@@ -18,6 +18,7 @@ import type {
   PageRow,
   SortOrder,
 } from "@/client/features/domain/types";
+import { useT } from "@/client/lib/i18n";
 
 type Props = DataTableFrameProps & {
   domain: string;
@@ -37,11 +38,12 @@ export function DomainPagesTable({
   onSortClick,
   ...frame
 }: Props) {
+  const t = useT();
   const columns = useMemo<ColumnDef<PageRow>[]>(
     () => [
       pageColumnHelper.display({
         id: "page",
-        header: () => "Page",
+        header: () => t("Page"),
         cell: ({ row }) => (
           <ExternalUrlCell
             value={row.original.page}
@@ -56,7 +58,7 @@ export function DomainPagesTable({
       pageColumnHelper.accessor("organicTraffic", {
         header: () => (
           <SortableHeader
-            label="Organic Traffic"
+            label={t("Organic Traffic")}
             column={domainSortColumn(
               toPageSortMode(sortMode) === "traffic",
               currentSortOrder,
@@ -69,7 +71,7 @@ export function DomainPagesTable({
       pageColumnHelper.accessor("keywords", {
         header: () => (
           <SortableHeader
-            label="Keywords"
+            label={t("Keywords")}
             column={domainSortColumn(
               toPageSortMode(sortMode) === "keywords",
               currentSortOrder,
@@ -80,7 +82,7 @@ export function DomainPagesTable({
         cell: ({ getValue }) => formatNumber(getValue()),
       }),
     ],
-    [currentSortOrder, domain, onSortClick, sortMode],
+    [currentSortOrder, domain, onSortClick, sortMode, t],
   );
   // Memoized on purpose: a fresh slice every render defeats TanStack Table's
   // data-keyed memo, so _autoResetPageIndex fires each render and its setState
@@ -93,7 +95,7 @@ export function DomainPagesTable({
   return (
     <DataTable
       table={table}
-      empty={{ title: "No pages match this search." }}
+      empty={{ title: t("No pages match this search.") }}
       {...frame}
     />
   );

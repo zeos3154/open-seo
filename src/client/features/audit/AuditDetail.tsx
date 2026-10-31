@@ -37,6 +37,7 @@ import {
   StatusBadge,
 } from "@/client/features/audit/shared";
 import { SUPPORT_EMAIL } from "@/client/lib/support";
+import { useT } from "@/client/lib/i18n";
 
 export function AuditDetail({
   projectId,
@@ -63,6 +64,7 @@ export function AuditDetail({
   const isComplete = statusQuery.data?.status === "completed";
   const isFailed = statusQuery.data?.status === "failed";
   const isRunning = statusQuery.data?.status === "running";
+  const t = useT();
 
   // Failed audits keep whatever pages were crawled before the failure
   // (persistence is per-batch), so fetch results for them too and show the
@@ -83,9 +85,11 @@ export function AuditDetail({
     return (
       <div className="px-4 py-4 md:px-6 md:py-6">
         <div className="mx-auto max-w-7xl space-y-4">
-          <BackButton onClick={onBack}>All audits</BackButton>
+          <BackButton onClick={onBack}>{t("All audits")}</BackButton>
           <QueryError
-            fallback="We could not load this audit. It may have been deleted."
+            fallback={t(
+              "We could not load this audit. It may have been deleted.",
+            )}
             onRetry={() => void statusQuery.refetch()}
             isRetrying={statusQuery.isFetching}
           />
@@ -121,7 +125,7 @@ export function AuditDetail({
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
       <div className="mx-auto max-w-7xl space-y-4">
         <div className="space-y-3">
-          <BackButton onClick={onBack}>All audits</BackButton>
+          <BackButton onClick={onBack}>{t("All audits")}</BackButton>
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="text-2xl font-semibold tracking-tight">
@@ -130,7 +134,9 @@ export function AuditDetail({
               {!isRunning && <StatusBadge status={status.status} />}
             </div>
             <p className="text-sm text-muted-foreground">
-              Site audit &middot; Started {formatStartedAt(status.startedAt)}
+              {t("Site audit · Started {time}", {
+                time: formatStartedAt(status.startedAt),
+              })}
             </p>
           </div>
         </div>
@@ -147,16 +153,18 @@ export function AuditDetail({
           <Alert variant="destructive">
             <AlertCircle />
             <AlertTitle>
-              This audit stopped before it crawled any pages.
+              {t("This audit stopped before it crawled any pages.")}
             </AlertTitle>
             <AlertDescription>
               <p>
-                Run a new audit to try again, or email{" "}
-                <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> if this
-                keeps happening.
+                {t("Run a new audit to try again, or email")}{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>{" "}
+                {t("if this keeps happening.")}
               </p>
               {status.errorCode ? (
-                <p className="font-mono text-xs">Code: {status.errorCode}</p>
+                <p className="font-mono text-xs">
+                  {t("Code: {code}", { code: status.errorCode })}
+                </p>
               ) : null}
             </AlertDescription>
           </Alert>
@@ -166,7 +174,7 @@ export function AuditDetail({
           <Alert variant="warning">
             <AlertCircle />
             <AlertTitle>
-              This site's bot protection blocked our crawler.
+              {t("This site's bot protection blocked our crawler.")}
             </AlertTitle>
             <AlertDescription>
               <BotProtectionAdvice
@@ -181,14 +189,18 @@ export function AuditDetail({
           <Alert variant="warning">
             <AlertCircle />
             <AlertTitle>
-              This audit stopped early after {partialPageCount} page
-              {partialPageCount === 1 ? "" : "s"}.
+              {partialPageCount === 1
+                ? t("This audit stopped early after 1 page.")
+                : t("This audit stopped early after {count} pages.", {
+                    count: partialPageCount,
+                  })}
             </AlertTitle>
             <AlertDescription>
-              The results below cover everything crawled before it stopped. Run
-              a new audit to try again, or email{" "}
-              <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> if this
-              keeps happening.
+              {t(
+                "The results below cover everything crawled before it stopped. Run a new audit to try again, or email",
+              )}{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>{" "}
+              {t("if this keeps happening.")}
             </AlertDescription>
           </Alert>
         )}
@@ -242,16 +254,17 @@ function ProgressCard({
       ? Math.round((lighthouseDone / status.lighthouseTotal) * 100)
       : 0;
   const isLighthousePhase = status.currentPhase === "lighthouse";
+  const t = useT();
   const phaseLabel =
     status.currentPhase === "discovery"
-      ? "Discovery"
+      ? t("Discovery")
       : status.currentPhase === "crawling"
-        ? "Crawling"
+        ? t("Crawling")
         : status.currentPhase === "lighthouse"
           ? "Lighthouse"
           : status.currentPhase === "finalizing"
-            ? "Finalizing"
-            : "Running";
+            ? t("Finalizing")
+            : t("Running");
   const progress = isLighthousePhase ? lighthouseProgress : crawlProgress;
 
   const crawlProgressQuery = useQuery({
@@ -268,7 +281,9 @@ function ProgressCard({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-medium">
             <Spinner className="text-primary" aria-hidden />
-            {isLighthousePhase ? "Running Lighthouse checks" : "Crawling pages"}
+            {isLighthousePhase
+              ? t("Running Lighthouse checks")
+              : t("Crawling pages")}
           </CardTitle>
           <CardAction>
             <Badge variant="secondary">{phaseLabel}</Badge>
@@ -278,12 +293,20 @@ function ProgressCard({
           <Progress value={progress}>
             <ProgressLabel className="font-normal">
               {isLighthousePhase
-                ? `${lighthouseDone} / ${status.lighthouseTotal} checks${
+                ? `${t("{done} / {total} checks", {
+                    done: lighthouseDone,
+                    total: status.lighthouseTotal,
+                  })}${
                     status.lighthouseFailed > 0
-                      ? ` (${status.lighthouseFailed} failed)`
+                      ? t(" ({failed} failed)", {
+                          failed: status.lighthouseFailed,
+                        })
                       : ""
                   }`
-                : `${status.pagesCrawled} / ${status.pagesTotal} pages`}
+                : t("{done} / {total} pages", {
+                    done: status.pagesCrawled,
+                    total: status.pagesTotal,
+                  })}
             </ProgressLabel>
             <ProgressValue />
           </Progress>
@@ -294,10 +317,12 @@ function ProgressCard({
         <Card size="sm">
           <CardHeader>
             <CardTitle className="font-medium text-muted-foreground">
-              Crawled Pages ({crawledUrls.length})
+              {t("Crawled Pages ({count})", { count: crawledUrls.length })}
             </CardTitle>
             <CardAction className="text-xs text-muted-foreground">
-              Updated {new Date(crawledUrls[0].crawledAt).toLocaleTimeString()}
+              {t("Updated {time}", {
+                time: new Date(crawledUrls[0].crawledAt).toLocaleTimeString(),
+              })}
             </CardAction>
           </CardHeader>
           <CardContent className="max-h-[400px] overflow-y-auto">

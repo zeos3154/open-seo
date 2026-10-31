@@ -27,6 +27,7 @@ import {
   type PageRow,
   type PagesFilters,
 } from "@/client/features/audit/results/AuditResultsTableFilterLogic";
+import { useT } from "@/client/lib/i18n";
 
 const pageColumnHelper = createColumnHelper<PageRow>();
 
@@ -82,6 +83,31 @@ const EmptyCell = () => (
   <span className="text-xs text-muted-foreground">-</span>
 );
 
+const FailedStatusBadge = () => {
+  const t = useT();
+  return (
+    <Badge
+      variant="destructive"
+      size="sm"
+      title={t(
+        "Fetching or rendering failed, so this page was not checked for content issues.",
+      )}
+    >
+      {t("Failed")}
+    </Badge>
+  );
+};
+
+const RedirectText = () => {
+  const t = useT();
+  return t("redirect");
+};
+
+const MissingTitleText = () => {
+  const t = useT();
+  return <span className="text-destructive text-xs">{t("missing")}</span>;
+};
+
 function buildPagesColumns({
   canonicalHost,
   missingTitlePageIds,
@@ -113,13 +139,7 @@ function buildPagesColumns({
       // A failed fetch or render has no HTTP status to show.
       cell: ({ getValue, row }) =>
         row.original.fetchClass === "error" ? (
-          <Badge
-            variant="destructive"
-            size="sm"
-            title="Fetching or rendering failed, so this page was not checked for content issues."
-          >
-            Failed
-          </Badge>
+          <FailedStatusBadge />
         ) : (
           <HttpStatusBadge code={getValue()} />
         ),
@@ -132,7 +152,7 @@ function buildPagesColumns({
           const target = row.original.redirectUrl;
           return (
             <span className="text-xs text-muted-foreground">
-              → {target ? displayPath(target, canonicalHost) : "redirect"}
+              → {target ? displayPath(target, canonicalHost) : <RedirectText />}
             </span>
           );
         }
@@ -143,7 +163,7 @@ function buildPagesColumns({
         // Red only when the engine flagged it — a 200 that isn't an HTML
         // document (robots.txt, security.txt) legitimately has no title.
         return missingTitlePageIds.has(row.original.id) ? (
-          <span className="text-destructive text-xs">missing</span>
+          <MissingTitleText />
         ) : (
           <EmptyCell />
         );
@@ -239,11 +259,12 @@ export function PagesTable({
   });
 
   const resetFilters = () => setFilters(EMPTY_PAGES_FILTERS);
+  const t = useT();
 
   return (
     <DataTable
       table={table}
-      empty={{ title: "No pages crawled" }}
+      empty={{ title: t("No pages crawled") }}
       isFiltered={activeFilterCount > 0}
       onClearFilters={resetFilters}
       toolbar={

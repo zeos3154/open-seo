@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { revalidateLogic } from "@tanstack/react-form";
 import { useAppForm } from "@/client/components/form/useAppForm";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import { useAuditCapabilities } from "@/client/features/audit/shared";
 import { isEveryAppClientAuthMode } from "@/lib/auth-mode";
 import { saveCrawlerCredential } from "@/serverFunctions/crawlerAccess";
@@ -19,10 +20,13 @@ export const saveCrawlerCredentialMutationKey = ["save-crawler-credential"];
  * crawl warning say how to set it instead of failing on save.
  */
 export function CrawlerAccessSetupHint() {
+  const t = useT();
   return (
     <>
-      An admin sets <code>CRAWLER_ACCESS_SECRET</code> with{" "}
-      <code>pnpm everyapp secret set CRAWLER_ACCESS_SECRET --app openseo</code>.
+      {t("An admin sets {code} with {command}.", {
+        code: "CRAWLER_ACCESS_SECRET",
+        command: "pnpm everyapp secret set CRAWLER_ACCESS_SECRET --app openseo",
+      })}
     </>
   );
 }
@@ -63,6 +67,7 @@ export function CrawlerAccessForm({
   onSaved?: () => void;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
 
   const saveMutation = useMutation({
     mutationKey: saveCrawlerCredentialMutationKey,
@@ -75,7 +80,11 @@ export function CrawlerAccessForm({
       await queryClient.invalidateQueries({
         queryKey: crawlerCredentialsQueryKey,
       });
-      toast.success(`Crawler access saved for ${result.credential.host}`);
+      toast.success(
+        translateCurrent("Crawler access saved for {host}", {
+          host: result.credential.host,
+        }),
+      );
       onSaved?.();
     },
   });
@@ -93,8 +102,14 @@ export function CrawlerAccessForm({
             fields: {
               signatureInput:
                 problem.reason === "wrong_domain"
-                  ? `This signature was created for ${problem.signedHost}, not ${problem.host}. In Shopify admin, create a signature for ${problem.host}.`
-                  : `Shopify won't accept this signature for ${problem.host}. Check that you created it for ${problem.host} and copied both values in full.`,
+                  ? translateCurrent(
+                      "This signature was created for {signedHost}, not {host}. In Shopify admin, create a signature for {host}.",
+                      { signedHost: problem.signedHost, host: problem.host },
+                    )
+                  : translateCurrent(
+                      "Shopify won't accept this signature for {host}. Check that you created it for {host} and copied both values in full.",
+                      { host: problem.host },
+                    ),
             },
           },
         });
@@ -107,7 +122,7 @@ export function CrawlerAccessForm({
   if (useCrawlerAccessNeedsSetup(projectId)) {
     return (
       <p className="text-sm text-muted-foreground">
-        Crawler access isn't set up yet. <CrawlerAccessSetupHint />
+        {t("Crawler access isn't set up yet.")} <CrawlerAccessSetupHint />
       </p>
     );
   }
@@ -119,7 +134,7 @@ export function CrawlerAccessForm({
           <form.AppField name="host">
             {(field) => (
               <field.TextField
-                label="Domain"
+                label={t("Domain")}
                 placeholder="store.example.com"
                 className="font-mono"
                 required
@@ -130,7 +145,7 @@ export function CrawlerAccessForm({
         <form.AppField name="signatureInput">
           {(field) => (
             <field.TextField
-              label="Signature-Input"
+              label={t("Signature-Input")}
               type="password"
               autoComplete="off"
               data-ph-mask
@@ -143,8 +158,8 @@ export function CrawlerAccessForm({
         <form.AppField name="signature">
           {(field) => (
             <field.TextField
-              label="Signature"
-              description="Shopify also shows a Signature-Agent value. You don't need to paste it: OpenSEO sends it with every request."
+              label={t("Signature")}
+              description={<SignatureDescription />}
               type="password"
               autoComplete="off"
               data-ph-mask
@@ -155,9 +170,16 @@ export function CrawlerAccessForm({
           )}
         </form.AppField>
         <form.SubmitButton disabled={!projectId}>
-          Save signature
+          {t("Save signature")}
         </form.SubmitButton>
       </form.Form>
     </form.AppForm>
+  );
+}
+
+function SignatureDescription() {
+  const t = useT();
+  return t(
+    "Shopify also shows a Signature-Agent value. You don't need to paste it: OpenSEO sends it with every request.",
   );
 }

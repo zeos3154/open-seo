@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";
+import { useT } from "@/client/lib/i18n";
 import {
   InputGroup,
   InputGroupAddon,
@@ -32,6 +33,7 @@ export function SearchCard({
   /** More fields below the row, still inside the form so Enter submits. */
   secondRow?: ReactNode;
 }) {
+  const t = useT();
   return (
     <Card>
       <CardContent className="space-y-3">
@@ -39,7 +41,7 @@ export function SearchCard({
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             {children}
             <Button type="submit" className="px-6" pending={pending}>
-              Search
+              {t("Search")}
             </Button>
           </div>
           {secondRow}

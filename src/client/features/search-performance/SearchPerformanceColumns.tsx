@@ -4,6 +4,7 @@ import { makeSelectionColumn } from "@/client/components/table/DataTable";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
 import { safeHttpUrl } from "@/shared/safe-url";
 import type { SelectionAnchor } from "@/client/components/table/tableSelection";
+import { useT } from "@/client/lib/i18n";
 import type {
   getSearchPerformanceReport,
   getSearchPerformanceTable,
@@ -94,7 +95,7 @@ export function buildStrikingColumns(
     makeSelectionColumn<StrikingRow>(anchorRef),
     strikingHelper.accessor("query", {
       enableSorting: false,
-      header: () => "Query",
+      header: () => <HeaderText label="Query" />,
       cell: ({ getValue }) => (
         <span className="block max-w-xs truncate" title={getValue()}>
           {getValue()}
@@ -103,7 +104,7 @@ export function buildStrikingColumns(
     }),
     strikingHelper.accessor("page", {
       enableSorting: false,
-      header: () => "Page",
+      header: () => <HeaderText label="Page" />,
       // GSC page keys are canonical http(s) URLs of the verified property;
       // the scheme check is defense-in-depth before rendering an href.
       cell: ({ getValue }) => (
@@ -140,4 +141,10 @@ export function buildStrikingColumns(
       meta: rightAligned,
     }),
   ];
+}
+
+/** Plain header label translated at render (non-sortable columns). */
+function HeaderText({ label }: { label: string }) {
+  const t = useT();
+  return t(label);
 }

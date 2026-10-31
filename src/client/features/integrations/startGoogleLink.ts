@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { useSyncExternalStore } from "react";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent } from "@/client/lib/i18n";
 import { startGa4Link } from "@/serverFunctions/ga4";
 import { startGscLink } from "@/serverFunctions/gsc";
 import type { GoogleLinkProvider } from "@/shared/google-link";
@@ -64,7 +65,7 @@ export async function startGoogleLink(
     }, 15_000);
     return true;
   } catch (error) {
-    toast.error(getStandardErrorMessage(error));
+    toast.error(translateCurrent(getStandardErrorMessage(error)));
     return false;
   } finally {
     // Single release point: any exit that didn't hand off to the browser

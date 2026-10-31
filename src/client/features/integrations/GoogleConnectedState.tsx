@@ -1,4 +1,5 @@
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 
 export function GoogleConnectedState({
   property,
@@ -21,6 +22,7 @@ export function GoogleConnectedState({
   canManageAccounts: boolean;
   disabled: boolean;
 }) {
+  const t = useT();
   return (
     <div className="space-y-4">
       <div className="min-w-0">
@@ -45,12 +47,12 @@ export function GoogleConnectedState({
         >
           <Button variant="outline" size="sm" onClick={onChange}>
             {canManage
-              ? "Change property or account"
-              : "Manage Google accounts"}
+              ? t("Change property or account")
+              : t("Manage Google accounts")}
           </Button>
           {canManage ? (
             <Button variant="destructive" size="sm" onClick={onDisconnect}>
-              {disconnecting ? "Disconnecting…" : "Disconnect project"}
+              {disconnecting ? t("Disconnecting…") : t("Disconnect project")}
             </Button>
           ) : null}
         </fieldset>

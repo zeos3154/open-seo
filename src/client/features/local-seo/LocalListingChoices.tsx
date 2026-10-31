@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Star } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/client/components/ui/radio-group";
 import type { lookupLocalBusiness } from "@/serverFunctions/local-seo";
+import { useT } from "@/client/lib/i18n";
 
 export type Listing = Awaited<ReturnType<typeof lookupLocalBusiness>>[number];
 
@@ -17,6 +18,7 @@ export function LocalListingChoices({
   onSelectedChange: (index: number) => void;
 }) {
   const list = useRef<HTMLDivElement>(null);
+  const t = useT();
   // A pin picked on the map brings its listing into view.
   useEffect(() => {
     list.current
@@ -26,11 +28,13 @@ export function LocalListingChoices({
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">
-        {listings.length} listings match your search.
+        {t("{count} listings match your search.", {
+          count: listings.length,
+        })}
       </p>
       <RadioGroup
         ref={list}
-        aria-label="Google Maps listings"
+        aria-label={t("Google Maps listings")}
         value={selected}
         onValueChange={(value) => onSelectedChange(Number(value))}
         className="max-h-80 overflow-y-auto"
@@ -48,14 +52,14 @@ export function LocalListingChoices({
                 {listing.business.title}
               </p>
               <p className="text-sm text-muted-foreground">
-                {listing.business.address ?? "No public address"}
+                {listing.business.address ?? t("No public address")}
               </p>
               <p className="flex items-center gap-1 text-xs text-muted-foreground">
                 {listing.rating != null && (
                   <>
                     <Star className="size-3 fill-current" />
                     {listing.rating} · {(listing.reviews ?? 0).toLocaleString()}{" "}
-                    reviews
+                    {t("reviews")}
                     {listing.category && " · "}
                   </>
                 )}

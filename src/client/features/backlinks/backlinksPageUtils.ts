@@ -1,4 +1,5 @@
 import type { BacklinksTab } from "@/types/schemas/backlinks";
+import { translateCurrent } from "@/client/lib/i18n";
 import type { BacklinksOverviewData } from "./backlinksPageTypes";
 
 export const TAB_DESCRIPTIONS: Record<BacklinksTab, string> = {
@@ -96,7 +97,8 @@ export function formatMonthLabel(value: string) {
 
 export function formatRelativeTimestamp(value: string) {
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "recently";
+  // Display-only helper: localizes the known fallback without touching data.
+  if (Number.isNaN(parsed.getTime())) return translateCurrent("recently");
   return parsed.toLocaleString(undefined, {
     month: "short",
     day: "numeric",

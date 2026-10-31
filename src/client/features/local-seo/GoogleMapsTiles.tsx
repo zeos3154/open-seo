@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { Map } from "leaflet";
 import { TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { QueryError } from "@/client/components/QueryState";
+import { useT } from "@/client/lib/i18n";
 import { getLocalMapCopyright } from "@/serverFunctions/google-maps";
 import type { GoogleMapsViewport } from "@/types/schemas/google-maps";
 import googleMapsLogo from "./google-maps-logo.svg";
@@ -22,6 +23,7 @@ function readViewport(map: Map): GoogleMapsViewport {
 
 export function GoogleMapsTiles({ projectId }: { projectId: string }) {
   const map = useMap();
+  const t = useT();
   const [viewport, setViewport] = useState(() => readViewport(map));
   // The map only moves when its container resizes and the grid is refitted.
   useMapEvents({ moveend: () => setViewport(readViewport(map)) });
@@ -40,8 +42,10 @@ export function GoogleMapsTiles({ projectId }: { projectId: string }) {
       <div className="absolute inset-x-4 top-4 z-[1000]">
         <QueryError
           error={copyright.error}
-          title="Google Maps unavailable"
-          fallback="Map tiles could not load. Check the map key's access and quota, or view rankings in Points."
+          title={t("Google Maps unavailable")}
+          fallback={t(
+            "Map tiles could not load. Check the map key's access and quota, or view rankings in Points.",
+          )}
           onRetry={() => void copyright.refetch()}
           isRetrying={copyright.isFetching}
         />
@@ -54,7 +58,7 @@ export function GoogleMapsTiles({ projectId }: { projectId: string }) {
         role="status"
         className="absolute inset-x-0 top-4 z-[1000] text-center text-sm"
       >
-        Loading Google Maps…
+        Loading {t("Google Maps")}…
       </div>
     );
   }

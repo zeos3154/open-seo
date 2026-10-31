@@ -14,6 +14,7 @@ import { QueryState } from "@/client/components/QueryState";
 import { SkeletonCard } from "@/client/components/SkeletonPresets";
 import { useHostedPlanGate } from "@/client/features/billing/HostedPlanGate";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { useT } from "@/client/lib/i18n";
 import { FreePlanAlert } from "./FreePlanAlert";
 import { RankTrackingChangesAlert } from "./RankTrackingChangesAlert";
 import { RankRunAlerts } from "./RankRunAlerts";
@@ -90,6 +91,7 @@ export function RankTrackingDomainDetail({
 }) {
   const planStatus = useHostedPlanGate();
   const queryClient = useQueryClient();
+  const t = useT();
   const [showAddKeywords, setShowAddKeywords] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const filters = useMemo(
@@ -164,16 +166,20 @@ export function RankTrackingDomainDetail({
     setShowAddKeywords(false);
     captureClientEvent("rank_tracking:keywords_add");
     toast.success(
-      `${result.added} keyword${result.added !== 1 ? "s" : ""} added`,
+      result.added === 1
+        ? t("1 keyword added")
+        : t("{count} keywords added", { count: result.added }),
     );
     if (result.checkScheduledSoon) {
-      toast.info("The scheduled check within the hour covers these keywords");
+      toast.info(
+        t("The scheduled check within the hour covers these keywords"),
+      );
     } else if (
       !result.checkTriggered &&
       result.added > 0 &&
       planStatus === "paid"
     ) {
-      toast.info("Use 'Check rankings' to check these keywords");
+      toast.info(t("Use 'Check rankings' to check these keywords"));
     }
   };
 
@@ -297,7 +303,7 @@ export function RankTrackingDomainDetail({
             void navigator.clipboard.writeText(
               filtered.map((r) => r.keyword).join("\n"),
             );
-            toast.success("Keywords copied to clipboard");
+            toast.success(t("Keywords copied to clipboard"));
           }}
           onCheckNow={() => {
             if (trackedKeywordCount > 0) requestCheck(trackedKeywordCount);
@@ -334,7 +340,7 @@ export function RankTrackingDomainDetail({
           ) : (
             <QueryState
               query={resultsQuery}
-              errorFallback="Failed to load rank data"
+              errorFallback={t("Failed to load rank data")}
               loading={<SkeletonCard />}
             >
               {(results) => (

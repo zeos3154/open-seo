@@ -26,6 +26,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/client/components/ui/select";
+import { useT } from "@/client/lib/i18n";
 
 type Filter = { id: string; label: string; kind: "text" | "number" | "follow" };
 export function DashboardDataTable<T>({
@@ -52,6 +53,7 @@ export function DashboardDataTable<T>({
   empty?: ComponentProps<typeof DataTable>["empty"];
 }) {
   const [open, setOpen] = useState(false);
+  const t = useT();
   const table = useDataTable({
     data: rows,
     columns,
@@ -80,7 +82,14 @@ export function DashboardDataTable<T>({
       onClearFilters={clear}
       isLoading={isLoading}
       error={error}
-      empty={empty}
+      empty={{
+        ...empty,
+        title: typeof empty.title === "string" ? t(empty.title) : empty.title,
+        description:
+          typeof empty.description === "string"
+            ? t(empty.description)
+            : empty.description,
+      }}
       toolbar={
         <>
           {tabs}
@@ -130,28 +139,34 @@ export function DashboardDataTable<T>({
                       {filter.kind === "follow" ? (
                         <Select
                           items={[
-                            { value: "all", label: "All links" },
-                            { value: "Follow", label: "Follow" },
-                            { value: "Nofollow", label: "Nofollow" },
+                            { value: "all", label: t("All links") },
+                            { value: "Follow", label: t("Follow") },
+                            { value: "Nofollow", label: t("Nofollow") },
                           ]}
                           value={typeof value === "string" ? value : "all"}
                           onValueChange={(v) =>
                             column.setFilterValue(v === "all" ? undefined : v)
                           }
                         >
-                          <SelectTrigger aria-label={filter.label}>
+                          <SelectTrigger aria-label={t(filter.label)}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">All links</SelectItem>
-                            <SelectItem value="Follow">Follow</SelectItem>
-                            <SelectItem value="Nofollow">Nofollow</SelectItem>
+                            <SelectItem value="all">
+                              {t("All links")}
+                            </SelectItem>
+                            <SelectItem value="Follow">
+                              {t("Follow")}
+                            </SelectItem>
+                            <SelectItem value="Nofollow">
+                              {t("Nofollow")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
                         <Input
-                          aria-label={filter.label}
-                          placeholder="Contains…"
+                          aria-label={t(filter.label)}
+                          placeholder={t("Contains…")}
                           value={typeof value === "string" ? value : ""}
                           onChange={(e) =>
                             column.setFilterValue(e.target.value)

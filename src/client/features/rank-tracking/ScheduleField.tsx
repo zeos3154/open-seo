@@ -7,6 +7,7 @@ import {
   FieldLabel,
 } from "@/client/components/ui/field";
 import { Input } from "@/client/components/ui/input";
+import { useT } from "@/client/lib/i18n";
 import {
   Select,
   SelectContent,
@@ -24,6 +25,8 @@ import {
 
 type Schedule = RankTrackingConfig["scheduleInterval"];
 
+// Labels are English source text; translate at render so a locale switch
+// applies to the open dialog.
 const SCHEDULE_ITEMS: { value: Schedule; label: string }[] = [
   { value: "daily", label: "Daily" },
   { value: "weekly", label: "Weekly" },
@@ -31,10 +34,7 @@ const SCHEDULE_ITEMS: { value: Schedule; label: string }[] = [
   { value: "manual", label: "Manual only" },
 ];
 
-const WEEKDAY_ITEMS = WEEKDAYS.map((day, index) => ({
-  value: index,
-  label: day,
-}));
+// Weekday option values stay indexes; labels translate at render.
 
 type Props = {
   schedule: Schedule;
@@ -53,14 +53,21 @@ export function ScheduleField({
   allowManual = true,
 }: Props) {
   const id = useId();
-  const items = allowManual
-    ? SCHEDULE_ITEMS
-    : SCHEDULE_ITEMS.filter((item) => item.value !== "manual");
+  const t = useT();
+  const items = (
+    allowManual
+      ? SCHEDULE_ITEMS
+      : SCHEDULE_ITEMS.filter((item) => item.value !== "manual")
+  ).map((item) => ({ ...item, label: t(item.label) }));
+  const weekdayItems = WEEKDAYS.map((day, index) => ({
+    value: index,
+    label: t(day),
+  }));
   const [showScheduleTime, setShowScheduleTime] = useState(false);
 
   return (
     <Field>
-      <FieldLabel htmlFor={id}>Schedule</FieldLabel>
+      <FieldLabel htmlFor={id}>{t("Schedule")}</FieldLabel>
       <Select
         items={items}
         value={schedule}
@@ -81,7 +88,7 @@ export function ScheduleField({
       </Select>
       {schedule !== "manual" && (
         <FieldDescription>
-          {describeSchedule(schedule, scheduleTime)}
+          {describeSchedule(schedule, scheduleTime, t)}
           {!showScheduleTime && (
             <>
               {" "}
@@ -92,7 +99,7 @@ export function ScheduleField({
                 className="h-auto p-0 text-xs"
                 onClick={() => setShowScheduleTime(true)}
               >
-                change
+                {t("change")}
               </Button>
             </>
           )}
@@ -103,7 +110,7 @@ export function ScheduleField({
           <div className="flex gap-2">
             {schedule === "weekly" && (
               <Select
-                items={WEEKDAY_ITEMS}
+                items={weekdayItems}
                 value={scheduleTime.weekday}
                 onValueChange={(weekday) => {
                   if (weekday !== null) {
@@ -111,11 +118,11 @@ export function ScheduleField({
                   }
                 }}
               >
-                <SelectTrigger aria-label="Day of week">
+                <SelectTrigger aria-label={t("Day of week")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {WEEKDAY_ITEMS.map((item) => (
+                  {weekdayItems.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
                       {item.label}
                     </SelectItem>
@@ -126,7 +133,7 @@ export function ScheduleField({
             <Input
               type="time"
               className="w-auto"
-              aria-label="Time of day"
+              aria-label={t("Time of day")}
               value={`${String(scheduleTime.hour).padStart(2, "0")}:${String(scheduleTime.minute).padStart(2, "0")}`}
               onChange={(e) => {
                 const [hour, minute] = e.target.value.split(":").map(Number);
@@ -137,14 +144,14 @@ export function ScheduleField({
             />
           </div>
           <FieldDescription>
-            In your local timezone: {browserTimeZoneLabel()}
+            {t("In your local timezone: {tz}", { tz: browserTimeZoneLabel() })}
           </FieldDescription>
         </>
       )}
       {schedule === "daily" && (
         <p className="flex items-start gap-1.5 text-xs text-warning">
           <Info className="mt-0.5 size-3.5 shrink-0" />
-          Daily checks use 7x more credits than weekly
+          {t("Daily checks use 7x more credits than weekly")}
         </p>
       )}
     </Field>

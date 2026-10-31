@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { updateProjectContext } from "@/serverFunctions/projectContext";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import type { getProjectContext } from "@/serverFunctions/projectContext";
 import type {
   ContextAuthor,
@@ -34,7 +35,7 @@ export function useContextUpdate(projectId: string) {
     onMutate: () => queryClient.cancelQueries({ queryKey }),
     onSuccess: (context) => {
       queryClient.setQueryData(queryKey, context);
-      toast.success("Project context updated");
+      toast.success(translateCurrent("Project context updated"));
     },
     // The page instantiates this mutation per section, so two concurrent
     // patches can settle out of order and the slower (earlier-snapshotted)
@@ -51,11 +52,15 @@ const AUTHOR_LABELS: Record<ContextAuthor, string> = {
 };
 
 export function Provenance({ by, at }: { by: ContextAuthor; at?: string }) {
+  const t = useT();
   return (
     <span className="text-xs text-muted-foreground">
       {at
-        ? `Updated by ${AUTHOR_LABELS[by]} · ${formatRelativeTime(at)}`
-        : `Added by ${AUTHOR_LABELS[by]}`}
+        ? t("Updated by {who} · {time}", {
+            who: t(AUTHOR_LABELS[by]),
+            time: formatRelativeTime(at),
+          })
+        : t("Added by {who}", { who: t(AUTHOR_LABELS[by]) })}
     </span>
   );
 }

@@ -8,6 +8,7 @@ import { useState, type ComponentProps } from "react";
 import { TabsTrigger } from "@/client/components/ui/tabs";
 import { getDashboardBacklinks } from "@/serverFunctions/dashboard";
 import { Freshness, ExternalPage } from "./siteTabParts";
+import { useT } from "@/client/lib/i18n";
 const KINDS = ["new", "lost", "all"] as const;
 type Kind = (typeof KINDS)[number];
 
@@ -24,6 +25,7 @@ export function DashboardBacklinks({
   projectId: string;
   domain: string;
 }) {
+  const t = useT();
   const [kind, setKind] = useState<Kind>("new");
   const query = useQuery({
     queryKey: ["dashboardBacklinks", projectId, domain, kind],
@@ -55,14 +57,14 @@ export function DashboardBacklinks({
           }}
           description={
             <>
-              {DESCRIPTIONS[kind]}
+              {t(DESCRIPTIONS[kind])}
               {query.data ? <Freshness {...query.data} /> : null}
             </>
           }
         >
-          <TabsTrigger value="new">New this week</TabsTrigger>
-          <TabsTrigger value="lost">Lost links</TabsTrigger>
-          <TabsTrigger value="all">Active links</TabsTrigger>
+          <TabsTrigger value="new">{t("New this week")}</TabsTrigger>
+          <TabsTrigger value="lost">{t("Lost links")}</TabsTrigger>
+          <TabsTrigger value="all">{t("Active links")}</TabsTrigger>
         </DataTableTabs>
       }
     />
@@ -83,6 +85,7 @@ function DashboardBacklinkTable({
   ComponentProps<typeof DashboardDataTable>,
   "tabs" | "isLoading" | "error"
 >) {
+  const t = useT();
   const columns: ColumnDef<Backlink>[] = [
     {
       id: "urlFrom",
@@ -100,7 +103,10 @@ function DashboardBacklinkTable({
     },
     {
       accessorKey: "anchor",
-      header: "Anchor",
+      header: () => {
+        const T = HeaderText;
+        return <T label="Anchor" />;
+      },
       cell: ({ row }) => (
         <span
           className="block max-w-48 truncate"
@@ -113,14 +119,14 @@ function DashboardBacklinkTable({
     },
     {
       accessorKey: "urlTo",
-      header: "Target page",
+      header: () => <HeaderText label="Target page" />,
       cell: ({ row }) => <ExternalPage url={row.original.urlTo} />,
       filterFn: "includesString",
     },
     {
       id: "follow",
       accessorFn: (row) => (row.isDofollow ? "Follow" : "Nofollow"),
-      header: "Link type",
+      header: () => <HeaderText label="Link type" />,
       filterFn: "equalsString",
     },
     {
@@ -159,10 +165,10 @@ function DashboardBacklinkTable({
       empty={{
         title:
           kind === "new"
-            ? "No new backlinks this week"
+            ? t("No new backlinks this week")
             : kind === "lost"
-              ? "No lost backlinks found"
-              : "No active backlinks found yet",
+              ? t("No lost backlinks found")
+              : t("No active backlinks found yet"),
       }}
       columns={columns}
       filters={[
@@ -175,4 +181,10 @@ function DashboardBacklinkTable({
       ]}
     />
   );
+}
+
+/** Plain header label translated at render (non-sortable columns). */
+function HeaderText({ label }: { label: string }) {
+  const t = useT();
+  return t(label);
 }

@@ -22,6 +22,7 @@ import {
 import { pagesToTable } from "@/client/features/domain/utils";
 import type { DomainOverviewRouteState } from "@/client/features/domain/domainRouteState";
 import { exportRows, type ExportFormat } from "@/client/lib/exportRows";
+import { useT } from "@/client/lib/i18n";
 import {
   DOMAIN_KEYWORDS_PAGE_SIZES,
   MAX_DATAFORSEO_FILTER_CONDITIONS,
@@ -81,6 +82,7 @@ export function PagesTab({
   onPageSizeChange,
 }: Props) {
   const [showFilters, setShowFilters] = useState(false);
+  const t = useT();
   // Scope filters consume part of DataForSEO's fixed filter budget.
   const maxConditions =
     MAX_DATAFORSEO_FILTER_CONDITIONS - RESEARCH_SCOPE_FILTER_SLOTS.pages[scope];
@@ -176,7 +178,7 @@ export function PagesTab({
         query.isError ? (
           <QueryError
             error={query.error}
-            fallback="Failed to load pages."
+            fallback={t("Failed to load pages.")}
             onRetry={() => void query.refetch()}
             isRetrying={isFetching}
           />

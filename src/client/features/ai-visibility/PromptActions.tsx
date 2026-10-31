@@ -1,6 +1,7 @@
 import { Archive, Pause, Pencil, Play } from "lucide-react";
 import { RowActionsMenu } from "@/client/components/RowActionsMenu";
 import { DropdownMenuItem } from "@/client/components/ui/dropdown-menu";
+import { useT } from "@/client/lib/i18n";
 
 /** The dots menu of a prompt or topic row in the tracked prompts table. */
 export function PromptActionsMenu({
@@ -23,12 +24,13 @@ export function PromptActionsMenu({
   onTogglePause: () => void;
   onArchive: () => void;
 }) {
+  const t = useT();
   return (
     <RowActionsMenu label={label}>
       {onEdit && (
         <DropdownMenuItem onClick={onEdit}>
           <Pencil />
-          {kind === "topic" ? "Rename topic" : "Edit prompt"}
+          {kind === "topic" ? t("Rename topic") : t("Edit prompt")}
         </DropdownMenuItem>
       )}
       <DropdownMenuItem
@@ -36,7 +38,9 @@ export function PromptActionsMenu({
         onClick={onTogglePause}
       >
         {paused ? <Play /> : <Pause />}
-        {paused ? `Resume ${kind}` : `Pause ${kind}`}
+        {paused
+          ? t("Resume {kind}", { kind: kindName(kind, t) })
+          : t("Pause {kind}", { kind: kindName(kind, t) })}
       </DropdownMenuItem>
       <DropdownMenuItem
         variant="destructive"
@@ -44,8 +48,16 @@ export function PromptActionsMenu({
         onClick={onArchive}
       >
         <Archive />
-        Archive {kind}
+        {t("Archive {kind}", { kind: kindName(kind, t) })}
       </DropdownMenuItem>
     </RowActionsMenu>
   );
+}
+
+/** Translate the row kind at display; the stored values stay "prompt"/"topic". */
+function kindName(
+  kind: "prompt" | "topic",
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): string {
+  return kind === "topic" ? t("topic") : t("prompt");
 }

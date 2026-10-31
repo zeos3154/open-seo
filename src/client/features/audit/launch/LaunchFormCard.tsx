@@ -30,6 +30,7 @@ import {
 import { PAID_MAX_AUDIT_PAGES } from "@/shared/audit-limits";
 import { renderingEstimateText } from "@/shared/audit-rendering";
 import { SUBSCRIBE_ROUTE } from "@/shared/billing";
+import { useT } from "@/client/lib/i18n";
 
 type Props = {
   launchForm: ReturnType<typeof useLaunchController>["launchForm"];
@@ -46,11 +47,12 @@ export function LaunchFormCard({
   canRenderJavaScript,
   outOfCredits,
 }: Props) {
+  const t = useT();
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>Start New Audit</h2>
+          <h2>{t("Start New Audit")}</h2>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -68,7 +70,7 @@ export function LaunchFormCard({
               return (
                 <Input
                   className="lg:col-span-9"
-                  aria-label="Site URL"
+                  aria-label={t("Site URL")}
                   aria-invalid={urlError ? true : undefined}
                   placeholder="https://example.com"
                   value={field.state.value}
@@ -91,7 +93,7 @@ export function LaunchFormCard({
                 className="w-full lg:col-span-3"
                 pending={isSubmitting}
               >
-                {isSubmitting ? "Starting..." : "Start Audit"}
+                {isSubmitting ? t("Starting...") : t("Start Audit")}
               </Button>
             )}
           </launchForm.Subscribe>
@@ -124,9 +126,10 @@ function LaunchOptions({
   commitMaxPagesInput,
   maxPagesLimit,
 }: Props) {
+  const t = useT();
   return (
     <Field className="rounded-lg border border-border p-3">
-      <FieldLabel htmlFor="audit-max-pages">Max pages</FieldLabel>
+      <FieldLabel htmlFor="audit-max-pages">{t("Max pages")}</FieldLabel>
       <launchForm.Field name="maxPagesInput">
         {(field) => (
           <Input
@@ -149,14 +152,19 @@ function LaunchOptions({
         )}
       </launchForm.Field>
       <FieldDescription>
-        Enter any value from {MIN_PAGES} to {maxPagesLimit.toLocaleString()}.
+        {t("Enter any value from {min} to {max}.", {
+          min: MIN_PAGES,
+          max: maxPagesLimit.toLocaleString(),
+        })}
         {maxPagesLimit < PAID_MAX_AUDIT_PAGES ? (
           <>
             {" "}
             <Link to={SUBSCRIBE_ROUTE} search={{ upgrade: true }}>
-              Upgrade
+              {t("Upgrade")}
             </Link>{" "}
-            to crawl up to {PAID_MAX_AUDIT_PAGES.toLocaleString()} pages.
+            {t("to crawl up to {max} pages.", {
+              max: PAID_MAX_AUDIT_PAGES.toLocaleString(),
+            })}
           </>
         ) : null}
       </FieldDescription>
@@ -165,6 +173,7 @@ function LaunchOptions({
 }
 
 function LighthouseOptions({ launchForm }: Pick<Props, "launchForm">) {
+  const t = useT();
   return (
     <Field className="rounded-lg border border-border p-3">
       <div className="flex items-center gap-2">
@@ -179,9 +188,11 @@ function LighthouseOptions({ launchForm }: Pick<Props, "launchForm">) {
         </launchForm.Field>
         <FieldLabel
           htmlFor="audit-run-lighthouse"
-          title="Lighthouse measures the performance of your pages and identifies issues."
+          title={t(
+            "Lighthouse measures the performance of your pages and identifies issues.",
+          )}
         >
-          Include Lighthouse
+          {t("Include Lighthouse")}
         </FieldLabel>
       </div>
 
@@ -191,8 +202,9 @@ function LighthouseOptions({ launchForm }: Pick<Props, "launchForm">) {
         {(runLighthouse) =>
           runLighthouse ? (
             <FieldDescription>
-              We choose a sample of 20 pages to audit, removing pages from
-              duplicate templates.
+              {t(
+                "We choose a sample of 20 pages to audit, removing pages from duplicate templates.",
+              )}
             </FieldDescription>
           ) : null
         }
@@ -206,6 +218,7 @@ function RenderingOptions({
   maxPagesLimit,
   canRenderJavaScript,
 }: Pick<Props, "launchForm" | "maxPagesLimit" | "canRenderJavaScript">) {
+  const t = useT();
   return (
     <Field className="rounded-lg border border-border p-3">
       <div className="flex items-center gap-2">
@@ -221,9 +234,9 @@ function RenderingOptions({
         </launchForm.Field>
         <FieldLabel
           htmlFor="audit-render-javascript"
-          title="Loads each page in a browser before auditing it. Slower."
+          title={t("Loads each page in a browser before auditing it. Slower.")}
         >
-          Render JavaScript
+          {t("Render JavaScript")}
         </FieldLabel>
       </div>
 
@@ -247,22 +260,23 @@ function RenderingOptions({
       )}
       {canRenderJavaScript === false && isEveryAppClientAuthMode() && (
         <FieldDescription>
-          JavaScript rendering isn't set up on your Every App gateway yet. An
-          owner or admin sets it with{" "}
-          <code>pnpm everyapp secret set CONTEXT_API_KEY</code>.
+          {t(
+            "JavaScript rendering isn't set up on your Every App gateway yet. An owner or admin sets it with {command}.",
+            { command: "pnpm everyapp secret set CONTEXT_API_KEY" },
+          )}
         </FieldDescription>
       )}
       {canRenderJavaScript === false && !isEveryAppClientAuthMode() && (
         <FieldDescription>
-          This deployment has no browser, so rendering needs a Context.dev API
-          key. Set <code>CONTEXT_API_KEY</code>, restart OpenSEO, then reload
-          this page.{" "}
+          {t(
+            "This deployment has no browser, so rendering needs a Context.dev API key. Set CONTEXT_API_KEY, restart OpenSEO, then reload this page.",
+          )}{" "}
           <a
             href="https://github.com/every-app/open-seo/blob/main/docs/SELF_HOSTING_CLOUDFLARE_OPERATIONS.md#render-javascript-in-site-audits"
             target="_blank"
             rel="noreferrer"
           >
-            Setup guide
+            {t("Setup guide")}
           </a>
         </FieldDescription>
       )}

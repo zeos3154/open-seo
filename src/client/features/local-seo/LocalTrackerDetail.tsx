@@ -9,6 +9,7 @@ import { Button } from "@/client/components/ui/button";
 import { Card } from "@/client/components/ui/card";
 import { Progress } from "@/client/components/ui/progress";
 import { Spinner } from "@/client/components/ui/spinner";
+import { useLocale, useT } from "@/client/lib/i18n";
 import {
   isLocalScanActive,
   localAreaLabel,
@@ -21,13 +22,20 @@ import type { LocalSeoSearch } from "@/types/schemas/local-seo-search";
 
 type TrackerData = Awaited<ReturnType<typeof getLocalTracker>>;
 
+type Translate = (
+  key: string,
+  vars?: Record<string, string | number>,
+) => string;
+
 // The workflow runs a keyword's points in waves of six live searches, each
 // wave ~3-5 s, so a check takes about five seconds per wave.
-function checkDurationLabel(keywords: number, points: number) {
+function checkDurationLabel(keywords: number, points: number, t: Translate) {
   const seconds = keywords * Math.ceil(points / 6) * 5;
-  return seconds < 60
-    ? "under a minute"
-    : `about ${Math.ceil(seconds / 60)} minute${seconds > 60 ? "s" : ""}`;
+  if (seconds < 60) return t("under a minute");
+  const minutes = Math.ceil(seconds / 60);
+  return minutes === 1
+    ? t("about 1 minute")
+    : t("about {count} minutes", { count: minutes });
 }
 
 export function LocalTrackerDetail({
@@ -49,8 +57,12 @@ export function LocalTrackerDetail({
         ? 4000
         : false,
   });
+  const t = useT();
   return (
-    <QueryState query={query} errorFallback="Failed to load local tracking">
+    <QueryState
+      query={query}
+      errorFallback={t("Failed to load local tracking")}
+    >
       {(data) => (
         <TrackerContent
           projectId={projectId}
@@ -78,6 +90,8 @@ function TrackerContent({
   const queryClient = useQueryClient();
   const [confirm, setConfirm] = useState<string | null>(null);
   const [managingKeywords, setManagingKeywords] = useState(false);
+  const t = useT();
+  const locale = useLocale();
   const keyword =
     keywords.find((row) => row.id === search.keyword) ?? keywords[0];
   const latestScan = keyword && latestKeywordScan(scans, keyword.id);
@@ -124,7 +138,13 @@ function TrackerContent({
             <h2 className="text-lg font-semibold">{tracker.title}</h2>
             <p className="text-xs text-muted-foreground">{tracker.address}</p>
             <p className="text-xs text-muted-foreground">
-              {localAreaLabel(tracker)} · Mobile
+              {locale === "en"
+                ? localAreaLabel(tracker)
+                : t("{count} points across {km} km", {
+                    count: tracker.gridSize * tracker.gridSize,
+                    km: (tracker.gridSize - 1) * tracker.spacingKm,
+                  })}{" "}
+              · {t("Mobile")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -135,7 +155,7 @@ function TrackerContent({
               onClick={() => setManagingKeywords(true)}
             >
               <Pencil data-icon="inline-start" />
-              Manage keywords
+              {t("Manage keywords")}
             </Button>
             <Button
               size="sm"
@@ -144,7 +164,7 @@ function TrackerContent({
               onClick={() => setConfirm(crypto.randomUUID())}
             >
               <Play data-icon="inline-start" />
-              {active ? "Checking rankings…" : "Check rankings"}
+              {active ? t("Checking rankings…") : t("Check rankings")}
             </Button>
           </div>
         </div>
@@ -152,19 +172,26 @@ function TrackerContent({
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-4 py-2 text-sm text-muted-foreground">
             <Spinner className="size-3.5 text-primary" />
             <span>
-              Checking {estimate.keywords} keyword
-              {estimate.keywords === 1 ? "" : "s"} across {estimate.points}{" "}
-              points · {searchesDone}/{estimate.searches} searches
+              {t("Checking {count} keywords across {points} points", {
+                count: estimate.keywords,
+                points: estimate.points,
+              })}{" "}
+              · {searchesDone}/{estimate.searches} {t("searches")}
             </span>
             <Progress
               className="w-24"
-              aria-label="Ranking check progress"
+              aria-label={t("Ranking check progress")}
               value={searchesDone}
               max={estimate.searches}
             />
             <span>
-              Usually takes{" "}
-              {checkDurationLabel(estimate.keywords, estimate.points)}
+              {t("Usually takes {duration}", {
+                duration: checkDurationLabel(
+                  estimate.keywords,
+                  estimate.points,
+                  t,
+                ),
+              })}
             </span>
           </div>
         )}
@@ -173,7 +200,9 @@ function TrackerContent({
             <QueryError
               fallback={
                 failed.error ??
-                "The last check returned no rankings. Earlier results are shown below."
+                t(
+                  "The last check returned no rankings. Earlier results are shown below.",
+                )
               }
             />
           </div>
@@ -197,12 +226,12 @@ function TrackerContent({
                 {
                   value: "latest",
                   icon: <List className="size-3.5" />,
-                  label: "Latest",
+                  label: t("Latest"),
                 },
                 {
                   value: "history",
                   icon: <CalendarDays className="size-3.5" />,
-                  label: "History",
+                  label: t("History"),
                 },
               ]}
               value={history ? "history" : "latest"}
@@ -215,11 +244,11 @@ function TrackerContent({
             />
           )}
           <span className="text-sm text-muted-foreground">
-            {keywords.length} keyword{keywords.length === 1 ? "" : "s"}
+            {t("{count} keywords", { count: keywords.length })}
           </span>
           {history && (
             <span className="ml-auto text-xs text-muted-foreground">
-              Average rank where found
+              {t("Average rank where found")}
             </span>
           )}
         </div>
@@ -250,26 +279,54 @@ function TrackerContent({
       )}
       {confirm && (
         <ConfirmDialog
-          title={`Check ${estimate.keywords} keyword${estimate.keywords === 1 ? "" : "s"}?`}
-          confirmLabel="Run now"
+          title={
+            estimate.keywords === 1
+              ? t("Check 1 keyword?")
+              : t("Check {count} keywords?", { count: estimate.keywords })
+          }
+          confirmLabel={t("Run now")}
           pending={start.isPending}
           onConfirm={() => start.mutate(confirm)}
           onClose={() => setConfirm(null)}
         >
-          {estimate.keywords} keyword{estimate.keywords === 1 ? "" : "s"}{" "}
-          &times; {estimate.points} grid points = {estimate.searches} Google
-          Maps searches on mobile, taking{" "}
-          {checkDurationLabel(estimate.keywords, estimate.points)}. Costs up to{" "}
-          <span className="font-mono font-semibold text-foreground">
-            {/* Credits are $0.001, so three decimals show the exact maximum. */}
-            {estimate.costUsd.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 3,
-            })}
-          </span>
-          .
+          {estimate.keywords === 1
+            ? t(
+                "1 keyword × {points} grid points = {total} Google Maps searches on mobile, taking {duration}. Costs up to {cost}.",
+                {
+                  points: estimate.points,
+                  total: estimate.searches,
+                  duration: checkDurationLabel(
+                    estimate.keywords,
+                    estimate.points,
+                    t,
+                  ),
+                  cost: estimate.costUsd.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 3,
+                  }),
+                },
+              )
+            : t(
+                "{count} keywords × {points} grid points = {total} Google Maps searches on mobile, taking {duration}. Costs up to {cost}.",
+                {
+                  count: estimate.keywords,
+                  points: estimate.points,
+                  total: estimate.searches,
+                  duration: checkDurationLabel(
+                    estimate.keywords,
+                    estimate.points,
+                    t,
+                  ),
+                  cost: estimate.costUsd.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 3,
+                  }),
+                },
+              )}
         </ConfirmDialog>
       )}
     </div>

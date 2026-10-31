@@ -26,7 +26,7 @@ import {
 import { ProjectMarketFields } from "@/client/features/projects/ProjectMarketFields";
 import { toastInitialAudit } from "@/client/features/projects/initialAuditToast";
 import { createProject } from "@/serverFunctions/projects";
-import { useT } from "@/client/lib/i18n";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import { isEveryAppClientAuthMode } from "@/lib/auth-mode";
 
 const createProjectSchema = z.object({
@@ -100,7 +100,7 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
           // reactive if the locale changes.
           formApi.setErrorMap({ onSubmit: { fields } });
         } else {
-          toast.error(getStandardErrorMessage(error));
+          toast.error(translateCurrent(getStandardErrorMessage(error)));
         }
       }
     },

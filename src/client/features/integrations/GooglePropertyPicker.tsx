@@ -1,4 +1,5 @@
 import { GscPropertySetupHelp, hasNoGscWebsites } from "./GscPropertySetupHelp";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import { GoogleAccountRemovalDialog } from "@/client/features/integrations/GoogleAccountRemovalDialog";
 import { QueryError } from "@/client/components/QueryState";
 import { Spinner } from "@/client/components/Spinner";
@@ -53,7 +54,12 @@ type PropertyGroup = {
 };
 
 function accountLabel(account: GooglePickerAccount) {
-  return account.email ?? `Google account · ${account.accountId.slice(-6)}`;
+  return (
+    account.email ??
+    translateCurrent("Google account · {id}", {
+      id: account.accountId.slice(-6),
+    })
+  );
 }
 
 function accountStatus(account: GooglePickerAccount, provider: "gsc" | "ga4") {
@@ -109,6 +115,7 @@ export function GooglePropertyPicker({
   renderActions?: (disabled: boolean) => ReactNode;
 }) {
   const [removing, setRemoving] = useState<GooglePickerAccount | null>(null);
+  const t = useT();
   // Expired and unreachable accounts have no properties, so they only appear
   // in the accounts list below, where their reconnect and retry actions live.
   const groups: PropertyGroup[] = accounts
@@ -159,12 +166,12 @@ export function GooglePropertyPicker({
       {!emptyGsc || readOnly ? (
         <div className="space-y-4">
           {readOnly ? (
-            <p className="text-sm font-medium">Manage Google accounts</p>
+            <p className="text-sm font-medium">{t("Manage Google accounts")}</p>
           ) : (
             <div>
-              <p className="mb-2 text-sm font-medium">Choose property</p>
+              <p className="mb-2 text-sm font-medium">{t("Choose property")}</p>
               {loading ? (
-                <Spinner size="sm" label="Loading properties…" />
+                <Spinner size="sm" label={t("Loading properties…")} />
               ) : error ? (
                 <QueryError
                   fallback="Couldn't load properties."
@@ -192,15 +199,17 @@ export function GooglePropertyPicker({
                 >
                   <ComboboxInput
                     className="w-full"
-                    placeholder="Select a property…"
-                    aria-label="Search properties"
+                    placeholder={t("Select a property…")}
+                    aria-label={t("Search properties")}
                     disabled={saving}
                   />
                   <ComboboxContent>
                     <ComboboxEmpty>
                       {options.length > 0
-                        ? "No matching properties."
-                        : "No properties available. Check the Google accounts below."}
+                        ? t("No matching properties.")
+                        : t(
+                            "No properties available. Check the Google accounts below.",
+                          )}
                     </ComboboxEmpty>
                     <ComboboxList>
                       {(group: PropertyGroup) => (
@@ -230,8 +239,10 @@ export function GooglePropertyPicker({
                                   {!option.selectable ? (
                                     <span className="block text-xs">
                                       {provider === "gsc"
-                                        ? "Ask the property owner for Full access, or verify ownership in Search Console."
-                                        : "No verified access"}
+                                        ? t(
+                                            "Ask the property owner for Full access, or verify ownership in Search Console.",
+                                          )
+                                        : t("No verified access")}
                                     </span>
                                   ) : null}
                                 </span>
@@ -248,7 +259,7 @@ export function GooglePropertyPicker({
           )}
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">
-              Google accounts
+              {t("Google accounts")}
             </p>
             {accounts.map((account) => {
               const label = accountLabel(account);
@@ -272,7 +283,7 @@ export function GooglePropertyPicker({
                           rel="noopener noreferrer"
                           className="underline underline-offset-4"
                         >
-                          How to enable it ↗
+                          {t("How to enable it ↗")}
                         </a>
                       </>
                     ) : null}
@@ -287,7 +298,7 @@ export function GooglePropertyPicker({
                         disabled={linking}
                         aria-busy={linking}
                       >
-                        {linking ? "Opening Google…" : "Reconnect"}
+                        {linking ? t("Opening Google…") : t("Reconnect")}
                       </Button>
                     ) : account.unavailable ? (
                       <Button
@@ -322,7 +333,7 @@ export function GooglePropertyPicker({
               pending={linking}
             >
               {linking ? null : <Plus className="size-4" />}
-              {linking ? "Opening Google…" : "Add Google account"}
+              {linking ? t("Opening Google…") : t("Add Google account")}
             </Button>
             {provider === "gsc" &&
             !loading &&
@@ -331,14 +342,14 @@ export function GooglePropertyPicker({
               (account) => accountStatus(account, provider) !== null,
             ) ? (
               <p className="text-xs text-muted-foreground">
-                Having trouble?{" "}
+                {t("Having trouble?")}{" "}
                 <a
                   href={GSC_SETUP_GUIDE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline underline-offset-4"
                 >
-                  Setup guide ↗
+                  {t("Setup guide ↗")}
                 </a>
               </p>
             ) : null}
@@ -351,7 +362,7 @@ export function GooglePropertyPicker({
         <div className="flex flex-wrap items-center gap-1">
           {readOnly ? null : (
             <Button size="sm" onClick={onSave} disabled={!canSave || saving}>
-              {saving ? "Saving…" : saveLabel}
+              {saving ? t("Saving…") : saveLabel}
             </Button>
           )}
           {secondaryAction ? (

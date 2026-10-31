@@ -7,6 +7,7 @@ import { Button } from "@/client/components/ui/button";
 import { Checkbox } from "@/client/components/ui/checkbox";
 import { Label } from "@/client/components/ui/label";
 import { Textarea } from "@/client/components/ui/textarea";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 
 export function AddKeywordsPanel({
   configId,
@@ -24,6 +25,7 @@ export function AddKeywordsPanel({
   onCancel: () => void;
 }) {
   const matchCaseId = useId();
+  const t = useT();
   const [keywordInput, setKeywordInput] = useState("");
   const [matchCase, setMatchCase] = useState(false);
   const mutation = useMutation({
@@ -44,14 +46,16 @@ export function AddKeywordsPanel({
           rows={3}
           // The field grows with its text; a long line must wrap, not widen the card.
           className="min-w-0"
-          aria-label="Keywords to add"
-          placeholder="Enter keywords, one per line"
+          aria-label={t("Keywords to add")}
+          placeholder={t("Enter keywords, one per line")}
           value={keywordInput}
           onChange={(e) => setKeywordInput(e.target.value)}
         />
         <div
           className="flex w-fit items-center gap-2"
-          title="Track these keywords exactly as typed instead of lowercasing them. Google can return different results for a capitalized brand name."
+          title={t(
+            "Track these keywords exactly as typed instead of lowercasing them. Google can return different results for a capitalized brand name.",
+          )}
         >
           <Checkbox
             id={matchCaseId}
@@ -59,7 +63,7 @@ export function AddKeywordsPanel({
             onCheckedChange={(checked) => setMatchCase(checked)}
           />
           <Label htmlFor={matchCaseId} className="text-xs font-normal">
-            Match case
+            {t("Match case")}
           </Label>
         </div>
       </div>
@@ -74,7 +78,10 @@ export function AddKeywordsPanel({
               .filter(Boolean);
             if (lines.some((l) => l.length > MAX_TRACKED_KEYWORD_LENGTH)) {
               toast.error(
-                `Keywords must be ${MAX_TRACKED_KEYWORD_LENGTH} characters or fewer.`,
+                translateCurrent(
+                  "Keywords must be {limit} characters or fewer.",
+                  { limit: MAX_TRACKED_KEYWORD_LENGTH },
+                ),
               );
               return;
             }
@@ -82,10 +89,10 @@ export function AddKeywordsPanel({
           }}
           disabled={!keywordInput.trim()}
         >
-          Add
+          {t("Add")}
         </Button>
         <Button variant="ghost" size="sm" onClick={onCancel}>
-          Cancel
+          {t("Cancel")}
         </Button>
       </div>
     </div>

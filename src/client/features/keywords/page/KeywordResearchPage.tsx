@@ -5,6 +5,7 @@ import { BackButton, PageHeader } from "@/client/components/PageHeader";
 import { Button } from "@/client/components/ui/button";
 import { InsufficientCreditsError } from "@/client/features/billing/InsufficientCreditsError";
 import { getErrorCode } from "@/client/lib/error-messages";
+import { useT } from "@/client/lib/i18n";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import { useKeywordResearchController } from "@/client/features/keywords/state/useKeywordResearchController";
 import type {
@@ -43,6 +44,7 @@ function isKeywordSearchTab(tab: SearchTab): tab is KeywordSearchTab {
 }
 
 export function KeywordResearchPage(input: Props) {
+  const t = useT();
   const setSearchParams = useKeywordSearchParams();
   const projectId = input.projectId;
   const { locationCode, displayedLocationCode, setPreferredLocationCode } =
@@ -199,15 +201,17 @@ export function KeywordResearchPage(input: Props) {
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
         <PageHeader
-          title="Keyword Research"
-          description="Discover keyword ideas, search demand, and ranking opportunities."
+          title={t("Keyword Research")}
+          description={t(
+            "Discover keyword ideas, search demand, and ranking opportunities.",
+          )}
           backLink={
             controller.hasSearched ? (
               <BackButton
                 data-testid="keyword-research-recent-searches"
                 onClick={showRecentSearches}
               >
-                Recent searches
+                {t("Recent searches")}
               </BackButton>
             ) : undefined
           }
@@ -280,6 +284,7 @@ function ResearchErrorCard({
   message: string;
 }) {
   const errorCode = getErrorCode(controller.researchMutationError);
+  const t = useT();
 
   return (
     <div className="mx-auto w-full max-w-xl pt-1">
@@ -287,7 +292,7 @@ function ResearchErrorCard({
         <InsufficientCreditsError />
       ) : (
         <ErrorState
-          message={message}
+          message={t(message)}
           onRetry={
             errorCode === "UNKNOWN_LOCATION"
               ? undefined
@@ -305,11 +310,14 @@ function KeywordSaveDialog({
 }: {
   controller: KeywordResearchControllerState;
 }) {
+  const t = useT();
   if (!controller.showSaveDialog) return null;
 
   return (
     <FormDialog
-      title={`Save ${controller.selectedKeywordRows.length} Keywords`}
+      title={t("Save {count} Keywords", {
+        count: controller.selectedKeywordRows.length,
+      })}
       onClose={() => controller.setShowSaveDialog(false)}
       actions={
         <>
@@ -317,23 +325,25 @@ function KeywordSaveDialog({
             variant="outline"
             onClick={() => controller.setShowSaveDialog(false)}
           >
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button
             pending={controller.savePending}
             onClick={controller.confirmSave}
           >
-            Save
+            {t("Save")}
           </Button>
         </>
       }
     >
       <div className="space-y-2 text-sm text-muted-foreground">
-        <p>These keywords will be saved to your current project.</p>
+        <p>{t("These keywords will be saved to your current project.")}</p>
         {controller.locationName ? (
           <p>
-            Saved keywords show national metrics. The local volume for{" "}
-            {formatLocationLabel(controller.locationName)} is not saved.
+            {t(
+              "Saved keywords show national metrics. The local volume for {location} is not saved.",
+              { location: formatLocationLabel(controller.locationName) },
+            )}
           </p>
         ) : null}
       </div>

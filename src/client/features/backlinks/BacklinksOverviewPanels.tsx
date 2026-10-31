@@ -10,6 +10,7 @@ import {
 } from "./BacklinksPageCharts";
 import type { BacklinksOverviewData } from "./backlinksPageTypes";
 import { formatRelativeTimestamp } from "./backlinksPageUtils";
+import { useT } from "@/client/lib/i18n";
 
 type SummaryStat = { label: string; value: string; description: string };
 
@@ -25,12 +26,13 @@ export function BacklinksScopeAlert({
 }: {
   scope: BacklinksOverviewData["scope"];
 }) {
+  const t = useT();
   const note = SCOPE_NOTES[scope];
   if (!note) return null;
   return (
     <Alert variant="info">
       <Info />
-      <AlertDescription className="text-foreground">{note}</AlertDescription>
+      <AlertDescription className="text-foreground">{t(note)}</AlertDescription>
     </Alert>
   );
 }
@@ -43,6 +45,7 @@ export function BacklinksOverviewPanels({
   data: BacklinksOverviewData;
   summaryStats: SummaryStat[];
 }) {
+  const t = useT();
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 pb-3">
@@ -50,10 +53,14 @@ export function BacklinksOverviewPanels({
           <h2 className="text-lg font-semibold break-all">
             {data.displayTarget}
           </h2>
-          <Badge variant="outline">{RESEARCH_SCOPE_LABELS[data.scope]}</Badge>
+          <Badge variant="outline">
+            {t(RESEARCH_SCOPE_LABELS[data.scope])}
+          </Badge>
         </div>
         <p className="ml-auto text-xs text-muted-foreground">
-          Updated {formatRelativeTimestamp(data.fetchedAt)}
+          {t("Updated {time}", {
+            time: formatRelativeTimestamp(data.fetchedAt),
+          })}
         </p>
       </div>
       <div className="px-4 pb-4">
@@ -72,6 +79,7 @@ function OverviewGrid({
 }) {
   // Trend charts need history/live, which only takes a whole hostname.
   const domainScope = data.scope === "domain" || data.scope === "subdomains";
+  const t = useT();
 
   return (
     <div
@@ -82,7 +90,9 @@ function OverviewGrid({
       >
         <MetricsTable
           rows={summaryStats.map((item) => ({
-            label: <HelpLabel label={item.label} helpText={item.description} />,
+            label: (
+              <HelpLabel label={t(item.label)} helpText={t(item.description)} />
+            ),
             value: item.value,
           }))}
         />
@@ -90,18 +100,18 @@ function OverviewGrid({
       {domainScope ? (
         <>
           <TrendPanel
-            title="Backlink growth"
+            title={t("Backlink growth")}
             description={
               data.scope === "domain"
-                ? "Last year · Includes subdomains"
-                : "Backlinks and referring domains over the last year"
+                ? t("Last year · Includes subdomains")
+                : t("Backlinks and referring domains over the last year")
             }
           >
             <BacklinksTrendChart data={data.trends} />
           </TrendPanel>
           <TrendPanel
-            title="New vs lost"
-            description="Backlink acquisition and attrition"
+            title={t("New vs lost")}
+            description={t("Backlink acquisition and attrition")}
           >
             <BacklinksNewLostChart data={data.newLostTrends} />
           </TrendPanel>

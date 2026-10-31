@@ -33,6 +33,7 @@ import {
 } from "@/client/components/table/DataTableToolbar";
 import { TabsTrigger } from "@/client/components/ui/tabs";
 import { exportRows } from "@/client/lib/exportRows";
+import { useT } from "@/client/lib/i18n";
 
 const BACKLINKS_RESULTS_TABS: Array<{
   tab: BacklinksSearchState["tab"];
@@ -103,6 +104,7 @@ export function BacklinksResultsCard({
     isLoading: isLoadingRatings,
     loadRatings,
   } = useAhrefsDomainRatings(projectId);
+  const t = useT();
   const activeFilterCount = filters[activeTab].activeFilterCount;
   const exportTable = useMemo(
     () =>
@@ -137,7 +139,7 @@ export function BacklinksResultsCard({
     error: tabErrorMessage ? (
       <QueryError
         cause={tabError}
-        fallback={tabErrorMessage}
+        fallback={t(tabErrorMessage)}
         onRetry={onRetryTab}
         isRetrying={isTabRetrying}
       />
@@ -152,14 +154,14 @@ export function BacklinksResultsCard({
             );
             if (next) onTabChange(next.tab);
           }}
-          description={TAB_DESCRIPTIONS[activeTab]}
+          description={t(TAB_DESCRIPTIONS[activeTab])}
         >
           {BACKLINKS_RESULTS_TABS.filter(
             // Referring domains can't be filtered to a path prefix.
             ({ tab }) => !(scope === "subfolder" && tab === "domains"),
           ).map(({ label, tab }) => (
             <TabsTrigger key={tab} value={tab}>
-              {label}
+              {t(label)}
             </TabsTrigger>
           ))}
         </DataTableTabs>
@@ -168,7 +170,9 @@ export function BacklinksResultsCard({
             <>
               <ExportMenu
                 actions={["sheets", "csv"]}
-                scopes={[{ id: "page", label: "Current page · selected view" }]}
+                scopes={[
+                  { id: "page", label: t("Current page · selected view") },
+                ]}
                 disabled={exportTable.rows.length === 0}
                 onExport={(format) =>
                   void exportRows({
@@ -213,9 +217,9 @@ export function BacklinksResultsCard({
                   {
                     value: "one",
                     icon: <Rows3 />,
-                    label: "One per domain",
+                    label: t("One per domain"),
                   },
-                  { value: "all", icon: <List />, label: "All links" },
+                  { value: "all", icon: <List />, label: t("All links") },
                 ]}
               />
             </>

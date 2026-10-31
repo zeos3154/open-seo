@@ -3,6 +3,7 @@ import { ClientOnly } from "@tanstack/react-router";
 import { type LocalPointStatus, type LocalGridPoint } from "@/shared/local-seo";
 import { Card, CardHeader, CardTitle } from "@/client/components/ui/card";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { useT } from "@/client/lib/i18n";
 
 const MapView = lazy(() => import("./LocalRankMap"));
 export type LocalGridDisplayPoint = LocalGridPoint & {
@@ -25,11 +26,12 @@ export function LocalRankGrid({
   onSelect: (id: string) => void;
   preview: boolean;
 }) {
+  const t = useT();
   return (
     <Card className="h-full min-h-0 min-w-0 gap-0 overflow-hidden py-0 shadow-none">
       <CardHeader className="shrink-0 items-center gap-2 px-4 py-3">
         <CardTitle className="text-sm">
-          {preview ? "Grid preview" : "Maps rankings"}
+          {preview ? t("Grid preview") : t("Maps rankings")}
         </CardTitle>
       </CardHeader>
       <div className="min-h-0 flex-1 overflow-hidden border-t border-border">
@@ -59,8 +61,8 @@ export function LocalRankGrid({
           <span className="mr-1 inline-block size-2 rounded-full bg-red-600" />
           11–20
         </span>
-        <span>– Not found</span>
-        <span>! Failed</span>
+        <span>– {t("Not found")}</span>
+        <span>! {t("Failed")}</span>
       </div>
     </Card>
   );

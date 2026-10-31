@@ -28,6 +28,7 @@ import {
   type PerformanceFilters,
   type PerformanceRowData,
 } from "@/client/features/audit/results/AuditResultsTableFilterLogic";
+import { useT } from "@/client/lib/i18n";
 
 const performanceColumnHelper = createColumnHelper<PerformanceRowData>();
 
@@ -72,9 +73,10 @@ export function PerformanceTable({
     filters,
     EMPTY_PERFORMANCE_FILTERS,
   );
+  const t = useT();
   const columns = useMemo(
-    () => buildPerformanceColumns({ auditId, projectId }),
-    [auditId, projectId],
+    () => buildPerformanceColumns({ auditId, projectId, t }),
+    [auditId, projectId, t],
   );
   const table = useDataTable({
     data: filteredRows,
@@ -89,7 +91,7 @@ export function PerformanceTable({
   return (
     <DataTable
       table={table}
-      empty={{ title: "No Lighthouse results" }}
+      empty={{ title: t("No Lighthouse results") }}
       isFiltered={activeFilterCount > 0}
       onClearFilters={resetFilters}
       toolbar={
@@ -119,9 +121,11 @@ export function PerformanceTable({
 function buildPerformanceColumns({
   auditId,
   projectId,
+  t,
 }: {
   auditId: string;
   projectId: string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }): ColumnDef<PerformanceRowData>[] {
   return [
     performanceColumnHelper.accessor("pagePath", {
@@ -134,9 +138,19 @@ function buildPerformanceColumns({
     }),
     performanceColumnHelper.accessor("strategy", {
       header: ({ column }) => <SortableHeader column={column} label="Device" />,
-      cell: ({ getValue }) => (
-        <span className="capitalize text-xs">{getValue()}</span>
-      ),
+      // The strategy value itself stays the raw API enum; only the label
+      // translates, and unknown values fall back to the raw value.
+      cell: ({ getValue }) => {
+        const value = String(getValue());
+        const known = ["desktop", "mobile"] as const;
+        return (
+          <span className="text-xs">
+            {known.some((k) => k === value)
+              ? t(value === "desktop" ? "Desktop" : "Mobile")
+              : value}
+          </span>
+        );
+      },
     }),
     performanceColumnHelper.display({
       id: "status",
@@ -144,13 +158,14 @@ function buildPerformanceColumns({
       cell: ({ row }) => {
         const isFailed = isLighthouseFailure(row.original);
         const failureMessage =
-          row.original.errorMessage ?? "Lighthouse returned no category scores";
+          row.original.errorMessage ??
+          t("Lighthouse returned no category scores");
         return isFailed ? (
           <Badge variant="destructive" title={failureMessage}>
-            failed
+            {t("failed")}
           </Badge>
         ) : (
-          <Badge variant="success">ok</Badge>
+          <Badge variant="success">{t("ok")}</Badge>
         );
       },
       enableSorting: true,
@@ -223,25 +238,49 @@ function buildPerformanceColumns({
     }),
     performanceColumnHelper.display({
       id: "issues",
-      header: () => "Issues",
+      header: () => <IssuesHeader />,
       cell: ({ row }) =>
         row.original.r2Key && !isLighthouseFailure(row.original) ? (
-          <Button
-            size="xs"
-            nativeButton={false}
-            render={
-              <Link
-                to="/p/$projectId/audit/issues/$resultId"
-                params={{ projectId, resultId: row.original.id }}
-                search={{ auditId, category: "performance" }}
-              />
-            }
-          >
-            View issues
-          </Button>
+          <ViewIssuesButton
+            projectId={projectId}
+            resultId={row.original.id}
+            auditId={auditId}
+          />
         ) : (
           <span className="text-xs text-muted-foreground">-</span>
         ),
     }),
   ];
+}
+
+function IssuesHeader() {
+  const t = useT();
+  return t("Issues");
+}
+
+function ViewIssuesButton({
+  projectId,
+  resultId,
+  auditId,
+}: {
+  projectId: string;
+  resultId: string;
+  auditId: string;
+}) {
+  const t = useT();
+  return (
+    <Button
+      size="xs"
+      nativeButton={false}
+      render={
+        <Link
+          to="/p/$projectId/audit/issues/$resultId"
+          params={{ projectId, resultId }}
+          search={{ auditId, category: "performance" }}
+        />
+      }
+    >
+      {t("View issues")}
+    </Button>
+  );
 }

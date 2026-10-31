@@ -7,6 +7,7 @@ import {
   getWorkspaceMergeStatus,
   mergeLegacyWorkspaces,
 } from "@/serverFunctions/workspace";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 
 // Shown on self-hosted Cloudflare Access deployments that still have per-user
 // workspaces from before the shared workspace existed. The server decides
@@ -14,6 +15,7 @@ import {
 // entirely since the mode is known at build time.
 export function WorkspaceMergeBanner() {
   const queryClient = useQueryClient();
+  const t = useT();
 
   const statusQuery = useQuery({
     queryKey: ["workspaceMergeStatus"],
@@ -25,7 +27,15 @@ export function WorkspaceMergeBanner() {
     mutationFn: () => mergeLegacyWorkspaces(),
     onSuccess: ({ mergedWorkspaces }) => {
       toast.success(
-        `Migrated ${mergedWorkspaces} organization${mergedWorkspaces === 1 ? "" : "s"} into the shared organization.`,
+        mergedWorkspaces === 1
+          ? translateCurrent(
+              "Migrated {count} organization into the shared organization.",
+              { count: mergedWorkspaces },
+            )
+          : translateCurrent(
+              "Migrated {count} organizations into the shared organization.",
+              { count: mergedWorkspaces },
+            ),
       );
       // The merge changes projects, connections, and the banner's own status —
       // refetch everything rather than enumerating keys.
@@ -40,10 +50,9 @@ export function WorkspaceMergeBanner() {
   return (
     <Alert variant="warning" className="p-5">
       <AlertDescription className="max-w-3xl text-foreground">
-        When self-hosting on Cloudflare, there was a bug where each user had
-        their own workspace. It was intended for all users to be in one
-        workspace. Clicking the button below will migrate everyone&apos;s
-        previous work into this shared workspace.
+        {t(
+          "When self-hosting on Cloudflare, there was a bug where each user had their own workspace. It was intended for all users to be in one workspace. Clicking the button below will migrate everyone's previous work into this shared workspace.",
+        )}
       </AlertDescription>
       <Button
         size="sm"
@@ -51,7 +60,7 @@ export function WorkspaceMergeBanner() {
         pending={mergeMutation.isPending}
         onClick={() => mergeMutation.mutate()}
       >
-        {mergeMutation.isPending ? "Migrating…" : "Migrate organizations"}
+        {mergeMutation.isPending ? t("Migrating…") : t("Migrate organizations")}
       </Button>
     </Alert>
   );

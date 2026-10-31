@@ -6,9 +6,11 @@ import { ClaudeIcon, OpenAIIcon } from "@/client/features/ai-mcp/AgentIcons";
 import { ONE_CLICK_INSTALLS } from "@/client/features/ai-mcp/agentInstalls";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { setDashboardStepDismissed } from "@/serverFunctions/dashboard";
+import { useT } from "@/client/lib/i18n";
 
 export function DashboardAgentCard({ projectId }: { projectId: string }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const dismiss = useMutation({
     mutationFn: () =>
       setDashboardStepDismissed({
@@ -28,7 +30,7 @@ export function DashboardAgentCard({ projectId }: { projectId: string }) {
   return (
     <Card
       role="region"
-      aria-label="Use OpenSEO in your chatbot"
+      aria-label={t("Use OpenSEO in your chatbot")}
       className="relative flex-row flex-wrap items-center gap-x-6 gap-y-4 p-5 pr-9 shadow-none"
     >
       <div className="flex min-w-0 flex-1 basis-[32rem] items-center gap-4">
@@ -42,11 +44,12 @@ export function DashboardAgentCard({ projectId }: { projectId: string }) {
         </div>
         <div className="min-w-0 space-y-1">
           <h2 className="text-sm font-semibold">
-            Use OpenSEO in ChatGPT or Claude
+            {t("Use OpenSEO in ChatGPT or Claude")}
           </h2>
           <p className="truncate text-sm text-muted-foreground">
-            Research keywords and audit your site from the chatbot you already
-            use.
+            {t(
+              "Research keywords and audit your site from the chatbot you already use.",
+            )}
           </p>
         </div>
       </div>
@@ -66,7 +69,7 @@ export function DashboardAgentCard({ projectId }: { projectId: string }) {
             }
           >
             <Icon data-icon="inline-start" />
-            Add to {name}
+            {t("Add to {name}", { name })}
           </Button>
         ))}
       </div>
@@ -74,7 +77,7 @@ export function DashboardAgentCard({ projectId }: { projectId: string }) {
         variant="ghost"
         size="icon-xs"
         className="absolute right-1 top-1 text-muted-foreground"
-        aria-label="Dismiss chatbot card"
+        aria-label={t("Dismiss chatbot card")}
         disabled={dismiss.isPending}
         onClick={() => dismiss.mutate()}
       >

@@ -26,6 +26,7 @@ import {
 import { PromptExecutions, type PromptExecution } from "./PromptExecutions";
 import { PromptSummary } from "./PromptSummary";
 import { aiDate } from "./shared";
+import { useT } from "@/client/lib/i18n";
 
 const answered = ({ observation }: PromptExecution) =>
   observation.status === "completed" && observation.answerStatus === "answered";
@@ -61,6 +62,7 @@ export function PromptAnalysis({
     executions.find(({ observation }) => observation.id === selectedId) ??
     executions.find(answered) ??
     executions[0];
+  const t = useT();
   const summaries = summarizeAiBrands(
     executions.map(({ observation }) => observation),
   );
@@ -92,13 +94,15 @@ export function PromptAnalysis({
         <div className="space-y-3 rounded-lg border border-border bg-card p-8 text-center">
           <h2 className="text-sm font-medium">
             {history.rows.length
-              ? "No executions in this period"
-              : "No answers yet"}
+              ? t("No executions in this period")
+              : t("No answers yet")}
           </h2>
           <p className="text-sm text-muted-foreground">
             {history.rows.length
-              ? "Choose another date range to see this prompt’s answers."
-              : "Choose Run now to collect answers, brand mentions, and citations."}
+              ? t("Choose another date range to see this prompt’s answers.")
+              : t(
+                  "Choose Run now to collect answers, brand mentions, and citations.",
+                )}
           </p>
           {history.rows.length > 0 && (
             <Button
@@ -106,15 +110,16 @@ export function PromptAnalysis({
               variant="outline"
               onClick={() => setPeriod(promptPeriod(PromptRange.All))}
             >
-              Show all available history
+              {t("Show all available history")}
             </Button>
           )}
         </div>
       )}
       {history.truncated && (
         <p className="text-xs text-muted-foreground">
-          History covers the latest 50 project runs. Older executions are not
-          included in this period’s metrics.
+          {t(
+            "History covers the latest 50 project runs. Older executions are not included in this period’s metrics.",
+          )}
         </p>
       )}
     </div>
@@ -132,6 +137,7 @@ function ExecutionSelects({
   onSelect: (id: string) => void;
 }) {
   const engine = selected.observation.engine;
+  const t = useT();
   const engineItems = aiEngineSchema.options
     .filter((value) =>
       executions.some(({ observation }) => observation.engine === value),
@@ -144,7 +150,7 @@ function ExecutionSelects({
       label: `${aiDate(observation.collectedAt ?? run.createdAt)}${
         observation.status === "completed"
           ? ""
-          : ` · ${aiObservationStatusLabel(observation.status)}`
+          : ` · ${t(aiObservationStatusLabel(observation.status))}`
       }`,
     }));
   return (
@@ -164,7 +170,7 @@ function ExecutionSelects({
           if (match) onSelect(match.observation.id);
         }}
       >
-        <SelectTrigger size="sm" aria-label="AI provider">
+        <SelectTrigger size="sm" aria-label={t("AI provider")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -182,7 +188,7 @@ function ExecutionSelects({
           if (id) onSelect(id);
         }}
       >
-        <SelectTrigger size="sm" aria-label="Answer date">
+        <SelectTrigger size="sm" aria-label={t("Answer date")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -8,6 +8,7 @@ import { Input } from "@/client/components/ui/input";
 import type { CitationTab } from "@/client/features/ai-search/brandLookupFilterTypes";
 import { formatPlatformLabel } from "@/client/features/ai-search/platformLabels";
 import type { BrandLookupFiltersState } from "@/client/features/ai-search/useBrandLookupFilters";
+import { useT } from "@/client/lib/i18n";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyForm = { Field: React.ComponentType<any> };
@@ -28,14 +29,15 @@ function FilterTextInput({
   label: string;
   placeholder: string;
 }) {
+  const t = useT();
   return (
-    <DataTableFilterGroup label={label}>
+    <DataTableFilterGroup label={t(label)}>
       <form.Field name={name}>
         {(field: StringField) => (
           <Input
             className="h-7"
-            aria-label={label}
-            placeholder={placeholder}
+            aria-label={t(label)}
+            placeholder={t(placeholder)}
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
           />
@@ -56,13 +58,14 @@ function FilterRangeInputs({
   minName: string;
   maxName: string;
 }) {
+  const t = useT();
   return (
     <form.Field name={minName}>
       {(minField: StringField) => (
         <form.Field name={maxName}>
           {(maxField: StringField) => (
             <DataTableRangeFilter
-              label={title}
+              label={t(title)}
               min={{
                 value: minField.state.value,
                 onChange: (event) => minField.handleChange(event.target.value),
@@ -86,13 +89,18 @@ const PLATFORM_ITEMS = [
 ];
 
 function PlatformToggle({ form }: { form: AnyForm }) {
+  const t = useT();
+  const platformItems = PLATFORM_ITEMS.map((item) => ({
+    ...item,
+    label: t(item.label),
+  }));
   return (
-    <DataTableFilterGroup label="Platform">
+    <DataTableFilterGroup label={t("Platform")}>
       <form.Field name="platform">
         {(field: StringField) => (
           <SegmentedToggle
             showLabels
-            items={PLATFORM_ITEMS}
+            items={platformItems}
             // The stored value for "All" is the empty string.
             value={field.state.value || "all"}
             onChange={(value) =>

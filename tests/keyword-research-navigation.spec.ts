@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { dismissSetupDialog } from "./setup-dialog";
 
 async function getProjectId(page: Page) {
   await page.goto("/");
@@ -20,6 +21,7 @@ test.describe("Keyword Research navigation", () => {
     await page.goto(
       `/p/${projectId}/keywords?q=keyword%20research&loc=2840&kLimit=150&mode=auto`,
     );
+    await dismissSetupDialog(page);
     await expect(
       page.getByRole("heading", { name: "Keyword Research", exact: true }),
     ).toBeVisible();
@@ -50,6 +52,7 @@ test.describe("Keyword Research navigation", () => {
     await page.goto(
       `/p/${projectId}/keywords?q=keyword%20research&loc=2840&kLimit=150&mode=auto`,
     );
+    await dismissSetupDialog(page);
     await expect(
       page.getByRole("row", { name: /keyword research/i }).first(),
     ).toBeVisible({ timeout: 30_000 });
@@ -57,6 +60,7 @@ test.describe("Keyword Research navigation", () => {
     await page.goto(
       `/p/${projectId}/keywords?q=backlinks&loc=2840&kLimit=150&mode=auto`,
     );
+    await dismissSetupDialog(page);
     await expect(
       page.getByRole("row", { name: /backlinks/i }).first(),
     ).toBeVisible({ timeout: 30_000 });
@@ -87,6 +91,7 @@ test.describe("Keyword Research navigation", () => {
       await page.goto(
         `/p/${projectId}/keywords?q=${encodeURIComponent(keyword)}&loc=2840&kLimit=150&mode=auto`,
       );
+      await dismissSetupDialog(page);
       await expect(
         page.getByRole("row", { name: new RegExp(keyword, "i") }).first(),
       ).toBeVisible({ timeout: 30_000 });

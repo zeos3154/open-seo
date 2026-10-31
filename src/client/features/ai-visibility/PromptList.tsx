@@ -10,6 +10,7 @@ import { Input } from "@/client/components/ui/input";
 import { exportAiVisibilityData } from "@/serverFunctions/ai-visibility";
 import { safeHttpUrl } from "@/shared/safe-url";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import type { AiPrompt, AiRun, AiTrackerState } from "@/shared/ai-visibility";
 import type { AiTrackerPatch } from "@/types/schemas/ai-visibility";
 import { PromptInventory, promptHasResults } from "./PromptInventory";
@@ -37,6 +38,7 @@ export function PromptList({
   reducePending: boolean;
 }) {
   const [search, setSearch] = useState("");
+  const t = useT();
   const results = useQuery(aiRunResultsQueryOptions(projectId, currentRun?.id));
   const exportMutation = useMutation({
     mutationFn: (format: "json" | "csv") =>
@@ -51,7 +53,7 @@ export function PromptList({
     onSuccess: (result) => {
       const url = safeHttpUrl(result.url);
       if (!url) {
-        toast.error("The export link was invalid.");
+        toast.error(translateCurrent("The export link was invalid."));
         return;
       }
       const link = document.createElement("a");
@@ -60,7 +62,8 @@ export function PromptList({
       link.rel = "noreferrer";
       link.click();
     },
-    onError: (error) => toast.error(getStandardErrorMessage(error)),
+    onError: (error) =>
+      toast.error(translateCurrent(getStandardErrorMessage(error))),
   });
   // Archiving keeps a prompt's history for when it is added back; archived
   // prompts are not listed.
@@ -79,15 +82,15 @@ export function PromptList({
             )}
             <Button size="sm" onClick={onSetup}>
               <Plus />
-              Add prompts
+              {t("Add prompts")}
             </Button>
           </>
         }
       >
         <Input
-          aria-label="Search tracked prompts"
+          aria-label={t("Search tracked prompts")}
           className="h-7 w-64"
-          placeholder="Search prompts"
+          placeholder={t("Search prompts")}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -106,7 +109,7 @@ export function PromptList({
           <Alert variant="info" banner>
             <Info />
             <AlertDescription>
-              Run prompts before interacting with results.
+              {t("Run prompts before interacting with results.")}
             </AlertDescription>
           </Alert>
         )}

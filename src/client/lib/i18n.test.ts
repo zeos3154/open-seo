@@ -41,10 +41,13 @@ describe("translateCurrent", () => {
     expect(translateCurrent("Projects")).toBe("项目");
   });
 
-  it("falls back to the key (English) for missing entries", () => {
-    stubBrowser({ getItem: () => "zh-CN" });
-    expect(translateCurrent("No such string")).toBe("No such string");
-  });
+  it.each(["No such string", "constructor", "__proto__", "toString"])(
+    "keeps an unknown message as text: %s",
+    (message) => {
+      stubBrowser({ getItem: () => "zh-CN" });
+      expect(translateCurrent(message)).toBe(message);
+    },
+  );
 
   it("fills {name} placeholders, including in the English fallback", () => {
     stubBrowser({ getItem: () => "zh-CN" });

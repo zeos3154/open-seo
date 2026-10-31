@@ -57,6 +57,8 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
   INTERNAL_ERROR: UNEXPECTED_ERROR_MESSAGE,
 };
 
+// Keep source text in state and form errors. Renderers translate it in the
+// current locale, so an existing error follows later language changes.
 export function getStandardErrorMessage(
   error: unknown,
   fallback: string = STANDARD_MESSAGES.INTERNAL_ERROR,

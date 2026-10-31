@@ -6,6 +6,7 @@ import { getAiVisibilitySources } from "@/serverFunctions/ai-visibility";
 import { updateProjectContext } from "@/serverFunctions/projectContext";
 import type { AiTrackerState } from "@/shared/ai-visibility";
 import { DomainFavicon } from "./DomainFavicon";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import { aiVisibilityKey } from "./shared";
 
 /** Third-party domains cited most often in the run; add them to shared context. */
@@ -19,6 +20,7 @@ export function SuggestedCompetitors({
   runId: string;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const sources = useQuery({
     queryKey: [...aiVisibilityKey(projectId), "sources", "suggested", runId],
     queryFn: () =>
@@ -40,7 +42,9 @@ export function SuggestedCompetitors({
       });
     },
     onSuccess: (_, domain) => {
-      toast.success(`${domain} added as a competitor`);
+      toast.success(
+        translateCurrent("{domain} added as a competitor", { domain }),
+      );
       void Promise.all([
         queryClient.invalidateQueries({ queryKey: aiVisibilityKey(projectId) }),
         queryClient.invalidateQueries({
@@ -61,9 +65,9 @@ export function SuggestedCompetitors({
   const top = rows.slice(0, 5);
   return (
     <div className="space-y-3 border-t border-border p-4">
-      <h2 className="text-sm font-semibold">Suggested competitors</h2>
+      <h2 className="text-sm font-semibold">{t("Suggested competitors")}</h2>
       <p className="text-xs text-muted-foreground">
-        Other sites AI answers cite most for your prompts.
+        {t("Other sites AI answers cite most for your prompts.")}
       </p>
       <div className="divide-y divide-border">
         {top.map((row) => (
@@ -75,8 +79,9 @@ export function SuggestedCompetitors({
               <DomainFavicon domain={row.domain} />
               {row.domain}
               <span className="ml-2 text-xs text-muted-foreground">
-                cited in {row.answerCount}{" "}
-                {row.answerCount === 1 ? "answer" : "answers"}
+                {t("cited in {count} answers", {
+                  count: row.answerCount,
+                })}
               </span>
             </span>
             <Button
@@ -86,7 +91,7 @@ export function SuggestedCompetitors({
               onClick={() => add.mutate(row.domain)}
             >
               <Plus />
-              Add
+              {t("Add")}
             </Button>
           </div>
         ))}

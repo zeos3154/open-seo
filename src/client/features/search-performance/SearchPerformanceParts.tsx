@@ -32,12 +32,14 @@ import {
 } from "@/client/features/search-performance/SearchPerformanceColumns";
 import { normalizeExportValue, type CsvValue } from "@/client/lib/csv";
 import { exportRows } from "@/client/lib/exportRows";
+import { translateCurrent } from "@/client/lib/i18n";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {
   SEARCH_PERFORMANCE_PAGE_SIZES,
   type SearchPerformanceTableDimension,
 } from "@/types/schemas/search-performance";
 import { saveKeywords } from "@/serverFunctions/keywords";
+import { useT } from "@/client/lib/i18n";
 
 export type ExportTarget = "csv" | "sheets";
 
@@ -131,25 +133,29 @@ function positionDelta(current: number, previous: number): Delta {
 
 export function TotalsTable({ report }: { report: Report }) {
   const { totals, prevTotals, range } = report;
-  const deltaTitle = `Compared with ${range.prevStartDate} to ${range.prevEndDate}`;
+  const t = useT();
+  const deltaTitle = t("Compared with {start} to {end}", {
+    start: range.prevStartDate,
+    end: range.prevEndDate,
+  });
   const metrics = [
     {
-      label: "Clicks",
+      label: t("Clicks"),
       value: formatCount(totals.clicks),
       delta: percentDelta(totals.clicks, prevTotals.clicks),
     },
     {
-      label: "Impressions",
+      label: t("Impressions"),
       value: formatCount(totals.impressions),
       delta: percentDelta(totals.impressions, prevTotals.impressions),
     },
     {
-      label: "Click-through rate",
+      label: t("Click-through rate"),
       value: formatCtr(totals.ctr),
       delta: percentDelta(totals.ctr, prevTotals.ctr),
     },
     {
-      label: "Average position",
+      label: t("Average position"),
       value: formatPosition(totals.position),
       delta: positionDelta(totals.position, prevTotals.position),
     },
@@ -159,10 +165,10 @@ export function TotalsTable({ report }: { report: Report }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-full">Metric</TableHead>
-            <TableHead className="min-w-32 text-right">Value</TableHead>
+            <TableHead className="w-full">{t("Metric")}</TableHead>
+            <TableHead className="min-w-32 text-right">{t("Value")}</TableHead>
             <TableHead className="min-w-32 text-right" title={deltaTitle}>
-              Change
+              {t("Change")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -200,7 +206,12 @@ export function DimensionTable({
   onClearFilters: () => void;
   onFirstPage: () => void;
 }) {
-  const columns = useMemo(() => buildDimensionColumns(keyLabel), [keyLabel]);
+  const t = useT();
+  const columns = useMemo(
+    () => buildDimensionColumns(t(keyLabel)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable per locale change which re-renders
+    [keyLabel, t],
+  );
   const table = useDataTable({
     data: rows,
     columns,
@@ -215,17 +226,19 @@ export function DimensionTable({
       empty={
         isPastEnd
           ? {
-              title: "No rows on this page",
-              description: "This page is past the end of the results.",
+              title: t("No rows on this page"),
+              description: t("This page is past the end of the results."),
               action: (
                 <Button variant="outline" size="sm" onClick={onFirstPage}>
-                  Go to first page
+                  {t("Go to first page")}
                 </Button>
               ),
             }
           : {
-              title: "No Search Console data yet",
-              description: "Search Console data can take a few days to appear.",
+              title: t("No Search Console data yet"),
+              description: t(
+                "Search Console data can take a few days to appear.",
+              ),
             }
       }
     />
@@ -252,6 +265,7 @@ export function StrikingDistanceTable({
   onClearFilters: () => void;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const anchorRef = useSelectionAnchor();
   const [rowSelection, setRowSelection] = useState({});
   const columns = useMemo(() => buildStrikingColumns(anchorRef), [anchorRef]);
@@ -284,10 +298,16 @@ export function StrikingDistanceTable({
         .join("\n");
       await navigator.clipboard.writeText(text);
       toast.success(
-        `Copied ${selectedQueries.length} ${selectedQueries.length === 1 ? "keyword" : "keywords"}`,
+        selectedQueries.length === 1
+          ? translateCurrent("Copied {count} keyword", {
+              count: selectedQueries.length,
+            })
+          : translateCurrent("Copied {count} keywords", {
+              count: selectedQueries.length,
+            }),
       );
     } catch {
-      toast.error("Couldn't copy to clipboard");
+      toast.error(translateCurrent("Couldn't copy to clipboard"));
     }
   };
 
@@ -303,7 +323,13 @@ export function StrikingDistanceTable({
         queryKey: ["savedKeywords", projectId],
       });
       toast.success(
-        `Saved ${keywords.length} ${keywords.length === 1 ? "keyword" : "keywords"}`,
+        keywords.length === 1
+          ? translateCurrent("Saved {count} keyword", {
+              count: keywords.length,
+            })
+          : translateCurrent("Saved {count} keywords", {
+              count: keywords.length,
+            }),
       );
       setRowSelection({});
     },
@@ -313,8 +339,9 @@ export function StrikingDistanceTable({
     <>
       <div className="p-4">
         <p className="mb-3 text-sm text-muted-foreground">
-          Queries ranking at positions 5 to 20, sorted by impressions. Improve
-          the listed page to move them into the top results.
+          {t(
+            "Queries ranking at positions 5 to 20, sorted by impressions. Improve the listed page to move them into the top results.",
+          )}
         </p>
         <DataTable
           table={table}
@@ -323,22 +350,23 @@ export function StrikingDistanceTable({
           empty={
             isPastEnd
               ? {
-                  title: "No rows on this page",
-                  description: "This page is past the end of the results.",
+                  title: t("No rows on this page"),
+                  description: t("This page is past the end of the results."),
                   action: (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => onPageChange(1)}
                     >
-                      Go to first page
+                      {t("Go to first page")}
                     </Button>
                   ),
                 }
               : {
-                  title: "No striking-distance queries",
-                  description:
+                  title: t("No striking-distance queries"),
+                  description: t(
                     "Queries ranking at positions 5 to 20 will appear here.",
+                  ),
                 }
           }
         />
@@ -357,7 +385,7 @@ export function StrikingDistanceTable({
       )}
       <TableBulkActionBar
         selectedCount={selectedQueries.length}
-        selectedLabel={selectedQueries.length === 1 ? "query" : "queries"}
+        selectedLabel={selectedQueries.length === 1 ? t("query") : t("queries")}
         onClear={() => setRowSelection({})}
         actions={
           <div className="flex items-center gap-1 px-1.5">
@@ -365,7 +393,7 @@ export function StrikingDistanceTable({
               icon={<Copy className="size-3.5" />}
               onClick={() => void copyKeywords()}
             >
-              Copy keywords
+              {t("Copy keywords")}
             </TableBulkActionButton>
             <TableBulkActionButton
               icon={
@@ -378,7 +406,7 @@ export function StrikingDistanceTable({
               onClick={() => save.mutate(selectedQueries)}
               disabled={save.isPending}
             >
-              Save as keywords
+              {t("Save as keywords")}
             </TableBulkActionButton>
           </div>
         }

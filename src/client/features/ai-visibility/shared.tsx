@@ -7,6 +7,7 @@ import { Spinner } from "@/client/components/Spinner";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Progress } from "@/client/components/ui/progress";
+import { useT, translateCurrent } from "@/client/lib/i18n";
 import {
   getAiResearchSetup,
   getAiVisibilityRun,
@@ -164,19 +165,21 @@ export function AiQueryError({
   error: unknown;
   retry?: () => void;
 }) {
+  const t = useT();
   return (
     <QueryError
       error={error}
-      fallback="Could not load AI visibility. Please try again."
+      fallback={t("Could not load AI visibility. Please try again.")}
       onRetry={retry}
     />
   );
 }
 
 export function AiLoading() {
+  const t = useT();
   return (
     <div className="flex justify-center py-12">
-      <Spinner size="sm" label="Loading AI visibility…" />
+      <Spinner size="sm" label={t("Loading AI visibility…")} />
     </div>
   );
 }
@@ -188,9 +191,14 @@ export function AiMatchBadge({
   value: boolean;
   positive?: "Mentioned" | "Cited";
 }) {
+  const t = useT();
   return (
     <Badge variant={value ? "success" : "secondary"}>
-      {value ? positive : positive === "Cited" ? "Not cited" : "Not mentioned"}
+      {value
+        ? t(positive)
+        : positive === "Cited"
+          ? t("Not cited")
+          : t("Not mentioned")}
     </Badge>
   );
 }
@@ -198,7 +206,9 @@ export function AiMatchBadge({
 export function aiDate(value: string | null) {
   if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Unavailable" : date.toLocaleString();
+  return Number.isNaN(date.getTime())
+    ? translateCurrent("Unavailable")
+    : date.toLocaleString();
 }
 
 export function aiRate(count: number, eligible: number) {
@@ -216,6 +226,7 @@ export function aiMoney(value: number) {
 
 export function AiRunStatus({ run }: { run: AiRun }) {
   const pending = run.status === "running" || run.status === "queued";
+  const t = useT();
   return (
     <div
       className="space-y-2 rounded-lg border bg-card px-4 py-3 border-border"
@@ -225,11 +236,11 @@ export function AiRunStatus({ run }: { run: AiRun }) {
         <span className="flex items-center gap-2 font-medium">
           {pending && <Loader2 className="size-4 animate-spin" />}
           {run.trigger === "manual"
-            ? "One-off run"
+            ? t("One-off run")
             : run.trigger === "baseline"
-              ? "First scheduled run"
-              : "Scheduled run"}
-          <Badge variant="secondary">{run.status}</Badge>
+              ? t("First scheduled run")
+              : t("Scheduled run")}
+          <Badge variant="secondary">{t(runStatusLabel(run.status))}</Badge>
         </span>
         <span className="text-xs text-muted-foreground">
           {aiDate(run.createdAt)}
@@ -237,11 +248,18 @@ export function AiRunStatus({ run }: { run: AiRun }) {
       </div>
       <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
         <span>
-          {run.completed} of {run.expected} answers collected
+          {t("{count} of {total} answers collected", {
+            count: run.completed,
+            total: run.expected,
+          })}
         </span>
-        {run.pending > 0 && <span>{run.pending} pending</span>}
+        {run.pending > 0 && (
+          <span>{t("{count} pending", { count: run.pending })}</span>
+        )}
         {run.failed > 0 && (
-          <span className="text-destructive">{run.failed} failed</span>
+          <span className="text-destructive">
+            {t("{count} failed", { count: run.failed })}
+          </span>
         )}
       </div>
       {pending && (
@@ -257,6 +275,7 @@ export function PromptTrackingWithoutUpgradeButton({
 }: {
   projectId: string;
 }) {
+  const t = useT();
   return (
     <Button
       size="lg"
@@ -264,7 +283,20 @@ export function PromptTrackingWithoutUpgradeButton({
       nativeButton={false}
       render={<Link to="/p/$projectId/ai-visibility" params={{ projectId }} />}
     >
-      Use Prompt Tracking without upgrading
+      {t("Use Prompt Tracking without upgrading")}
     </Button>
   );
+}
+
+/** Display label for the stored run status enum; the value is never changed. */
+function runStatusLabel(status: string): string {
+  return status === "queued"
+    ? "Queued"
+    : status === "running"
+      ? "Running"
+      : status === "completed"
+        ? "Completed"
+        : status === "failed"
+          ? "Failed"
+          : status;
 }

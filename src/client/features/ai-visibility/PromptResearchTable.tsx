@@ -17,67 +17,88 @@ import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import type { AiResearchedPrompt } from "@/shared/ai-visibility";
 import { DomainFavicon } from "./DomainFavicon";
+import { useT } from "@/client/lib/i18n";
 
-const promptColumns: ColumnDef<AiResearchedPrompt>[] = [
-  {
-    id: "prompt",
-    header: "Prompt",
-    cell: ({ row: { original: prompt } }) => (
-      <>
-        <span>{prompt.text}</span>
-        {prompt.tracked && (
-          <Badge variant="secondary" className="ml-2">
-            Tracked
-          </Badge>
-        )}
-        {prompt.variants.length > 0 && (
-          <p
-            className="text-xs text-muted-foreground"
-            title={prompt.variants.join("\n")}
-          >
-            +{prompt.variants.length} similar{" "}
-            {prompt.variants.length === 1 ? "prompt" : "prompts"} merged
-          </p>
-        )}
-      </>
-    ),
-  },
-  {
-    id: "sources",
-    header: "Sources",
-    meta: { headerClassName: "w-40" },
-    cell: ({ row: { original: prompt } }) => (
-      <>
-        <span className="text-sm">
-          {prompt.sources.length
-            ? `${prompt.sources.length} ${prompt.sources.length === 1 ? "source" : "sources"}`
-            : "No sources"}
-        </span>
-        {prompt.ownDomainCited && (
-          <Badge variant="success" size="sm" className="ml-2">
-            You
-          </Badge>
-        )}
-      </>
-    ),
-  },
-  {
-    id: "expand",
-    header: () => <span className="sr-only">Details</span>,
-    meta: { headerClassName: "w-10" },
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-expanded={row.getIsExpanded()}
-        aria-label={`Show sources for ${row.original.text}`}
-        onClick={() => row.toggleExpanded()}
-      >
-        {row.getIsExpanded() ? <ChevronDown /> : <ChevronRight />}
-      </Button>
-    ),
-  },
-];
+/** Column labels translate at render; the factory runs inside the component. */
+function makePromptColumns(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): ColumnDef<AiResearchedPrompt>[] {
+  return [
+    {
+      id: "prompt",
+      header: t("Prompt"),
+      cell: ({ row: { original: prompt } }) => (
+        <>
+          <span>{prompt.text}</span>
+          {prompt.tracked && (
+            <Badge variant="secondary" className="ml-2">
+              {t("Tracked")}
+            </Badge>
+          )}
+          {prompt.variants.length > 0 && (
+            <p
+              className="text-xs text-muted-foreground"
+              title={prompt.variants.join("\n")}
+            >
+              {t(
+                prompt.variants.length === 1
+                  ? "+{count} similar prompt merged"
+                  : "+{count} similar prompts merged",
+                {
+                  count: prompt.variants.length,
+                },
+              )}
+            </p>
+          )}
+        </>
+      ),
+    },
+    {
+      id: "sources",
+      header: t("Sources"),
+      meta: { headerClassName: "w-40" },
+      cell: ({ row: { original: prompt } }) => (
+        <>
+          <span className="text-sm">
+            {prompt.sources.length
+              ? t(
+                  prompt.sources.length === 1
+                    ? "{count} source"
+                    : "{count} sources",
+                  {
+                    count: prompt.sources.length,
+                  },
+                )
+              : t("No sources")}
+          </span>
+          {prompt.ownDomainCited && (
+            <Badge variant="success" size="sm" className="ml-2">
+              {t("You")}
+            </Badge>
+          )}
+        </>
+      ),
+    },
+    {
+      id: "expand",
+      header: () => <span className="sr-only">{t("Details")}</span>,
+      meta: { headerClassName: "w-10" },
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-expanded={row.getIsExpanded()}
+          aria-label={t("Show sources for {prompt}", {
+            prompt: row.original.text,
+          })}
+          onClick={() => row.toggleExpanded()}
+        >
+          {row.getIsExpanded() ? <ChevronDown /> : <ChevronRight />}
+        </Button>
+      ),
+    },
+  ];
+}
 
 /** Tracked prompts can't be selected; a selection only adds new prompts. */
 export function PromptResearchTable({
@@ -93,15 +114,15 @@ export function PromptResearchTable({
   empty: ComponentProps<typeof DataTable>["empty"];
 }) {
   const selectAnchorRef = useSelectionAnchor();
+  const t = useT();
   const columns = useMemo(
     () => [
-      makeSelectionColumn<AiResearchedPrompt>(
-        selectAnchorRef,
-        (row) => `Select ${row.original.text}`,
+      makeSelectionColumn<AiResearchedPrompt>(selectAnchorRef, (row) =>
+        t("Select {prompt}", { prompt: row.original.text }),
       ),
-      ...promptColumns,
+      ...makePromptColumns(t),
     ],
-    [selectAnchorRef],
+    [selectAnchorRef, t],
   );
   const table = useDataTable({
     data: prompts,
@@ -122,12 +143,13 @@ export function PromptResearchTable({
 }
 
 function PromptSources({ prompt }: { prompt: AiResearchedPrompt }) {
+  const t = useT();
   return (
     <div className="space-y-2 py-1 pl-10">
       <Badge variant={prompt.brandMentioned ? "success" : "outline"}>
         {prompt.brandMentioned
-          ? "Your brand is mentioned"
-          : "Your brand is not mentioned"}
+          ? t("Your brand is mentioned")
+          : t("Your brand is not mentioned")}
       </Badge>
       {prompt.sources.length ? (
         <ul className="space-y-1.5">
@@ -144,7 +166,7 @@ function PromptSources({ prompt }: { prompt: AiResearchedPrompt }) {
               />
               {source.own && (
                 <Badge variant="success" size="sm">
-                  You
+                  {t("You")}
                 </Badge>
               )}
             </li>
@@ -152,7 +174,7 @@ function PromptSources({ prompt }: { prompt: AiResearchedPrompt }) {
         </ul>
       ) : (
         <p className="text-sm text-muted-foreground">
-          The AI answered from memory and cited no sources.
+          {t("The AI answered from memory and cited no sources.")}
         </p>
       )}
     </div>

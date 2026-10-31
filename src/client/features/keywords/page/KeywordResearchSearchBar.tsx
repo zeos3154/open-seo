@@ -13,6 +13,7 @@ import {
 } from "@/client/components/ui/input-group";
 import { KeywordAreaField, LocalVolumeCostNote } from "./KeywordAreaField";
 import { KeywordSearchOptions } from "./KeywordSearchOptions";
+import { useT } from "@/client/lib/i18n";
 import type { KeywordResearchControllerState } from "./types";
 
 type Props = {
@@ -27,6 +28,7 @@ function getTextareaRows(value: string): number {
 
 export function KeywordResearchSearchBar({ controller }: Props) {
   const { controlsForm, handleSearchSubmit } = controller;
+  const t = useT();
 
   return (
     // The city field opens an absolute menu below the row, so the card must
@@ -54,8 +56,8 @@ export function KeywordResearchSearchBar({ controller }: Props) {
                   <InputGroupTextarea
                     className="min-h-0 py-[7px] leading-6 field-sizing-fixed"
                     rows={rows}
-                    placeholder="Enter a keyword"
-                    aria-label="Keywords"
+                    placeholder={t("Enter a keyword")}
+                    aria-label={t("Keywords")}
                     aria-invalid={keywordError ? true : undefined}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -108,7 +110,7 @@ export function KeywordResearchSearchBar({ controller }: Props) {
             <KeywordSearchOptions controller={controller} />
 
             <Button type="submit" className="w-full px-6 lg:w-auto lg:shrink-0">
-              Search
+              {t("Search")}
             </Button>
           </div>
         </form>
@@ -118,7 +120,7 @@ export function KeywordResearchSearchBar({ controller }: Props) {
 
             return keywordError ? (
               <p role="alert" className="text-sm text-destructive">
-                {keywordError}
+                {t(keywordError)}
               </p>
             ) : null;
           }}
@@ -134,9 +136,9 @@ export function KeywordResearchSearchBar({ controller }: Props) {
                 <Alert variant="info" role="status">
                   <Info />
                   <AlertDescription>
-                    Keyword data for this country comes from Google Ads — search
-                    volume, CPC, and trends are available, but difficulty and
-                    intent are not.
+                    {t(
+                      "Keyword data for this country comes from Google Ads — search volume, CPC, and trends are available, but difficulty and intent are not.",
+                    )}
                   </AlertDescription>
                 </Alert>
               )}

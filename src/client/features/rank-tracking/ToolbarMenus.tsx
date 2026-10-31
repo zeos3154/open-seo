@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MoreHorizontal, Play, RefreshCw } from "lucide-react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +41,7 @@ export function MoreMenu({
   hasData: boolean;
 }) {
   const [confirmingRefresh, setConfirmingRefresh] = useState(false);
+  const t = useT();
   return (
     <>
       <DropdownMenu>
@@ -48,8 +50,8 @@ export function MoreMenu({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="More actions"
-              title="More actions"
+              aria-label={t("More actions")}
+              title={t("More actions")}
             />
           }
         >
@@ -59,8 +61,8 @@ export function MoreMenu({
           <DropdownMenuItem onClick={onCheckNow} disabled={checkBusy}>
             <Play />
             <ItemText
-              label={checkBusy ? "Running..." : "Check rankings"}
-              description="Fetch current Google positions"
+              label={checkBusy ? t("Running...") : t("Check rankings")}
+              description={t("Fetch current Google positions")}
             />
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -70,27 +72,33 @@ export function MoreMenu({
             <RefreshCw className={metricsRefreshing ? "animate-spin" : ""} />
             <ItemText
               label={
-                metricsRefreshing ? "Refreshing..." : "Update keyword stats"
+                metricsRefreshing
+                  ? t("Refreshing...")
+                  : t("Update keyword stats")
               }
-              description="Volume, difficulty & CPC — not rankings"
+              description={t("Volume, difficulty & CPC — not rankings")}
             />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       {confirmingRefresh ? (
         <ConfirmDialog
-          title="Update keyword stats?"
-          confirmLabel="Update stats"
+          title={t("Update keyword stats?")}
+          confirmLabel={t("Update stats")}
           onConfirm={() => {
             setConfirmingRefresh(false);
             onRefreshMetrics();
           }}
           onClose={() => setConfirmingRefresh(false)}
         >
-          This fetches new volume, difficulty, and CPC for all{" "}
-          {trackedKeywordCount} tracked keyword
-          {trackedKeywordCount !== 1 ? "s" : ""}. Each keyword uses credits.
-          Rankings do not change.
+          {trackedKeywordCount === 1
+            ? t(
+                "This fetches new volume, difficulty, and CPC for all 1 tracked keyword. Each keyword uses credits. Rankings do not change.",
+              )
+            : t(
+                "This fetches new volume, difficulty, and CPC for all {count} tracked keywords. Each keyword uses credits. Rankings do not change.",
+                { count: trackedKeywordCount },
+              )}
         </ConfirmDialog>
       ) : null}
     </>

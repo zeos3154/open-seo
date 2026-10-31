@@ -71,6 +71,7 @@ export function browserTimeZoneLabel(): string {
 export function describeSchedule(
   interval: Exclude<RankTrackingConfig["scheduleInterval"], "manual">,
   time: LocalScheduleTime,
+  translate: (key: string, vars?: Record<string, string | number>) => string,
 ): string {
   const date = nextLocalOccurrence(time);
   const localTime = date.toLocaleTimeString([], {
@@ -82,17 +83,28 @@ export function describeSchedule(
     hour: "2-digit",
     minute: "2-digit",
   });
+  // The UTC abbreviation stays a short English code; it labels a UTC time.
   const utcWeekday =
     interval === "weekly" && date.getUTCDay() !== date.getDay()
       ? `${WEEKDAYS[date.getUTCDay()].slice(0, 3)} `
       : "";
-  const when =
-    interval === "daily"
-      ? "daily"
-      : interval === "weekly"
-        ? `weekly on ${WEEKDAYS[time.weekday]}s`
-        : "on the last day of each month";
-  return `Runs ${when} at ${localTime} (${utcWeekday}${utcTime} UTC)`;
+  const vars = { time: localTime, utc: `${utcWeekday}${utcTime}` };
+  if (interval === "daily") {
+    return translate("Runs daily at {time} ({utc} UTC)", vars);
+  }
+  if (interval === "weekly") {
+    // The English plural weekday is part of the key ("...on Mondays..."), so
+    // the fallback keeps the original copy; the Chinese entry carries the
+    // localized weekday name.
+    return translate(
+      `Runs weekly on ${WEEKDAYS[time.weekday]}s at {time} ({utc} UTC)`,
+      vars,
+    );
+  }
+  return translate(
+    "Runs on the last day of each month at {time} ({utc} UTC)",
+    vars,
+  );
 }
 
 export function formatNextCheck(nextCheckAt: string): string {

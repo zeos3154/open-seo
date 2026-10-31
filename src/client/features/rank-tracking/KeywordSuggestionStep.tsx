@@ -10,6 +10,7 @@ import { getDomainKeywordSuggestions } from "@/serverFunctions/domain";
 import { addTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { isLabsLocationCode } from "@/client/features/keywords/locations";
 import { Spinner } from "@/client/components/Spinner";
+import { useT } from "@/client/lib/i18n";
 import {
   DataTable,
   makeSelectionColumn,
@@ -38,99 +39,104 @@ type SuggestedKeyword = {
 
 const PRE_SELECT_COUNT = 20;
 
-const baseColumns: ColumnDef<SuggestedKeyword>[] = [
-  {
-    id: "keyword",
-    accessorKey: "keyword",
-    header: ({ column }) => (
-      <SortableHeader
-        column={column}
-        label="Keyword"
-        title="The search term this domain ranks for"
-        className={RANK_TRACKING_HEADER_CLASS}
-      />
-    ),
-    cell: ({ getValue }) => (
-      <span className="font-medium">{getValue<string>()}</span>
-    ),
-    sortingFn: "alphanumeric",
-  },
-  {
-    id: "position",
-    accessorKey: "position",
-    header: ({ column }) => (
-      <SortableHeader
-        column={column}
-        label="Position"
-        title="Current Google ranking position"
-        className={RANK_TRACKING_HEADER_CLASS}
-      />
-    ),
-    cell: ({ getValue }) => {
-      const pos = getValue<number | null>();
-      return pos != null ? (
-        pos
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      );
+/** Column headers translate at render; the factory runs inside the component. */
+function makeColumns(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): ColumnDef<SuggestedKeyword>[] {
+  return [
+    {
+      id: "keyword",
+      accessorKey: "keyword",
+      header: ({ column }) => (
+        <SortableHeader
+          column={column}
+          label={t("Keyword")}
+          title={t("The search term this domain ranks for")}
+          className={RANK_TRACKING_HEADER_CLASS}
+        />
+      ),
+      cell: ({ getValue }) => (
+        <span className="font-medium">{getValue<string>()}</span>
+      ),
+      sortingFn: "alphanumeric",
     },
-    sortingFn: (rowA, rowB) => {
-      const a = rowA.original.position ?? 999;
-      const b = rowB.original.position ?? 999;
-      return a - b;
+    {
+      id: "position",
+      accessorKey: "position",
+      header: ({ column }) => (
+        <SortableHeader
+          column={column}
+          label={t("Position")}
+          title={t("Current Google ranking position")}
+          className={RANK_TRACKING_HEADER_CLASS}
+        />
+      ),
+      cell: ({ getValue }) => {
+        const pos = getValue<number | null>();
+        return pos != null ? (
+          pos
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.position ?? 999;
+        const b = rowB.original.position ?? 999;
+        return a - b;
+      },
     },
-  },
-  {
-    id: "searchVolume",
-    accessorKey: "searchVolume",
-    header: ({ column }) => (
-      <SortableHeader
-        column={column}
-        label="Volume"
-        title="Monthly search volume"
-        className={RANK_TRACKING_HEADER_CLASS}
-      />
-    ),
-    cell: ({ getValue }) => {
-      const vol = getValue<number | null>();
-      return vol != null ? (
-        vol.toLocaleString()
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      );
+    {
+      id: "searchVolume",
+      accessorKey: "searchVolume",
+      header: ({ column }) => (
+        <SortableHeader
+          column={column}
+          label={t("Volume")}
+          title={t("Monthly search volume")}
+          className={RANK_TRACKING_HEADER_CLASS}
+        />
+      ),
+      cell: ({ getValue }) => {
+        const vol = getValue<number | null>();
+        return vol != null ? (
+          vol.toLocaleString()
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.searchVolume ?? 0;
+        const b = rowB.original.searchVolume ?? 0;
+        return a - b;
+      },
     },
-    sortingFn: (rowA, rowB) => {
-      const a = rowA.original.searchVolume ?? 0;
-      const b = rowB.original.searchVolume ?? 0;
-      return a - b;
+    {
+      id: "traffic",
+      accessorKey: "traffic",
+      header: ({ column }) => (
+        <SortableHeader
+          column={column}
+          label={t("Traffic")}
+          title={t("Estimated monthly organic traffic")}
+          className={RANK_TRACKING_HEADER_CLASS}
+        />
+      ),
+      cell: ({ getValue }) => {
+        const traffic = getValue<number | null>();
+        return traffic != null ? (
+          Math.round(traffic).toLocaleString()
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.traffic ?? 0;
+        const b = rowB.original.traffic ?? 0;
+        return a - b;
+      },
     },
-  },
-  {
-    id: "traffic",
-    accessorKey: "traffic",
-    header: ({ column }) => (
-      <SortableHeader
-        column={column}
-        label="Traffic"
-        title="Estimated monthly organic traffic"
-        className={RANK_TRACKING_HEADER_CLASS}
-      />
-    ),
-    cell: ({ getValue }) => {
-      const traffic = getValue<number | null>();
-      return traffic != null ? (
-        Math.round(traffic).toLocaleString()
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      );
-    },
-    sortingFn: (rowA, rowB) => {
-      const a = rowA.original.traffic ?? 0;
-      const b = rowB.original.traffic ?? 0;
-      return a - b;
-    },
-  },
-];
+  ];
+}
 
 type Props = {
   configId: string;
@@ -155,13 +161,14 @@ export function KeywordSuggestionStep({
     { id: "traffic", desc: true },
   ]);
   const selectAnchorRef = useRef<SelectionAnchor | null>(null);
+  const t = useT();
 
   const columns = useMemo<ColumnDef<SuggestedKeyword>[]>(
     () => [
       makeSelectionColumn<SuggestedKeyword>(selectAnchorRef),
-      ...baseColumns,
+      ...makeColumns(t),
     ],
-    [],
+    [t],
   );
 
   // Ranked-keyword suggestions are Labs-backed; countries served from Google
@@ -217,7 +224,9 @@ export function KeywordSuggestionStep({
     mutationFn: (keywords: string[]) =>
       addTrackingKeywords({ data: { projectId, configId, keywords } }),
     onSuccess: (result) => {
-      toast.success(`Added ${result.added} keywords for tracking`);
+      toast.success(
+        t("Added {count} keywords for tracking", { count: result.added }),
+      );
       onDone(configId);
     },
   });
@@ -235,11 +244,13 @@ export function KeywordSuggestionStep({
     return (
       <>
         <StepHeader
-          title="Add keywords manually"
-          description="Ranked-keyword suggestions aren't available for this country. Continue and add the keywords you want to track manually."
+          title={t("Add keywords manually")}
+          description={t(
+            "Ranked-keyword suggestions aren't available for this country. Continue and add the keywords you want to track manually.",
+          )}
         />
         <DialogFooter>
-          <Button onClick={onClose}>Continue</Button>
+          <Button onClick={onClose}>{t("Continue")}</Button>
         </DialogFooter>
       </>
     );
@@ -248,9 +259,9 @@ export function KeywordSuggestionStep({
   if (suggestionsQuery.isLoading) {
     return (
       <>
-        <StepHeader title="Finding your top keywords..." />
+        <StepHeader title={t("Finding your top keywords...")} />
         <div className="flex flex-col items-center justify-center py-16">
-          <Spinner label="This usually takes a few seconds" />
+          <Spinner label={t("This usually takes a few seconds")} />
         </div>
       </>
     );
@@ -260,11 +271,13 @@ export function KeywordSuggestionStep({
     return (
       <>
         <StepHeader
-          title="Couldn't fetch keywords"
-          description="You can skip this step and add keywords manually later."
+          title={t("Couldn't fetch keywords")}
+          description={t(
+            "You can skip this step and add keywords manually later.",
+          )}
         />
         <DialogFooter>
-          <Button onClick={onClose}>Skip</Button>
+          <Button onClick={onClose}>{t("Skip")}</Button>
         </DialogFooter>
       </>
     );
@@ -274,11 +287,14 @@ export function KeywordSuggestionStep({
     return (
       <>
         <StepHeader
-          title="No rankings found"
-          description={`We couldn't find any keywords ${domain} currently ranks for. You can add keywords manually.`}
+          title={t("No rankings found")}
+          description={t(
+            "We couldn't find any keywords {domain} currently ranks for. You can add keywords manually.",
+            { domain },
+          )}
         />
         <DialogFooter>
-          <Button onClick={onClose}>Skip</Button>
+          <Button onClick={onClose}>{t("Skip")}</Button>
         </DialogFooter>
       </>
     );
@@ -287,13 +303,16 @@ export function KeywordSuggestionStep({
   return (
     <>
       <StepHeader
-        title="Choose keywords to track"
-        description={`We found ${data.length} keywords ${domain} ranks for.`}
+        title={t("Choose keywords to track")}
+        description={t("We found {count} keywords {domain} ranks for.", {
+          count: data.length,
+          domain,
+        })}
       />
 
       <DataTable
         table={table}
-        empty={{ title: "No keywords" }}
+        empty={{ title: t("No keywords") }}
         scrollClassName="max-h-[400px]"
         onRowClick={(row, event) => {
           if (applyShiftRangeSelection(event, row, table, selectAnchorRef)) {
@@ -305,18 +324,21 @@ export function KeywordSuggestionStep({
 
       <DialogFooter className="items-center sm:justify-between">
         <p className="text-xs text-muted-foreground">
-          {selectedCount} of {data.length} selected
+          {t("{count} of {total} selected", {
+            count: selectedCount,
+            total: data.length,
+          })}
         </p>
         <div className="flex items-center gap-2">
           <Button variant="ghost" onClick={onClose}>
-            Skip
+            {t("Skip")}
           </Button>
           <Button
             onClick={handleAdd}
             pending={addMutation.isPending}
             disabled={selectedCount === 0}
           >
-            Save Keyword{selectedCount !== 1 ? "s" : ""}
+            {selectedCount === 1 ? t("Save Keyword") : t("Save Keywords")}
           </Button>
         </div>
       </DialogFooter>

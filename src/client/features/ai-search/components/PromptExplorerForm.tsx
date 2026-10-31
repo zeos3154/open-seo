@@ -40,7 +40,9 @@ import {
   PROMPT_EXPLORER_MODELS,
   type PromptExplorerModel,
   type WebSearchCountrySelection,
+  BRAND_LOOKUP_MAX_INPUT_LENGTH,
 } from "@/types/schemas/ai-search";
+import { useT } from "@/client/lib/i18n";
 
 type FormValues = {
   prompt: string;
@@ -110,15 +112,20 @@ export function PromptExplorerForm({
     (model) => !unsupportedModels.includes(model),
   );
 
+  const t = useT();
   const promptCharCount = form.prompt.length;
   const promptOverLimit = promptCharCount > PROMPT_EXPLORER_MAX_PROMPT_LENGTH;
+  const maxPrompt = PROMPT_EXPLORER_MAX_PROMPT_LENGTH;
+  const maxBrand = BRAND_LOOKUP_MAX_INPUT_LENGTH;
 
   return (
     <Card>
       <CardContent>
         <form onSubmit={onSubmit} noValidate className="space-y-5">
           <Field>
-            <FieldLabel htmlFor="prompt-explorer-prompt">Prompt</FieldLabel>
+            <FieldLabel htmlFor="prompt-explorer-prompt">
+              {t("Prompt")}
+            </FieldLabel>
             <Textarea
               id="prompt-explorer-prompt"
               className="resize-none"
@@ -130,7 +137,7 @@ export function PromptExplorerForm({
               autoFocus
             />
             <FieldDescription className="flex items-center justify-between">
-              <span>What your customers might ask AI.</span>
+              <span>{t("What your customers might ask AI.")}</span>
               <span
                 className={cn(
                   "tabular-nums",
@@ -145,7 +152,7 @@ export function PromptExplorerForm({
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field>
               <FieldLabel htmlFor="prompt-explorer-brand">
-                Highlight brand (optional)
+                {t("Highlight brand (optional)")}
               </FieldLabel>
               <Input
                 id="prompt-explorer-brand"
@@ -155,12 +162,12 @@ export function PromptExplorerForm({
                 spellCheck={false}
               />
               <FieldDescription>
-                We&apos;ll flag whether each model mentions this brand.
+                {t("We'll flag whether each model mentions this brand.")}
               </FieldDescription>
             </Field>
 
             <Field>
-              <FieldTitle>Models</FieldTitle>
+              <FieldTitle>{t("Models")}</FieldTitle>
               <div className="flex flex-wrap items-start gap-x-5 gap-y-2 pt-1.5">
                 {PROMPT_EXPLORER_MODELS.map((model) => (
                   <Label key={model} className="font-normal">
@@ -173,8 +180,11 @@ export function PromptExplorerForm({
                       {unsupportedModels.includes(model) &&
                       form.webSearchCountryCode !== "default" ? (
                         <span className="block text-xs text-muted-foreground">
-                          Skipped for{" "}
-                          {formatCountryLabel(form.webSearchCountryCode)}
+                          {t("Skipped for {country}", {
+                            country: formatCountryLabel(
+                              form.webSearchCountryCode,
+                            ),
+                          })}
                         </span>
                       ) : null}
                     </span>
@@ -191,7 +201,7 @@ export function PromptExplorerForm({
                   checked={form.webSearch}
                   onCheckedChange={onWebSearchChange}
                 />
-                Allow web search
+                {t("Allow web search")}
               </Label>
               <Combobox
                 items={countryItems}
@@ -208,12 +218,14 @@ export function PromptExplorerForm({
                 disabled={!form.webSearch}
               >
                 <ComboboxInput
-                  aria-label="Web search country"
-                  placeholder="Search countries"
+                  aria-label={t("Web search country")}
+                  placeholder={t("Search countries")}
                   className="w-full sm:w-80"
                 />
                 <ComboboxContent>
-                  <ComboboxEmpty>No supported countries match.</ComboboxEmpty>
+                  <ComboboxEmpty>
+                    {t("No supported countries match.")}
+                  </ComboboxEmpty>
                   <ComboboxList>
                     {(item: (typeof COUNTRY_ITEMS)[number]) => (
                       <ComboboxItem key={item.value} value={item}>
@@ -228,7 +240,7 @@ export function PromptExplorerForm({
                   render={
                     <button
                       type="button"
-                      aria-label="About country targeting"
+                      aria-label={t("About country targeting")}
                       className="text-muted-foreground"
                     />
                   }
@@ -236,9 +248,9 @@ export function PromptExplorerForm({
                   <Info className="size-4" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  A country guides web search when a model supports it. Models
-                  may answer without searching. Leave it unset to run all
-                  selected models.
+                  {t(
+                    "A country guides web search when a model supports it. Models may answer without searching. Leave it unset to run all selected models.",
+                  )}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -247,14 +259,25 @@ export function PromptExplorerForm({
               className="px-6"
               disabled={supportedModels.length === 0}
             >
-              Run {supportedModels.length}{" "}
-              {supportedModels.length === 1 ? "model" : "models"}
+              {t(
+                supportedModels.length === 1
+                  ? "Run 1 model"
+                  : "Run {count} models",
+                supportedModels.length === 1
+                  ? undefined
+                  : { count: supportedModels.length },
+              )}
             </Button>
           </div>
 
           {validationError ? (
             <p role="alert" className="text-sm text-destructive">
-              {validationError}
+              {t(
+                validationError,
+                validationError.includes("brand")
+                  ? { max: maxBrand }
+                  : { max: maxPrompt },
+              )}
             </p>
           ) : null}
         </form>

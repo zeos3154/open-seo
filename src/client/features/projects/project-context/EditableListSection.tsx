@@ -5,6 +5,7 @@ import { EmptyState } from "@/client/components/EmptyState";
 import { InlineConfirm } from "@/client/components/InlineConfirm";
 import { SectionHeader } from "@/client/components/PageHeader";
 import { RowActions, listClass } from "./shared";
+import { useT } from "@/client/lib/i18n";
 
 /** The same add, edit, and remove interaction for both context lists. */
 export function EditableListSection<T>({
@@ -35,13 +36,14 @@ export function EditableListSection<T>({
   pending: boolean;
 }) {
   const [editing, setEditing] = useState<string | null>(null);
+  const t = useT();
   const close = () => setEditing(null);
 
   return (
     <section className="space-y-3">
       <SectionHeader
-        title={title}
-        hint={hint}
+        title={t(title)}
+        hint={t(hint)}
         action={
           <Button
             variant="ghost"
@@ -50,7 +52,7 @@ export function EditableListSection<T>({
             onClick={() => setEditing("add")}
           >
             <Plus className="size-3.5" />
-            {addLabel}
+            {t(addLabel)}
           </Button>
         }
       />
@@ -62,8 +64,8 @@ export function EditableListSection<T>({
           <EmptyState
             size="sm"
             icon={null}
-            title={emptyTitle}
-            description={emptyDescription}
+            title={t(emptyTitle)}
+            description={t(emptyDescription)}
           />
         )
       ) : (
@@ -83,13 +85,13 @@ export function EditableListSection<T>({
                     variant="ghost"
                     size="icon-xs"
                     disabled={pending}
-                    aria-label={`Edit ${getLabel(item)}`}
+                    aria-label={t("Edit {name}", { name: getLabel(item) })}
                     onClick={() => setEditing(id)}
                   >
                     <Pencil className="size-3.5" />
                   </Button>
                   <InlineConfirm
-                    label={`Remove ${getLabel(item)}`}
+                    label={t("Delete {name}", { name: getLabel(item) })}
                     pending={pending}
                     onConfirm={() => onRemove(item)}
                   />

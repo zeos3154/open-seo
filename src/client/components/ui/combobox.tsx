@@ -10,6 +10,7 @@ import {
   InputGroupInput,
 } from "@/client/components/ui/input-group";
 import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react";
+import { useT } from "@/client/lib/i18n";
 
 const Combobox = ComboboxPrimitive.Root;
 
@@ -245,6 +246,7 @@ function ComboboxChip({
 }: ComboboxPrimitive.Chip.Props & {
   showRemove?: boolean;
 }) {
+  const t = useT();
   return (
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
@@ -260,7 +262,7 @@ function ComboboxChip({
           render={<Button variant="ghost" size="icon-xs" />}
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
-          aria-label="Remove"
+          aria-label={t("Remove")}
         >
           <XIcon className="pointer-events-none" />
         </ComboboxPrimitive.ChipRemove>

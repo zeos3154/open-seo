@@ -1,4 +1,5 @@
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 
 /** The Cancel and submit buttons at the end of a form. */
 export function FormActions({
@@ -12,6 +13,7 @@ export function FormActions({
   onCancel: () => void;
   size?: "xs" | "sm" | "default";
 }) {
+  const t = useT();
   return (
     <div className="flex justify-end gap-2">
       <Button
@@ -21,10 +23,10 @@ export function FormActions({
         onClick={onCancel}
         disabled={pending}
       >
-        Cancel
+        {t("Cancel")}
       </Button>
       <Button type="submit" size={size} disabled={disabled} pending={pending}>
-        Save
+        {t("Save")}
       </Button>
     </div>
   );

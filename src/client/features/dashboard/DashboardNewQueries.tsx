@@ -15,6 +15,7 @@ import {
 import { getDashboardEmergingQueries } from "@/serverFunctions/dashboard";
 import { Freshness, DashboardInfo } from "./siteTabParts";
 import { moreDetailsClass } from "./cardParts";
+import { useT } from "@/client/lib/i18n";
 
 export function DashboardNewQueries({
   projectId,
@@ -25,6 +26,7 @@ export function DashboardNewQueries({
   connected: boolean;
   siteUrl: string | null;
 }) {
+  const t = useT();
   const query = useQuery({
     queryKey: ["dashboardEmergingQueries", projectId, siteUrl],
     queryFn: () => getDashboardEmergingQueries({ data: { projectId } }),
@@ -44,13 +46,18 @@ export function DashboardNewQueries({
           />
         ) : (
           <CardShell
-            title="New keywords"
+            title={t("New keywords")}
             titleInfo={
-              <DashboardInfo label="About new keywords">
-                <p>Searches where your website recently appeared on Google.</p>
+              <DashboardInfo label={t("About new keywords")}>
+                <p>
+                  {t(
+                    "Searches where your website recently appeared on Google.",
+                  )}
+                </p>
                 <p className="mt-2">
-                  We saw these in the latest week of Search Console data, but
-                  not in the previous four weeks.
+                  {t(
+                    "We saw these in the latest week of Search Console data, but not in the previous four weeks.",
+                  )}
                 </p>
               </DashboardInfo>
             }
@@ -61,7 +68,7 @@ export function DashboardNewQueries({
                 search={{ tab: "keywords" }}
                 className={moreDetailsClass}
               >
-                View all →
+                {t("View all →")}
               </Link>
             }
           >
@@ -70,9 +77,9 @@ export function DashboardNewQueries({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Keyword</TableHead>
-                    <TableHead>Impressions</TableHead>
-                    <TableHead>Clicks</TableHead>
+                    <TableHead>{t("Keyword")}</TableHead>
+                    <TableHead>{t("Impressions")}</TableHead>
+                    <TableHead>{t("Clicks")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -90,20 +97,24 @@ export function DashboardNewQueries({
                 <Search className="size-7 text-muted-foreground" />
                 <h3 className="font-medium">
                   {data.value.hasSearchData
-                    ? "No new keywords this week"
-                    : "No search data yet"}
+                    ? t("No new keywords this week")
+                    : t("No search data yet")}
                 </h3>
                 <p className="max-w-sm text-sm text-muted-foreground">
                   {data.value.hasSearchData
-                    ? "Your existing queries can still be gaining clicks. See how they're performing."
-                    : "Google hasn't reported searches for your website yet. Check your connected property in Search Console."}
+                    ? t(
+                        "Your existing queries can still be gaining clicks. See how they're performing.",
+                      )
+                    : t(
+                        "Google hasn't reported searches for your website yet. Check your connected property in Search Console.",
+                      )}
                 </p>
                 <Link
                   to="/p/$projectId/search-performance"
                   params={{ projectId }}
                   className="text-sm text-primary hover:underline"
                 >
-                  View full GSC insights →
+                  {t("View full GSC insights →")}
                 </Link>
               </div>
             )}

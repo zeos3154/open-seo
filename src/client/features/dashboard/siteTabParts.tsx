@@ -3,6 +3,7 @@ import { Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { useT } from "@/client/lib/i18n";
 import { safeHttpUrl } from "@/shared/safe-url";
 export function Freshness({
   stale,
@@ -12,16 +13,17 @@ export function Freshness({
   stale: boolean;
   refreshError: string | null;
 }) {
+  const t = useT();
   if (!stale && !refreshError) return null;
   return (
     <p role="status" className="text-xs text-muted-foreground">
-      Showing saved results
+      {t("Showing saved results")}
       {refreshError
-        ? ` · ${getStandardErrorMessage(new Error(refreshError), "Could not update. Showing saved results.")}`
+        ? ` · ${t(getStandardErrorMessage(new Error(refreshError), "Could not update. Showing saved results."))}`
         : ""}
       {refreshError === "INSUFFICIENT_CREDITS" ? (
         <Link to="/billing" className="ml-2 text-primary underline">
-          Add credits
+          {t("Add credits")}
         </Link>
       ) : null}
     </p>

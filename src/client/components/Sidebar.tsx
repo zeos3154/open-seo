@@ -27,7 +27,7 @@ import {
   SamSidebarPanel,
 } from "@/client/features/sam/SamSidebarPanel";
 import { ThemePreferenceRadio } from "@/client/components/ThemePreferenceMenuItems";
-import { useT } from "@/client/lib/i18n";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { signOutAndRedirect, useSession } from "@/lib/auth-client";
 import { isEveryAppClientAuthMode } from "@/lib/auth-mode";
@@ -273,7 +273,7 @@ function AccountFooter({ ready }: { ready: boolean }) {
       clearLastProjectId();
       window.location.assign("/");
     } catch (error) {
-      toast.error(getStandardErrorMessage(error));
+      toast.error(translateCurrent(getStandardErrorMessage(error)));
       setIsSwitching(false);
     }
   }

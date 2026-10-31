@@ -29,6 +29,7 @@ import {
   BRAND_LOOKUP_MAX_INPUT_LENGTH,
   PROMPT_EXPLORER_MAX_PROMPT_LENGTH,
 } from "@/types/schemas/ai-search";
+import { useT } from "@/client/lib/i18n";
 
 type PromptExplorerFormValues = PromptExplorerSearch;
 
@@ -59,10 +60,13 @@ const PROMPT_EXPLORER_BULLETS = [
 ];
 
 // The strip truncates labels to its width; the tooltip shows the full prompt.
-function promptTabLabel(input: SearchTabInput) {
+function promptTabLabel(input: SearchTabInput, t: ReturnType<typeof useT>) {
   if (input.type !== "prompt") return "";
   return input.models.length > 1
-    ? `${input.prompt} · ${input.models.length} models`
+    ? t("{prompt} · {count} models", {
+        prompt: input.prompt,
+        count: input.models.length,
+      })
     : input.prompt;
 }
 
@@ -73,6 +77,7 @@ export function PromptExplorerPage({
   onClear,
 }: Props) {
   const planStatus = useHostedPlanGate();
+  const t = useT();
   const [form, setForm] = useState<PromptExplorerFormValues>(urlState);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -100,7 +105,10 @@ export function PromptExplorerPage({
   const searchTabs = useSearchTabNavigation({
     storageKey: `prompt-explorer:${projectId}`,
     urlInput,
-    getLabel: promptTabLabel,
+    getLabel: useCallback(
+      (input: SearchTabInput) => promptTabLabel(input, t),
+      [t],
+    ),
     navigateToInput: useCallback(
       (input: SearchTabInput | null) => {
         if (input?.type !== "prompt") {
@@ -136,15 +144,11 @@ export function PromptExplorerPage({
       return;
     }
     if (trimmed.length > PROMPT_EXPLORER_MAX_PROMPT_LENGTH) {
-      setValidationError(
-        `Keep prompts under ${PROMPT_EXPLORER_MAX_PROMPT_LENGTH} characters`,
-      );
+      setValidationError("Keep prompts under {max} characters");
       return;
     }
     if (form.highlightBrand.trim().length > BRAND_LOOKUP_MAX_INPUT_LENGTH) {
-      setValidationError(
-        `Keep the brand under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
-      );
+      setValidationError("Keep the brand under {max} characters");
       return;
     }
     if (form.models.length === 0) {
@@ -181,13 +185,20 @@ export function PromptExplorerPage({
   return (
     <ResearchPageShell
       contained
-      title="Prompt Explorer"
-      description="Ask any prompt across ChatGPT, Claude, Gemini, and Perplexity side-by-side."
+      title={t("Prompt Explorer")}
+      description={t(
+        "Ask any prompt across ChatGPT, Claude, Gemini, and Perplexity side-by-side.",
+      )}
       gate={{
-        feature: "Prompt Explorer",
-        description:
+        feature: t("Prompt Explorer"),
+        description: t(
           "Ask one prompt across ChatGPT, Claude, Gemini, and Perplexity at the same time and compare their answers: including which sources each model cites.",
-        features: PROMPT_EXPLORER_BULLETS,
+        ),
+        features: PROMPT_EXPLORER_BULLETS.map((bullet) => ({
+          ...bullet,
+          title: t(bullet.title),
+          body: t(bullet.body),
+        })),
         alternative: (
           <PromptTrackingWithoutUpgradeButton projectId={projectId} />
         ),
@@ -247,7 +258,7 @@ export function PromptExplorerPage({
           search={{}}
           replace
         >
-          Recent searches
+          {t("Recent searches")}
         </BackLink>
       }
       renderResults={(result) => <PromptExplorerResults result={result} />}
@@ -257,7 +268,7 @@ export function PromptExplorerPage({
           loaded={historyLoaded}
           onRemove={removeHistoryItem}
           emptyIcon={MessageSquare}
-          emptyTitle="Enter a prompt to compare model answers"
+          emptyTitle={t("Enter a prompt to compare model answers")}
           getTitle={(item) => item.prompt}
           getSubtitle={(item) => item.models.map(formatModelLabel).join(", ")}
           renderLink={(item, props) => (

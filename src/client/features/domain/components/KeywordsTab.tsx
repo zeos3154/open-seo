@@ -45,6 +45,7 @@ import {
   RESEARCH_SCOPE_FILTER_SLOTS,
   type ResearchScope,
 } from "@/shared/researchScope";
+import { useT } from "@/client/lib/i18n";
 
 type SearchUpdate = Partial<DomainSearchParams>;
 
@@ -100,6 +101,7 @@ export function KeywordsTab({
   onPageSizeChange,
 }: Props) {
   const queryClient = useQueryClient();
+  const t = useT();
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(
     new Set(),
   );
@@ -240,17 +242,17 @@ export function KeywordsTab({
               onClick={handleSaveKeywords}
               disabled={!canSaveKeywords}
             >
-              Save Keywords
+              {t("Save Keywords")}
             </TableBulkActionButton>
             <TableBulkExportMenu
               actions={[
                 {
-                  label: "Export to Sheets",
+                  label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
                   onClick: () => exportSelection("sheets"),
                 },
                 {
-                  label: "Download CSV",
+                  label: t("Download CSV"),
                   icon: <Download className="size-4" />,
                   onClick: () => exportSelection("csv"),
                 },
@@ -276,7 +278,7 @@ export function KeywordsTab({
           query.isError ? (
             <QueryError
               error={query.error}
-              fallback="Failed to load keywords."
+              fallback={t("Failed to load keywords.")}
               onRetry={() => void query.refetch()}
               isRetrying={isFetching}
             />
@@ -311,8 +313,8 @@ export function KeywordsTab({
               <span className="text-sm text-muted-foreground">
                 ·{" "}
                 {selectedKeywords.size > 0
-                  ? `${selectedKeywords.size} selected`
-                  : "Select keywords to save"}
+                  ? t("{count} selected", { count: selectedKeywords.size })
+                  : t("Select keywords to save")}
               </span>
             </DomainTableToolbar>
           </>

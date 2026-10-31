@@ -7,6 +7,7 @@ import {
   ComboboxList,
 } from "@/client/components/ui/combobox";
 import { LOCATION_OPTIONS } from "@/shared/keyword-locations";
+import { useT } from "@/client/lib/i18n";
 
 type LocationOption = (typeof LOCATION_OPTIONS)[number];
 
@@ -35,6 +36,7 @@ export function CountryCombobox({
   /** Defaults to the full country list. */
   options?: readonly LocationOption[];
 }) {
+  const t = useT();
   const country = options.find((option) => option.code === value) ?? null;
 
   return (
@@ -51,10 +53,10 @@ export function CountryCombobox({
       <ComboboxInput
         id={id}
         className="w-full"
-        placeholder="Search countries"
+        placeholder={t("Search countries")}
       />
       <ComboboxContent>
-        <ComboboxEmpty>No countries match.</ComboboxEmpty>
+        <ComboboxEmpty>{t("No countries match.")}</ComboboxEmpty>
         <ComboboxList>
           {(option: LocationOption) => (
             <ComboboxItem key={option.code} value={option}>

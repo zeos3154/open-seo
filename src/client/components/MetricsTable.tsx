@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/client/components/ui/table";
+import { useT } from "@/client/lib/i18n";
 
 export function MetricsTable({
   rows,
@@ -15,13 +16,16 @@ export function MetricsTable({
   rows: { label: ReactNode; value: ReactNode; change?: ReactNode }[];
   showChange?: boolean;
 }) {
+  const t = useT();
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Metric</TableHead>
-          <TableHead className="text-right">Value</TableHead>
-          {showChange && <TableHead className="text-right">Change</TableHead>}
+          <TableHead>{t("Metric")}</TableHead>
+          <TableHead className="text-right">{t("Value")}</TableHead>
+          {showChange && (
+            <TableHead className="text-right">{t("Change")}</TableHead>
+          )}
         </TableRow>
       </TableHeader>
       <TableBody>

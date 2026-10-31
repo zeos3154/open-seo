@@ -4,6 +4,7 @@ import { FileDown, Plus, Sheet, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { Button } from "@/client/components/ui/button";
 import { DataTable, useDataTable } from "@/client/components/table/DataTable";
+import { useT } from "@/client/lib/i18n";
 import {
   TableBulkActionBar,
   TableBulkActionButton,
@@ -59,6 +60,7 @@ export function RankTrackingTable({
   onClearFilters: () => void;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const [showConfirm, setShowConfirm] = useState(false);
   const [trendTarget, setTrendTarget] = useState<KeywordTrendTarget | null>(
     null,
@@ -142,7 +144,9 @@ export function RankTrackingTable({
         queryKey: ["rankTrackingCostEstimate", projectId, configId],
       });
       toast.success(
-        `${result.removed} keyword${result.removed !== 1 ? "s" : ""} removed`,
+        result.removed === 1
+          ? t("1 keyword removed")
+          : t("{count} keywords removed", { count: result.removed }),
       );
     },
   });
@@ -159,17 +163,17 @@ export function RankTrackingTable({
               onClick={() => setShowConfirm(true)}
               variant="danger"
             >
-              Remove
+              {t("Remove")}
             </TableBulkActionButton>
             <TableBulkExportMenu
               actions={[
                 {
-                  label: "Export to Sheets",
+                  label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
                   onClick: () => exportSelection("sheets"),
                 },
                 {
-                  label: "Export CSV",
+                  label: t("Export CSV"),
                   icon: <FileDown className="size-4" />,
                   onClick: () => exportSelection("csv"),
                 },
@@ -181,16 +185,26 @@ export function RankTrackingTable({
 
       {showConfirm && (
         <ConfirmDialog
-          title="Remove keywords?"
-          confirmLabel={`Remove ${selectedCount} keyword${selectedCount !== 1 ? "s" : ""}`}
+          title={t("Remove keywords?")}
+          confirmLabel={
+            selectedCount === 1
+              ? t("Remove 1 keyword")
+              : t("Remove {count} keywords", { count: selectedCount })
+          }
           destructive
           pending={removeMutation.isPending}
           onConfirm={() => removeMutation.mutate(selectedRows.map((r) => r.id))}
           onClose={() => setShowConfirm(false)}
         >
-          This will stop tracking {selectedCount} keyword
-          {selectedCount !== 1 ? "s" : ""}. Historical ranking data is preserved
-          but won't appear in the table.
+          {selectedCount === 1
+            ? t(
+                "This will stop tracking 1 keyword. Historical ranking data is preserved but won't appear in the table.",
+                { count: selectedCount },
+              )
+            : t(
+                "This will stop tracking {count} keywords. Historical ranking data is preserved but won't appear in the table.",
+                { count: selectedCount },
+              )}
         </ConfirmDialog>
       )}
 
@@ -213,19 +227,22 @@ export function RankTrackingTable({
         isFiltered={totalCount > 0}
         onClearFilters={onClearFilters}
         empty={{
-          title: "No keywords yet",
-          description: "Add the keywords you want to track for this domain.",
+          title: t("No keywords yet"),
+          description: t("Add the keywords you want to track for this domain."),
           action: (
             <Button size="sm" onClick={onAddKeywords}>
               <Plus data-icon="inline-start" />
-              Add Keywords
+              {t("Add Keywords")}
             </Button>
           ),
         }}
         footer={
           rows.length > 0 ? (
             <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
-              {rows.length} of {totalCount} keywords
+              {t("{count} of {total} keywords", {
+                count: rows.length,
+                total: totalCount,
+              })}
             </p>
           ) : null
         }

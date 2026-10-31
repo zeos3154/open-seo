@@ -8,6 +8,7 @@ import {
 } from "@/shared/ai-visibility";
 import { EngineLabel } from "./EngineLabel";
 import { aiDate, AiMatchBadge } from "./shared";
+import { useT } from "@/client/lib/i18n";
 
 export interface PromptExecution {
   observation: AiObservationRow;
@@ -23,39 +24,40 @@ export function PromptExecutions({
   selectedId: string | undefined;
   onSelect: (id: string) => void;
 }) {
+  const t = useT();
   return (
     <section
-      aria-label="Executions"
+      aria-label={t("Executions")}
       className="overflow-hidden rounded-lg border border-border bg-card"
     >
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
-        <h2 className="text-sm font-medium">Executions</h2>
+        <h2 className="text-sm font-medium">{t("Executions")}</h2>
         <span className="text-xs text-muted-foreground">
-          {executions.length} in this period
+          {t("{count} in this period", { count: executions.length })}
         </span>
       </div>
       <div
         className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_140px_140px] gap-3 border-b border-border px-4 py-2 text-xs text-muted-foreground sm:grid"
         aria-hidden="true"
       >
-        <span>Date</span>
-        <span>Engine</span>
-        <span>Brand mentioned</span>
-        <span>Owned citation</span>
+        <span>{t("Date")}</span>
+        <span>{t("Engine")}</span>
+        <span>{t("Brand mentioned")}</span>
+        <span>{t("Owned citation")}</span>
       </div>
       <ul
         className="max-h-64 overflow-y-auto sm:max-h-44"
-        aria-label="Select an execution"
+        aria-label={t("Select an execution")}
       >
         {executions.map(({ observation, run }) => {
           const own = observation.brands.find((brand) => brand.own);
           const answered = observation.answerStatus === "answered";
           const status =
             observation.status !== "completed"
-              ? aiObservationStatusLabel(observation.status)
+              ? t(aiObservationStatusLabel(observation.status))
               : observation.answerStatus === "no_answer"
-                ? aiNoAnswerLabel(observation.engine)
-                : "Answer unavailable";
+                ? t(aiNoAnswerLabel(observation.engine))
+                : t("Answer unavailable");
           return (
             <li
               key={observation.id}
@@ -71,7 +73,9 @@ export function PromptExecutions({
                   {aiDate(observation.collectedAt ?? run.createdAt)}
                   {run.trigger !== "manual" && (
                     <span className="ml-2 hidden text-[0.625rem] lg:inline">
-                      {run.trigger === "baseline" ? "Baseline" : "Scheduled"}
+                      {run.trigger === "baseline"
+                        ? t("Baseline")
+                        : t("Scheduled")}
                     </span>
                   )}
                 </span>

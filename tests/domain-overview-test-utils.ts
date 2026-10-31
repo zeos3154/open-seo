@@ -1,4 +1,5 @@
 import { writeFile } from "node:fs/promises";
+import { dismissSetupDialog } from "./setup-dialog";
 import {
   expect,
   type CDPSession,
@@ -197,21 +198,14 @@ export async function openDomainOverview(page: Page, tab: DomainTab) {
   if (tab === "pages") params.set("tab", "pages");
 
   await page.goto(`/p/${match[1]}/domain?${params.toString()}`);
+  await dismissSetupDialog(page);
   await expect(
     page.getByRole("heading", { name: "Domain Overview" }),
   ).toBeVisible();
-  await dismissSetupModal(page);
   await expect(page.getByRole("button", { name: /Filters/ })).toBeVisible({
     timeout: 30_000,
   });
   await expectPageResponsive(page, "after opening Domain Overview");
-}
-
-async function dismissSetupModal(page: Page) {
-  const dismissButton = page.getByRole("button", { name: "Dismiss" });
-  if (await dismissButton.isVisible()) {
-    await dismissButton.click();
-  }
 }
 
 export async function waitForDomainRows(page: Page, label: string) {
@@ -238,13 +232,13 @@ export async function switchDomainTab(page: Page, tab: DomainTab) {
 
 export async function openFilters(page: Page) {
   await page.getByRole("button", { name: /Filters/ }).click();
-  await expect(page.getByText("Refine table results")).toBeVisible();
+  await expect(page.getByText("Refine results", { exact: true })).toBeVisible();
   await expectPageResponsive(page, "after opening filters");
 }
 
 export async function closeFilters(page: Page) {
   await page.getByRole("button", { name: /Filters/ }).click();
-  await expect(page.getByText("Refine table results")).toBeHidden();
+  await expect(page.getByText("Refine results", { exact: true })).toBeHidden();
   await expectPageResponsive(page, "after closing filters");
 }
 

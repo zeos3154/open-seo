@@ -7,6 +7,7 @@ import {
   AlertTitle,
 } from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 
 /**
  * A failure message with an optional retry.
@@ -32,6 +33,9 @@ export function ErrorState({
   action?: ReactNode;
   variant?: "inline" | "card" | "page";
 }) {
+  const t = useT();
+  const displayTitle = title === undefined ? undefined : t(title);
+  const displayMessage = t(message);
   const button =
     action ??
     (onRetry ? (
@@ -41,7 +45,7 @@ export function ErrorState({
         pending={isRetrying}
         onClick={onRetry}
       >
-        Try again
+        {t("Try again")}
       </Button>
     ) : null);
 
@@ -51,8 +55,8 @@ export function ErrorState({
         kind="error"
         variant="plain"
         size="lg"
-        title={title ?? "Something went wrong"}
-        description={message}
+        title={displayTitle ?? t("Something went wrong")}
+        description={displayMessage}
         action={button}
       />
     );
@@ -64,7 +68,7 @@ export function ErrorState({
         role="alert"
         className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-destructive"
       >
-        <span>{message}</span>
+        <span>{displayMessage}</span>
         {button}
       </div>
     );
@@ -73,8 +77,8 @@ export function ErrorState({
   return (
     <Alert variant="destructive">
       <CircleAlert aria-hidden />
-      <AlertTitle>{title ?? message}</AlertTitle>
-      {title ? <AlertDescription>{message}</AlertDescription> : null}
+      <AlertTitle>{displayTitle ?? displayMessage}</AlertTitle>
+      {title ? <AlertDescription>{displayMessage}</AlertDescription> : null}
       {button ? <div className="col-start-2 mt-2">{button}</div> : null}
     </Alert>
   );

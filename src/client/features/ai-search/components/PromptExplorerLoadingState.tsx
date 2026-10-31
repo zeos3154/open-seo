@@ -3,6 +3,7 @@ import { Skeleton } from "@/client/components/ui/skeleton";
 import { getModelAccent } from "@/client/features/ai-search/platformLabels";
 import { formatModelLabel } from "@/shared/prompt-explorer-labels";
 import type { PromptExplorerModel } from "@/types/schemas/ai-search";
+import { useT } from "@/client/lib/i18n";
 
 // Mirrors PromptExplorerResults: one answer card per selected model, named so
 // the user can see which answers are on their way.
@@ -11,8 +12,13 @@ export function PromptExplorerLoadingState({
 }: {
   models: PromptExplorerModel[];
 }) {
+  const t = useT();
   return (
-    <div className="space-y-5" aria-busy="true" aria-label="Loading answers">
+    <div
+      className="space-y-5"
+      aria-busy="true"
+      aria-label={t("Loading answers")}
+    >
       {models.map((model) => (
         <article
           key={model}

@@ -15,6 +15,7 @@ import { onboardingAnswersQueryOptions } from "@/client/features/onboarding/onbo
 import { captureClientEvent } from "@/client/lib/posthog";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { getGscGrantStatus } from "@/serverFunctions/gsc";
+import { useT } from "@/client/lib/i18n";
 import { dismissGscNudge } from "@/serverFunctions/onboarding";
 
 /**
@@ -36,6 +37,7 @@ export function GscReEngagementModal({
 }) {
   const hosted = isHostedClientAuthMode();
   const queryClient = useQueryClient();
+  const t = useT();
   const [closed, setClosed] = React.useState(false);
   const shownRef = React.useRef(false);
   const connectRef = React.useRef<HTMLButtonElement>(null);
@@ -115,11 +117,12 @@ export function GscReEngagementModal({
       <DialogContent className="sm:max-w-lg" initialFocus={connectRef}>
         <DialogHeader>
           <DialogTitle className="text-lg">
-            Connect Google Search Console
+            <GscDialogTitle />
           </DialogTitle>
           <DialogDescription>
-            Bring your real clicks, impressions, and rankings into OpenSEO and
-            query them from Claude or Codex over MCP. It never uses credits.
+            {t(
+              "Bring your real clicks, impressions, and rankings into OpenSEO and query them from Claude or Codex over MCP. It never uses credits.",
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -128,17 +131,22 @@ export function GscReEngagementModal({
             className="px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:underline"
             onClick={handleDismiss}
           >
-            Maybe later
+            {t("Maybe later")}
           </button>
           <Button ref={connectRef} onClick={handleConnect}>
             {/* Google's mark needs a white tile to stay legible on a colored button. */}
             <span className="flex size-6 items-center justify-center rounded bg-white">
               <GoogleGlyph className="size-[16px]" />
             </span>
-            Connect with Google
+            {t("Connect with Google")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
+}
+
+function GscDialogTitle() {
+  const t = useT();
+  return t("Connect Google Search Console");
 }

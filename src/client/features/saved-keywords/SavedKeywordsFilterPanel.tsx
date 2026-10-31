@@ -7,6 +7,7 @@ import {
 } from "@/client/components/table/DataTableToolbar";
 import type { SavedKeywordsFilterValues } from "./savedKeywordsFilterTypes";
 import type { SavedKeywordsFilterForm } from "./useSavedKeywordsFilters";
+import { useT } from "@/client/lib/i18n";
 
 export function SavedKeywordsFilterPanel({
   form,
@@ -17,36 +18,37 @@ export function SavedKeywordsFilterPanel({
   activeFilterCount: number;
   onReset: () => void;
 }) {
+  const t = useT();
   return (
     <DataTableFilterPanel activeCount={activeFilterCount} onReset={onReset}>
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
         <TermsTokenInput
           form={form}
           name="include"
-          label="Include"
+          label={t("Include")}
           variant="include"
-          placeholder="Must contain… e.g. audit"
+          placeholder={t("Must contain… e.g. audit")}
         />
         <TermsTokenInput
           form={form}
           name="exclude"
-          label="Exclude"
+          label={t("Exclude")}
           variant="exclude"
-          placeholder="Must not contain… e.g. jobs"
+          placeholder={t("Must not contain… e.g. jobs")}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-3">
         <FilterRangeInputs
           form={form}
-          title="Search Volume"
+          title={t("Search Volume")}
           minName="minVol"
           maxName="maxVol"
           min={0}
         />
         <FilterRangeInputs
           form={form}
-          title="CPC (USD)"
+          title={t("CPC (USD)")}
           minName="minCpc"
           maxName="maxCpc"
           step="0.01"
@@ -54,7 +56,7 @@ export function SavedKeywordsFilterPanel({
         />
         <FilterRangeInputs
           form={form}
-          title="Difficulty"
+          title={t("Difficulty")}
           minName="minKd"
           maxName="maxKd"
           min={0}
@@ -108,6 +110,7 @@ function TermsTokenInput({
   placeholder: string;
 }) {
   const [draft, setDraft] = useState("");
+  const t = useT();
   const styles = VARIANT_STYLES[variant];
   const Icon = styles.icon;
 
@@ -158,7 +161,7 @@ function TermsTokenInput({
                   <button
                     type="button"
                     className="opacity-70 hover:opacity-100"
-                    aria-label={`Remove ${term}`}
+                    aria-label={t("Remove {term}", { term })}
                     onClick={() =>
                       commit(terms.filter((existing) => existing !== term))
                     }

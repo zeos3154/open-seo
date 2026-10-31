@@ -13,7 +13,9 @@ export function toastInitialAudit(
     toast.warning(
       translateCurrent("Website saved. The first scan could not start."),
       {
-        description: getStandardErrorMessage(new Error(initialAudit.code)),
+        description: translateCurrent(
+          getStandardErrorMessage(new Error(initialAudit.code)),
+        ),
       },
     );
   else if (initialAudit?.status === "started")

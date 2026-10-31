@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/client/components/ui/dropdown-menu";
 import type { AiEngine } from "@/shared/ai-visibility";
+import { useT } from "@/client/lib/i18n";
 import { EngineLabel } from "./EngineLabel";
 
 export function EngineFilter({
@@ -20,6 +21,7 @@ export function EngineFilter({
   onChange: (value: AiEngine[]) => void;
   label: string;
 }) {
+  const t = useT();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -29,9 +31,9 @@ export function EngineFilter({
         {value.length === 1 ? (
           <EngineLabel engine={value[0]} />
         ) : value.length ? (
-          `${value.length} engines`
+          t("{count} engines", { count: value.length })
         ) : (
-          "No engines"
+          t("No engines")
         )}
         <ChevronDown className="size-4 text-muted-foreground" />
       </DropdownMenuTrigger>

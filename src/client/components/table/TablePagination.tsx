@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/client/components/ui/select";
 import { Spinner } from "@/client/components/ui/spinner";
+import { useT } from "@/client/lib/i18n";
 
 export type PageButtonProps = {
   page: number;
@@ -61,6 +62,7 @@ export function TablePagination<TSize extends number>({
   const isLastPage = totalPages != null && currentPage >= totalPages;
   const canGoPrev = currentPage > 1;
   const canGoNext = totalPages != null ? !isLastPage : hasNextPage;
+  const t = useT();
 
   // A page can fall past the end when rows are removed or a stale URL is
   // opened. Move to the last page instead of showing an empty table.
@@ -72,7 +74,7 @@ export function TablePagination<TSize extends number>({
     <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2 text-sm text-muted-foreground tabular-nums">
         <span className="whitespace-nowrap">
-          {formatRange(currentPage, pageSize, totalCount, pageRange)}
+          {formatRange(currentPage, pageSize, totalCount, pageRange, t)}
         </span>
         {isLoading ? <Spinner className="size-3.5" /> : null}
       </div>
@@ -80,7 +82,7 @@ export function TablePagination<TSize extends number>({
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
         {pageSizes && onPageSizeChange ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="whitespace-nowrap">Rows per page</span>
+            <span className="whitespace-nowrap">{t("Rows per page")}</span>
             <Select
               value={pageSize}
               onValueChange={(value) => {
@@ -91,7 +93,7 @@ export function TablePagination<TSize extends number>({
               <SelectTrigger
                 size="sm"
                 className="w-20"
-                aria-label="Rows per page"
+                aria-label={t("Rows per page")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -108,14 +110,18 @@ export function TablePagination<TSize extends number>({
 
         <div className="flex items-center gap-2">
           <span className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
-            Page {currentPage.toLocaleString()}
-            {totalPages != null ? ` of ${totalPages.toLocaleString()}` : ""}
+            {totalPages != null
+              ? t("Page {page} of {total}", {
+                  page: currentPage.toLocaleString(),
+                  total: totalPages.toLocaleString(),
+                })
+              : t("Page {page}", { page: currentPage.toLocaleString() })}
           </span>
           <div className="flex items-center gap-1">
             {renderPageButton({
               page: currentPage - 1,
               disabled: !canGoPrev || isLoading,
-              label: "Previous page",
+              label: t("Previous page"),
               children: <ChevronLeft />,
               onPageChange,
             })}
@@ -133,7 +139,7 @@ export function TablePagination<TSize extends number>({
               renderPageButton({
                 page: currentPage + 1,
                 disabled: !canGoNext || isLoading,
-                label: "Next page",
+                label: t("Next page"),
                 children: <ChevronRight />,
                 onPageChange,
               })
@@ -170,6 +176,7 @@ function formatRange(
   pageSize: number,
   totalCount: number | null,
   pageRange: Props<number>["pageRange"],
+  t: (key: string, vars?: Record<string, string | number>) => string,
 ) {
   if (totalCount === 0) return "0";
   const start = pageRange?.start ?? (page - 1) * pageSize + 1;
@@ -178,5 +185,9 @@ function formatRange(
     return `${start.toLocaleString()}–${pageEnd.toLocaleString()}`;
   }
   const end = Math.min(totalCount, pageEnd);
-  return `${start.toLocaleString()}–${end.toLocaleString()} of ${totalCount.toLocaleString()}`;
+  return t("{start}–{end} of {total}", {
+    start: start.toLocaleString(),
+    end: end.toLocaleString(),
+    total: totalCount.toLocaleString(),
+  });
 }

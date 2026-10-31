@@ -1,6 +1,7 @@
 import { CircleMarker, MapContainer, Tooltip } from "react-leaflet";
 import type { LatLngBoundsExpression } from "leaflet";
 import { GoogleMapsTiles } from "./GoogleMapsTiles";
+import { useT } from "@/client/lib/i18n";
 import type { Listing } from "./LocalListingChoices";
 
 /** The listings a lookup found as numbered pins; a click picks one. */
@@ -15,6 +16,7 @@ export default function LocalListingMap({
   selected: number;
   onSelectedChange: (index: number) => void;
 }) {
+  const t = useT();
   const bounds: LatLngBoundsExpression = listings.map(({ business }) => [
     business.latitude,
     business.longitude,
@@ -26,7 +28,7 @@ export default function LocalListingMap({
       scrollWheelZoom={false}
       attributionControl={false}
       className="z-0 h-full w-full"
-      aria-label="Matching listings on a Google Maps basemap"
+      aria-label={t("Matching listings on a Google Maps basemap")}
     >
       <GoogleMapsTiles projectId={projectId} />
       {listings.map(({ business }, index) => (

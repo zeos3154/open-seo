@@ -6,6 +6,7 @@ import { SearchCard, SearchInput } from "@/client/components/SearchCard";
 import { Field, FieldDescription } from "@/client/components/ui/field";
 import { Input } from "@/client/components/ui/input";
 import type { ResearchScope } from "@/shared/researchScope";
+import { useT } from "@/client/lib/i18n";
 import { BRAND_LOOKUP_MAX_INPUT_LENGTH } from "@/types/schemas/ai-search";
 
 type Props = {
@@ -61,44 +62,60 @@ export function BrandLookupSearchCard({
   const hasCompetitors = competitors.trim().length > 0;
   const queryError = validationError?.field === "query";
   const competitorsError = validationError?.field === "competitors";
+  const t = useT();
 
   return (
     <SearchCard
       onSubmit={onSubmit}
       pending={isLoading}
-      error={validationError?.message}
+      error={
+        !validationError
+          ? null
+          : validationError.message.endsWith(
+                "matches the brand you're looking up — remove it from competitors",
+              )
+            ? t(
+                '"{competitor}" matches the brand you\'re looking up — remove it from competitors',
+                {
+                  competitor: validationError.message.slice(
+                    1,
+                    validationError.message.indexOf('" matches'),
+                  ),
+                },
+              )
+            : t(validationError.message)
+      }
       errorId="brand-lookup-input-error"
       secondRow={
         <>
           <Field>
             <Input
-              placeholder="Add competitors (comma-separated)"
+              placeholder={t("Add competitors (comma-separated)")}
               value={competitors}
               onChange={(event) => onCompetitorsChange(event.target.value)}
               autoComplete="off"
               spellCheck={false}
-              aria-label="Competitors"
+              aria-label={t("Competitors")}
               aria-invalid={competitorsError || undefined}
               aria-describedby={
                 competitorsError ? "brand-lookup-input-error" : undefined
               }
             />
             <FieldDescription>
-              Add up to 5 competitor brands or domains to see your Share of
-              Voice.
+              {t(
+                "Add up to 5 competitor brands or domains to see your Share of Voice.",
+              )}
             </FieldDescription>
           </Field>
           <p className="text-xs text-muted-foreground tabular-nums">
-            Est.{" "}
-            <span className="font-medium text-foreground">
-              ${BRAND_LOOKUP_DISPLAYED_COST_USD.toFixed(2)}
-            </span>
+            {t("Est. {cost}", {
+              cost: `$${BRAND_LOOKUP_DISPLAYED_COST_USD.toFixed(2)}`,
+            })}
             {hasCompetitors ? (
               <span>
-                {" "}
-                plus ~$
-                {BRAND_LOOKUP_COMPETITOR_DISPLAYED_COST_USD.toFixed(2)} to
-                compare competitors
+                {t("plus ~{cost} to compare competitors", {
+                  cost: `~$${BRAND_LOOKUP_COMPETITOR_DISPLAYED_COST_USD.toFixed(2)}`,
+                })}
               </span>
             ) : null}
           </p>
@@ -106,8 +123,8 @@ export function BrandLookupSearchCard({
       }
     >
       <SearchInput
-        placeholder="Enter a brand name or domain"
-        aria-label="Brand name or domain"
+        placeholder={t("Enter a brand name or domain")}
+        aria-label={t("Brand name or domain")}
         value={query}
         maxLength={BRAND_LOOKUP_MAX_INPUT_LENGTH}
         onChange={(event) => onQueryChange(event.target.value)}

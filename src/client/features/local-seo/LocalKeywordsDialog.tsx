@@ -3,6 +3,7 @@ import { FormDialog } from "@/client/components/FormDialog";
 import { useAppForm } from "@/client/components/form/useAppForm";
 import { QueryError } from "@/client/components/QueryState";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 import { updateLocalKeywords } from "@/serverFunctions/local-seo";
 import { cleanKeywords, LocalKeywordFields } from "./LocalKeywordFields";
 
@@ -18,6 +19,7 @@ export function LocalKeywordsDialog({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const save = useMutation({
     mutationFn: (terms: string[]) =>
       updateLocalKeywords({ data: { projectId, trackerId, keywords: terms } }),
@@ -38,15 +40,15 @@ export function LocalKeywordsDialog({
   });
   return (
     <FormDialog
-      title="Manage keywords"
+      title={t("Manage keywords")}
       onClose={onClose}
       actions={
         <>
           <Button variant="outline" disabled={save.isPending} onClick={onClose}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button type="submit" form="local-keywords" pending={save.isPending}>
-            Save keywords
+            {t("Save keywords")}
           </Button>
         </>
       }
@@ -58,7 +60,9 @@ export function LocalKeywordsDialog({
               <LocalKeywordFields
                 value={field.state.value}
                 onChange={field.handleChange}
-                description="Each check searches every keyword at every point. Results for removed keywords are kept."
+                description={t(
+                  "Each check searches every keyword at every point. Results for removed keywords are kept.",
+                )}
               />
             )}
           </form.Field>
@@ -67,7 +71,7 @@ export function LocalKeywordsDialog({
       {save.isError && (
         <QueryError
           error={save.error}
-          fallback="Could not save these keywords."
+          fallback={t("Could not save these keywords.")}
         />
       )}
     </FormDialog>

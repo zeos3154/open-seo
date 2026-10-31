@@ -19,6 +19,9 @@ import {
 } from "@/client/features/ai-search/platformLabels";
 import { formatUrlForDisplay } from "@/client/components/table/url";
 import type { BrandLookupResult } from "@/types/schemas/ai-search";
+import { useT } from "@/client/lib/i18n";
+
+type TFunc = ReturnType<typeof useT>;
 
 type TopPageRow = BrandLookupResult["topPages"][number];
 type TopQueryRow = BrandLookupResult["topQueries"][number];
@@ -47,13 +50,13 @@ const PLATFORM_HELP =
  * short label replaces the old full-width pill that repeated identically on
  * every row.
  */
-function PlatformCell({ platform }: { platform: PlatformKey }) {
+function PlatformCell({ platform, t }: { platform: PlatformKey; t: TFunc }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
       <span
         className={`size-1.5 rounded-full ${PLATFORM_DOT_CLASS[platform]}`}
       />
-      {PLATFORM_SHORT_LABEL[platform]}
+      {t(PLATFORM_SHORT_LABEL[platform])}
     </span>
   );
 }
@@ -91,6 +94,7 @@ function PageUrlCell({
   row: TopPageRow;
   targetDomain: string | null;
 }) {
+  const t = useT();
   const path = urlPath(row.url);
   const isOwn =
     targetDomain != null &&
@@ -108,7 +112,7 @@ function PageUrlCell({
         <span className="font-medium text-foreground group-hover:underline">
           {row.domain ?? formatUrlForDisplay(row.url)}
         </span>
-        {isOwn ? <Badge size="sm">You</Badge> : null}
+        {isOwn ? <Badge size="sm">{t("You")}</Badge> : null}
         <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
       </span>
       {path ? (
@@ -129,10 +133,12 @@ function KeywordsCell({
   keywords,
   projectId,
   brand,
+  t,
 }: {
   keywords: TopPageRow["keywords"];
   projectId: string;
   brand: string;
+  t: TFunc;
 }) {
   if (keywords.length === 0) {
     return <span className="text-muted-foreground">—</span>;
@@ -149,16 +155,18 @@ function KeywordsCell({
             params={{ projectId }}
             search={{ q: keyword.question, hb: brand || undefined }}
             className="group/kw inline-flex items-baseline gap-2 text-xs"
-            title="Run this prompt in Prompt Explorer"
+            title={t("Run this prompt in Prompt Explorer")}
           >
             <span className="text-foreground/80 group-hover/kw:underline">
               {keyword.question}
             </span>
             <span
               className="shrink-0 text-muted-foreground tabular-nums"
-              title="Prompt volume in the fetched sample"
+              title={t("Prompt volume in the fetched sample")}
             >
-              {formatCount(keyword.aiSearchVolume)} vol.
+              {t("{count} vol.", {
+                count: formatCount(keyword.aiSearchVolume),
+              })}
             </span>
           </Link>
         </li>
@@ -178,11 +186,13 @@ export function buildTopPagesColumns({
   targetDomain,
   projectId,
   brand,
+  t,
 }: {
   showPlatform: boolean;
   targetDomain: string | null;
   projectId: string;
   brand: string;
+  t: TFunc;
 }) {
   return [
     pagesHelper.accessor("url", {
@@ -190,8 +200,10 @@ export function buildTopPagesColumns({
       meta: { cellClassName: TEXT_CELL },
       header: () => (
         <HeaderWithHelp
-          label="Source"
-          helpText="A page cited as a source in AI answers where the searched brand or domain appears."
+          label={t("Source")}
+          helpText={t(
+            "A page cited as a source in AI answers where the searched brand or domain appears.",
+          )}
         />
       ),
       enableSorting: false,
@@ -205,10 +217,15 @@ export function buildTopPagesColumns({
             id: "platform",
             meta: { cellClassName: "whitespace-nowrap align-top" },
             header: () => (
-              <HeaderWithHelp label="Platform" helpText={PLATFORM_HELP} />
+              <HeaderWithHelp
+                label={t("Platform")}
+                helpText={t(PLATFORM_HELP)}
+              />
             ),
             enableSorting: false,
-            cell: ({ getValue }) => <PlatformCell platform={getValue()} />,
+            cell: ({ getValue }) => (
+              <PlatformCell platform={getValue()} t={t} />
+            ),
           }),
         ]
       : []),
@@ -217,8 +234,10 @@ export function buildTopPagesColumns({
       meta: { cellClassName: "max-w-lg align-top" },
       header: () => (
         <HeaderWithHelp
-          label="Cited for"
-          helpText="Example prompts from the fetched sample where this page was cited."
+          label={t("Cited for")}
+          helpText={t(
+            "Example prompts from the fetched sample where this page was cited.",
+          )}
         />
       ),
       cell: ({ row }) => (
@@ -226,6 +245,7 @@ export function buildTopPagesColumns({
           keywords={row.original.keywords}
           projectId={projectId}
           brand={brand}
+          t={t}
         />
       ),
     }),
@@ -235,8 +255,10 @@ export function buildTopPagesColumns({
       header: ({ column }) => (
         <SortableHeader
           column={column}
-          label="Source vol."
-          helpText="Estimated monthly prompt demand DataForSEO reports for this cited source, across prompts where the searched brand or domain appears."
+          label={t("Source vol.")}
+          helpText={t(
+            "Estimated monthly prompt demand DataForSEO reports for this cited source, across prompts where the searched brand or domain appears.",
+          )}
           align="right"
         />
       ),
@@ -253,10 +275,12 @@ export function buildTopQueriesColumns({
   showPlatform,
   projectId,
   brand,
+  t,
 }: {
   showPlatform: boolean;
   projectId: string;
   brand: string;
+  t: TFunc;
 }) {
   return [
     queriesHelper.accessor("question", {
@@ -264,8 +288,10 @@ export function buildTopQueriesColumns({
       meta: { cellClassName: TEXT_CELL },
       header: () => (
         <HeaderWithHelp
-          label="Query"
-          helpText="A sampled user prompt whose AI answer cited the searched brand or domain in its text or sources. The prompt itself may not name the brand."
+          label={t("Query")}
+          helpText={t(
+            "A sampled user prompt whose AI answer cited the searched brand or domain in its text or sources. The prompt itself may not name the brand.",
+          )}
         />
       ),
       enableSorting: false,
@@ -274,7 +300,9 @@ export function buildTopQueriesColumns({
           <p className="break-words font-medium">{row.original.question}</p>
           {row.original.brandsMentioned.length > 0 ? (
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Brands: {row.original.brandsMentioned.slice(0, 5).join(", ")}
+              {t("Brands: {list}", {
+                list: row.original.brandsMentioned.slice(0, 5).join(", "),
+              })}
             </p>
           ) : null}
         </>
@@ -286,10 +314,15 @@ export function buildTopQueriesColumns({
             id: "platform",
             meta: { cellClassName: "whitespace-nowrap align-top" },
             header: () => (
-              <HeaderWithHelp label="Platform" helpText={PLATFORM_HELP} />
+              <HeaderWithHelp
+                label={t("Platform")}
+                helpText={t(PLATFORM_HELP)}
+              />
             ),
             enableSorting: false,
-            cell: ({ getValue }) => <PlatformCell platform={getValue()} />,
+            cell: ({ getValue }) => (
+              <PlatformCell platform={getValue()} t={t} />
+            ),
           }),
         ]
       : []),
@@ -299,8 +332,10 @@ export function buildTopQueriesColumns({
       header: ({ column }) => (
         <SortableHeader
           column={column}
-          label="AI search vol."
-          helpText="Estimated monthly search demand for this prompt's topic. This is prompt demand, not the number of brand mentions."
+          label={t("AI search vol.")}
+          helpText={t(
+            "Estimated monthly search demand for this prompt's topic. This is prompt demand, not the number of brand mentions.",
+          )}
           align="right"
         />
       ),
@@ -312,7 +347,7 @@ export function buildTopQueriesColumns({
     }),
     queriesHelper.display({
       id: "action",
-      header: () => <span className="sr-only">Actions</span>,
+      header: () => <span className="sr-only">{t("Actions")}</span>,
       meta: { cellClassName: "w-px whitespace-nowrap text-right align-top" },
       cell: ({ row }) => (
         <Tooltip>
@@ -328,14 +363,14 @@ export function buildTopQueriesColumns({
                   size: "icon-xs",
                   className: "text-muted-foreground",
                 })}
-                aria-label="Run this prompt in Prompt Explorer"
+                aria-label={t("Run this prompt in Prompt Explorer")}
               />
             }
           >
             <Sparkles />
           </TooltipTrigger>
           <TooltipContent side="left">
-            Run this prompt in Prompt Explorer
+            {t("Run this prompt in Prompt Explorer")}
           </TooltipContent>
         </Tooltip>
       ),

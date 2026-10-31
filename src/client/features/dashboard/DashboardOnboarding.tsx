@@ -20,6 +20,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/client/components/ui/collapsible";
+import { useT } from "@/client/lib/i18n";
 
 export function DashboardOnboarding({
   projectId,
@@ -29,6 +30,7 @@ export function DashboardOnboarding({
   activation: DashboardActivation;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const [selected, setSelected] = useState<DashboardSetupStep | null>(null);
   const dismiss = useMutation({
     mutationFn: ({
@@ -63,14 +65,15 @@ export function DashboardOnboarding({
 
   return (
     <section
-      aria-label="Onboarding checklist"
+      aria-label={t("Onboarding checklist")}
       className="overflow-hidden rounded-xl border border-border bg-card"
     >
       <header className="border-b border-border px-5 py-5 sm:px-6">
-        <h2 className="text-lg font-semibold">Get started</h2>
+        <h2 className="text-lg font-semibold">{t("Get started")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Research competitors and keywords, audit your site, and connect your
-          tools.
+          {t(
+            "Research competitors and keywords, audit your site, and connect your tools.",
+          )}
         </p>
       </header>
       <Accordion
@@ -91,9 +94,9 @@ export function DashboardOnboarding({
                   <Icon className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block">{item.label}</span>
+                  <span className="block">{t(item.label)}</span>
                   <span className="mt-1 hidden text-xs font-normal text-muted-foreground sm:block">
-                    {item.detail}
+                    {t(item.detail)}
                   </span>
                 </span>
               </AccordionTrigger>
@@ -114,8 +117,8 @@ export function DashboardOnboarding({
                     }
                   >
                     {item.id === "project"
-                      ? "I only need one project"
-                      : "Skip for now"}
+                      ? t("I only need one project")
+                      : t("Skip for now")}
                   </Button>
                 </div>
               </AccordionContent>
@@ -127,7 +130,7 @@ export function DashboardOnboarding({
         <Collapsible className="border-t border-border">
           <CollapsibleTrigger className="group flex w-full items-center gap-2 px-5 py-4 text-left text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset sm:px-6">
             <ChevronRight className="size-4 transition-transform group-data-panel-open:rotate-90" />
-            {deferred.length} saved for later
+            {t("{count} saved for later", { count: deferred.length })}
           </CollapsibleTrigger>
           <CollapsibleContent>
             <ul className="space-y-1 px-5 pb-4 sm:px-6">
@@ -139,13 +142,13 @@ export function DashboardOnboarding({
                   <span className="text-sm">{item.label}</span>
                   <Button
                     variant="ghost"
-                    aria-label={`Restore ${item.label}`}
+                    aria-label={t("Restore {label}", { label: t(item.label) })}
                     disabled={dismiss.isPending}
                     onClick={() =>
                       dismiss.mutate({ step: item.id, dismissed: false })
                     }
                   >
-                    <RotateCcw data-icon="inline-start" /> Restore
+                    <RotateCcw data-icon="inline-start" /> {t("Restore")}
                   </Button>
                 </li>
               ))}
@@ -157,7 +160,7 @@ export function DashboardOnboarding({
         <Collapsible className="border-t border-border">
           <CollapsibleTrigger className="group flex w-full items-center gap-2 px-5 py-4 text-left text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset sm:px-6">
             <Check className="size-4 text-success" />
-            {completed.length} completed
+            {t("{count} completed", { count: completed.length })}
             <ChevronRight className="ml-auto size-4 text-muted-foreground transition-transform group-data-panel-open:rotate-90" />
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -168,7 +171,7 @@ export function DashboardOnboarding({
                   className="flex items-center gap-3 text-sm text-muted-foreground"
                 >
                   <Check className="size-4 shrink-0 text-success" />
-                  {item.label}
+                  {t(item.label)}
                 </li>
               ))}
             </ul>

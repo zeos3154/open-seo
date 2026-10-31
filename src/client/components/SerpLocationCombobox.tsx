@@ -13,6 +13,7 @@ import {
 } from "@/client/components/ui/combobox";
 import { InputGroupAddon } from "@/client/components/ui/input-group";
 import { Spinner } from "@/client/components/ui/spinner";
+import { useT } from "@/client/lib/i18n";
 import { searchSerpLocations } from "@/serverFunctions/serp-locations";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import type { SerpLocationResult } from "@/server/lib/dataforseo/serp-locations";
@@ -49,6 +50,7 @@ export function SerpLocationCombobox({
   id,
   invalid,
 }: Props) {
+  const t = useT();
   // The list lines up with the whole field, not only the text input.
   const anchor = useComboboxAnchor();
   const [query, setQuery] = useState("");
@@ -72,12 +74,12 @@ export function SerpLocationCombobox({
     : null;
 
   const emptyMessage = !trimmed
-    ? "Type a city, county, or region"
+    ? t("Type a city, county, or region")
     : searching
-      ? "Searching..."
+      ? t("Searching...")
       : searchQuery.isError
-        ? "Unable to load locations"
-        : `No locations found for "${trimmed}"`;
+        ? t("Unable to load locations")
+        : t('No locations found for "{query}"', { query: trimmed });
 
   return (
     <Combobox
@@ -108,7 +110,7 @@ export function SerpLocationCombobox({
           id={id}
           aria-invalid={invalid || undefined}
           className="w-full"
-          placeholder={placeholder}
+          placeholder={t(placeholder)}
           showTrigger={false}
         >
           <InputGroupAddon align="inline-start">

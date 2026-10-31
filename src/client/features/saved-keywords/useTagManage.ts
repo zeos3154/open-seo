@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent } from "@/client/lib/i18n";
 import {
   deleteSavedKeywordTag,
   updateSavedKeywordTag,
@@ -40,9 +41,13 @@ export function useTagManage(projectId: string) {
         },
       });
       await invalidate();
-      toast.success("Tag updated");
+      toast.success(translateCurrent("Tag updated"));
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Could not update tag"));
+      toast.error(
+        translateCurrent(
+          getStandardErrorMessage(error, "Could not update tag"),
+        ),
+      );
     } finally {
       markBusy(input.tagId, false);
     }
@@ -53,13 +58,15 @@ export function useTagManage(projectId: string) {
     try {
       await deleteSavedKeywordTag({ data: { projectId, tagId } });
       await invalidate();
-      toast.success("Tag deleted");
+      toast.success(translateCurrent("Tag deleted"));
       return true;
     } catch (error) {
       toast.error(
-        getStandardErrorMessage(
-          error,
-          "Could not delete tag. Detach it from all keywords and try again.",
+        translateCurrent(
+          getStandardErrorMessage(
+            error,
+            "Could not delete tag. Detach it from all keywords and try again.",
+          ),
         ),
       );
       return false;

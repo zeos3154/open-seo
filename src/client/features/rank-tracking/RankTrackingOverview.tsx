@@ -4,6 +4,7 @@ import { Area, AreaChart } from "recharts";
 import { getRankConfigTrend } from "@/serverFunctions/rank-tracking";
 import { QueryState } from "@/client/components/QueryState";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { useT } from "@/client/lib/i18n";
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +28,8 @@ import {
   TrendRangeToggle,
 } from "./RankTrackingTrendChart";
 
+// Bucket labels are English source text; the legend and chart config
+// translate at render so a locale switch updates the mounted chart.
 const BUCKETS = [
   { key: "top3", label: "Top 3", color: "#1e40af" },
   { key: "top4to10", label: "4–10", color: "#56b4e9" },
@@ -42,9 +45,13 @@ const BUCKETS = [
   },
 ] as const;
 
-const chartConfig: ChartConfig = Object.fromEntries(
-  BUCKETS.map((b) => [b.key, { label: b.label, color: b.color }]),
-);
+function makeChartConfig(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): ChartConfig {
+  return Object.fromEntries(
+    BUCKETS.map((b) => [b.key, { label: t(b.label), color: b.color }]),
+  );
+}
 
 export function RankTrackingOverview({
   device,
@@ -56,6 +63,8 @@ export function RankTrackingOverview({
   configId: string;
 }) {
   const [sinceDays, setSinceDays] = useState(730);
+  const t = useT();
+  const chartConfig = useMemo(() => makeChartConfig(t), [t]);
 
   const trendQuery = useQuery({
     queryKey: ["rankConfigTrend", projectId, configId, device, sinceDays],
@@ -83,7 +92,9 @@ export function RankTrackingOverview({
     <div className="px-4 pt-4 pb-4">
       <div className="space-y-2 rounded-lg border border-border p-3">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium">Position distribution</span>
+          <span className="text-sm font-medium">
+            {t("Position distribution")}
+          </span>
           <TrendRangeToggle value={sinceDays} onChange={setSinceDays} />
         </div>
 
@@ -104,15 +115,15 @@ export function RankTrackingOverview({
                 >
                   {swatch}
                   <span className="underline decoration-dotted underline-offset-2">
-                    {b.label}
+                    {t(b.label)}
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>{b.hint}</TooltipContent>
+                <TooltipContent>{t(b.hint)}</TooltipContent>
               </Tooltip>
             ) : (
               <span key={b.key} className={className}>
                 {swatch}
-                {b.label}
+                {t(b.label)}
               </span>
             );
           })}
@@ -120,7 +131,7 @@ export function RankTrackingOverview({
 
         <QueryState
           query={trendQuery}
-          errorFallback="Failed to load position history"
+          errorFallback={t("Failed to load position history")}
           loading={<Skeleton className="h-[220px] w-full" />}
         >
           {() =>

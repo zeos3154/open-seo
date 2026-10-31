@@ -18,16 +18,8 @@ import {
   formatMonthLabel,
   formatTooltipValue,
 } from "./backlinksPageUtils";
-
-const trendChartConfig = {
-  backlinks: { label: "Backlinks", color: "#2563eb" },
-  referringDomains: { label: "Referring domains", color: "#e69f00" },
-} satisfies ChartConfig;
-
-const newLostChartConfig = {
-  lostBacklinks: { label: "Lost backlinks", color: "#d55e00" },
-  newBacklinks: { label: "New backlinks", color: "#2563eb" },
-} satisfies ChartConfig;
+import { useT } from "@/client/lib/i18n";
+import { useMemo } from "react";
 
 const tooltip = (
   <ChartTooltip
@@ -42,11 +34,30 @@ const tooltip = (
 
 const legend = <ChartLegend content={<ChartLegendContent />} />;
 
+function useTrendChartConfig() {
+  const t = useT();
+  return useMemo(
+    () => ({
+      trend: {
+        backlinks: { label: t("Backlinks"), color: "#2563eb" },
+        referringDomains: { label: t("Referring domains"), color: "#e69f00" },
+      } satisfies ChartConfig,
+      newLost: {
+        lostBacklinks: { label: t("Lost backlinks"), color: "#d55e00" },
+        newBacklinks: { label: t("New backlinks"), color: "#2563eb" },
+      } satisfies ChartConfig,
+    }),
+    [t],
+  );
+}
+
 export function BacklinksTrendChart({
   data,
 }: {
   data: BacklinksOverviewData["trends"];
 }) {
+  const t = useT();
+  const trendChartConfig = useTrendChartConfig().trend;
   if (data.length === 0) {
     return <EmptyChartState />;
   }
@@ -55,7 +66,7 @@ export function BacklinksTrendChart({
     <ChartContainer
       config={trendChartConfig}
       className="h-56"
-      aria-label="Backlink trend chart"
+      aria-label={t("Backlink trend chart")}
     >
       <LineChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
         <ChartGrid />
@@ -99,6 +110,8 @@ export function BacklinksNewLostChart({
 }: {
   data: BacklinksOverviewData["newLostTrends"];
 }) {
+  const t = useT();
+  const newLostChartConfig = useTrendChartConfig().newLost;
   if (data.length === 0) {
     return <EmptyChartState />;
   }
@@ -107,7 +120,7 @@ export function BacklinksNewLostChart({
     <ChartContainer
       config={newLostChartConfig}
       className="h-56"
-      aria-label="New and lost backlinks chart"
+      aria-label={t("New and lost backlinks chart")}
     >
       <LineChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
         <ChartGrid />
@@ -139,9 +152,10 @@ export function BacklinksNewLostChart({
 }
 
 function EmptyChartState() {
+  const t = useT();
   return (
     <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
-      Not enough historical data yet.
+      {t("Not enough historical data yet.")}
     </div>
   );
 }

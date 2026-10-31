@@ -130,16 +130,26 @@ function interpolate(text: string, vars?: Record<string, string | number>) {
 /**
  * Translate `key` into `locale`. Keys are the English source text, so the
  * fallback for a missing entry is the key itself: English by construction.
- * `vars` fills `{name}` placeholders; it also works on the untranslated
- * fallback, so templated strings need no English dictionary entry.
+ * Lookup skips inherited properties, so arbitrary strings (server error
+ * messages, user data) always fall back instead of resolving e.g.
+ * "constructor" through the prototype chain. `vars` fills `{name}`
+ * placeholders; it also works on the untranslated fallback, so templated
+ * strings need no English dictionary entry.
  */
 function translate(
   locale: Locale,
   key: string,
   vars?: Record<string, string | number>,
 ): string {
-  const text = (locale === "zh-CN" ? zhCN[key] : undefined) ?? key;
+  const text =
+    (locale === "zh-CN" && Object.hasOwn(zhCN, key) ? zhCN[key] : undefined) ??
+    key;
   return interpolate(text, vars);
+}
+
+/** The current locale for non-React code, e.g. client date formatting. */
+export function currentLocale(): Locale {
+  return readLocale();
 }
 
 /** Translate on the current locale, for plain (non-React) helpers like toasts. */

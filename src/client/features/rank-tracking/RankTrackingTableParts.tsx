@@ -2,6 +2,7 @@ import { Sparkles } from "lucide-react";
 import { Badge } from "@/client/components/ui/badge";
 import { exportRows } from "@/client/lib/exportRows";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { useT } from "@/client/lib/i18n";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import type {
   RankTrackingDeviceResult,
@@ -20,6 +21,8 @@ const FEATURE_SHORT_LABELS: Record<string, string> = {
   top_stories: "News",
 };
 
+// English source text; the badges translate at render so a locale switch
+// updates the already-mounted table.
 const FEATURE_TOOLTIPS: Record<string, string> = {
   featured_snippet:
     "Featured Snippet — highlighted answer box at top of results",
@@ -34,6 +37,7 @@ const FEATURE_TOOLTIPS: Record<string, string> = {
 };
 
 export function SerpFeatureTags({ features }: { features: string[] }) {
+  const t = useT();
   const notable = features.filter((f) => f in FEATURE_SHORT_LABELS);
   if (notable.length === 0) return null;
   return (
@@ -44,7 +48,7 @@ export function SerpFeatureTags({ features }: { features: string[] }) {
           variant="secondary"
           size="sm"
           className="cursor-help"
-          title={FEATURE_TOOLTIPS[f] ?? f}
+          title={t(FEATURE_TOOLTIPS[f] ?? f)}
         >
           {f === "ai_overview" && <Sparkles />}
           {FEATURE_SHORT_LABELS[f]}
@@ -59,6 +63,7 @@ export function DeviceRankCell({
 }: {
   result: RankTrackingDeviceResult;
 }) {
+  const t = useT();
   const { position, previousPosition } = result;
 
   // Nothing at all
@@ -75,7 +80,7 @@ export function DeviceRankCell({
         </span>
         <span className="text-muted-foreground/60">→</span>
         <span className="font-mono rounded px-1.5 py-0.5 text-xs font-semibold bg-destructive/15 text-destructive">
-          lost
+          {t("lost")}
         </span>
       </span>
     );

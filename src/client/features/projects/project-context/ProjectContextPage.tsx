@@ -26,6 +26,7 @@ import { SectionHeader } from "@/client/components/PageHeader";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { Textarea } from "@/client/components/ui/textarea";
+import { useT } from "@/client/lib/i18n";
 
 const SECTION_HINTS: Record<ProjectContextSectionKey, string> = {
   business_overview: "What you sell, who buys it, and where.",
@@ -46,6 +47,7 @@ const SECTION_PLACEHOLDERS: Record<ProjectContextSectionKey, string> = {
 };
 
 export function ProjectContextPage({ projectId }: { projectId: string }) {
+  const t = useT();
   const contextQuery = useQuery({
     queryKey: projectContextQueryKey(projectId),
     queryFn: () => getProjectContext({ data: { projectId } }),
@@ -64,9 +66,9 @@ export function ProjectContextPage({ projectId }: { projectId: string }) {
         // draft, open form, or edit state can carry over to another project.
         <div key={projectId} className="space-y-8">
           <p className="text-sm text-muted-foreground">
-            What Claude Code and any other connected MCP client know about this
-            project. They read it before they work and write back what they
-            learn, so correct anything that looks wrong.
+            {t(
+              "What Claude Code and any other connected MCP client know about this project. They read it before they work and write back what they learn, so correct anything that looks wrong.",
+            )}
           </p>
 
           <ProseSections
@@ -148,14 +150,17 @@ function ProseSections({
     );
   };
 
+  const t = useT();
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {missingSections.length === PROJECT_CONTEXT_SECTION_KEYS.length ? (
         <EmptyState
           size="sm"
           icon={null}
-          title="Nothing written down yet"
-          description="Fill in what you can — or ask your agent to draft it from your site and confirm what it got right."
+          title={t("Nothing written down yet")}
+          description={t(
+            "Fill in what you can — or ask your agent to draft it from your site and confirm what it got right.",
+          )}
         />
       ) : null}
 
@@ -168,16 +173,18 @@ function ProseSections({
                 htmlFor={`context-${key}`}
                 className="text-sm font-medium text-foreground"
               >
-                {PROJECT_CONTEXT_SECTION_LABELS[key]}
+                {t(PROJECT_CONTEXT_SECTION_LABELS[key])}
               </label>
               {section ? (
                 <Provenance by={section.updatedBy} at={section.updatedAt} />
               ) : (
-                <span className="text-xs text-muted-foreground">Empty</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("Empty")}
+                </span>
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {SECTION_HINTS[key]}
+              {t(SECTION_HINTS[key])}
             </p>
             <Textarea
               id={`context-${key}`}
@@ -197,7 +204,7 @@ function ProseSections({
               }}
               rows={4}
               maxLength={PROSE_MAX_CHARS}
-              placeholder={SECTION_PLACEHOLDERS[key]}
+              placeholder={t(SECTION_PLACEHOLDERS[key])}
             />
           </div>
         );
@@ -209,7 +216,7 @@ function ProseSections({
           size="sm"
           disabled={update.isPending || changed.length === 0}
         >
-          Save changes
+          {t("Save changes")}
         </Button>
       </div>
     </form>
@@ -224,21 +231,26 @@ function CustomSections({
   customSections: ProjectContextData["customSections"];
 }) {
   const update = useContextUpdate(projectId);
+  const t = useT();
   const [editingSlug, setEditingSlug] = React.useState<string | null>(null);
 
   return (
     <section className="space-y-3">
       <SectionHeader
-        title="Custom sections"
-        hint="Anything an agent wrote down that didn't fit the sections above."
+        title={t("Custom sections")}
+        hint={t(
+          "Anything an agent wrote down that didn't fit the sections above.",
+        )}
       />
 
       {customSections.length === 0 ? (
         <EmptyState
           size="sm"
           icon={null}
-          title="Nothing here yet"
-          description="Agents add a section when they learn something important that has nowhere else to live."
+          title={t("Nothing here yet")}
+          description={t(
+            "Agents add a section when they learn something important that has nowhere else to live.",
+          )}
         />
       ) : (
         <div className="space-y-3">
@@ -272,13 +284,17 @@ function CustomSections({
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      aria-label={`Edit ${custom.title ?? custom.slug}`}
+                      aria-label={t("Edit {name}", {
+                        name: custom.title ?? custom.slug,
+                      })}
                       onClick={() => setEditingSlug(custom.slug)}
                     >
                       <Pencil className="size-3.5" />
                     </Button>
                     <InlineConfirm
-                      label={`Delete ${custom.title ?? custom.slug}`}
+                      label={t("Delete {name}", {
+                        name: custom.title ?? custom.slug,
+                      })}
                       pending={update.isPending}
                       onConfirm={() =>
                         update.mutate([{ deleteCustomSection: custom.slug }])
@@ -309,6 +325,7 @@ function CustomSectionForm({
   onCancel: () => void;
   onSave: (title: string, content: string) => void;
 }) {
+  const t = useT();
   const [title, setTitle] = React.useState(custom.title ?? "");
   const [content, setContent] = React.useState(custom.content);
 
@@ -326,14 +343,14 @@ function CustomSectionForm({
         onChange={(event) => setTitle(event.target.value)}
         placeholder={custom.slug}
         maxLength={120}
-        aria-label="Section title"
+        aria-label={t("Section title")}
       />
       <Textarea
         value={content}
         onChange={(event) => setContent(event.target.value)}
         rows={5}
         maxLength={PROSE_MAX_CHARS}
-        aria-label="Section content"
+        aria-label={t("Section content")}
       />
       <FormActions
         pending={pending}
@@ -353,20 +370,23 @@ function ResearchLog({
   researchLog: ProjectContextData["researchLog"];
 }) {
   const update = useContextUpdate(projectId);
+  const t = useT();
 
   return (
     <section className="space-y-3">
       <SectionHeader
-        title="Research log"
-        hint="What's already been looked up, so nobody buys the same data twice."
+        title={t("Research log")}
+        hint={t(
+          "What's already been looked up, so nobody buys the same data twice.",
+        )}
       />
 
       {researchLog.length === 0 ? (
         <EmptyState
           size="sm"
           icon={null}
-          title="Nothing logged yet"
-          description="Agents record paid research here as they run it."
+          title={t("Nothing logged yet")}
+          description={t("Agents record paid research here as they run it.")}
         />
       ) : (
         <ul className={listClass}>
@@ -384,7 +404,9 @@ function ResearchLog({
               </div>
               <RowActions>
                 <InlineConfirm
-                  label={`Delete log entry from ${entry.entryDate}`}
+                  label={t("Delete log entry from {date}", {
+                    date: entry.entryDate,
+                  })}
                   pending={update.isPending}
                   onConfirm={() =>
                     update.mutate([{ removeResearchLog: [entry.id] }])

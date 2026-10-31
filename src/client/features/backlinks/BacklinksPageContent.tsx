@@ -26,6 +26,7 @@ import {
   toScopeSearchParam,
 } from "@/shared/researchScope";
 import type { useSearchTabNavigation } from "@/client/features/search-tabs/useSearchTabNavigation";
+import { useT } from "@/client/lib/i18n";
 
 type BacklinksBodyProps = {
   projectId: string;
@@ -81,6 +82,7 @@ export function BacklinksBody({
     () => buildSummaryStats(overviewData),
     [overviewData],
   );
+  const t = useT();
   const tabControls = (
     <SearchTabStrip
       projectId={projectId}
@@ -99,9 +101,9 @@ export function BacklinksBody({
         loaded={historyLoaded}
         onRemove={onRemoveHistoryItem}
         emptyIcon={Link2}
-        emptyTitle="Enter a domain or URL to get started"
+        emptyTitle={t("Enter a domain or URL to get started")}
         getTitle={(item) => item.target}
-        getSubtitle={(item) => RESEARCH_SCOPE_LABELS[item.scope]}
+        getSubtitle={(item) => t(RESEARCH_SCOPE_LABELS[item.scope])}
         renderLink={(item, props) => (
           <Link
             from="/p/$projectId/backlinks"
@@ -140,10 +142,12 @@ export function BacklinksBody({
       <>
         {tabControls}
         <QueryError
-          title="Could not load backlinks"
+          title={t("Could not load backlinks")}
           cause={data.overviewQuery.error}
           fallback={
-            data.overviewErrorMessage ?? "Please try again in a moment."
+            data.overviewErrorMessage
+              ? t(data.overviewErrorMessage)
+              : t("Please try again in a moment.")
           }
           onRetry={() => void data.overviewQuery.refetch()}
           isRetrying={data.overviewQuery.isFetching}

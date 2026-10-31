@@ -31,6 +31,7 @@ import {
   withBrowserTimeZone,
 } from "@/client/features/rank-tracking/scheduleTime";
 import { AiLoading, AiQueryError, aiMoney, aiVisibilityKey } from "./shared";
+import { useT } from "@/client/lib/i18n";
 
 const costEstimateQueryOptions = ({
   projectId,
@@ -98,6 +99,7 @@ export function TrackingCostReview({
   onClose: () => void;
   onStarted: (run: AiRun | null) => void;
 }) {
+  const t = useT();
   const [scheduleInterval, setScheduleInterval] = useState<AiScheduleInterval>(
     tracker.scheduleInterval,
   );
@@ -158,10 +160,10 @@ export function TrackingCostReview({
     <FormDialog
       title={
         mode === "check"
-          ? "Run now"
+          ? t("Run now")
           : tracker.enabled
-            ? "Change tracking schedule"
-            : "Schedule tracking"
+            ? t("Change tracking schedule")
+            : t("Schedule tracking")
       }
       onClose={() => {
         if (!start.isPending) onClose();
@@ -169,7 +171,7 @@ export function TrackingCostReview({
       actions={
         <>
           <Button variant="ghost" disabled={start.isPending} onClick={onClose}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button
             disabled={
@@ -184,10 +186,10 @@ export function TrackingCostReview({
           >
             {start.isPending && <Loader2 className="size-4 animate-spin" />}
             {mode === "check"
-              ? "Run now"
+              ? t("Run now")
               : tracker.enabled
-                ? "Save schedule"
-                : "Start tracking"}
+                ? t("Save schedule")
+                : t("Start tracking")}
           </Button>
         </>
       }
@@ -220,14 +222,16 @@ export function TrackingCostReview({
             )}
             <Field>
               <FieldLabel>
-                {mode === "schedule" ? "Cost per run" : "Cost"}
+                {mode === "schedule" ? t("Cost per run") : t("Cost")}
               </FieldLabel>
               <span className="text-2xl font-semibold tabular-nums">
                 {aiMoney(runCostUsd)}
               </span>
               <FieldDescription>
                 {/* No per-answer price: engines cost different amounts. */}
-                {`${cost.observations} ${cost.observations === 1 ? "answer" : "answers"}${mode === "schedule" ? ` · about ${aiMoney(cost.monthlyCostUsd)} a month (${cost.checksPerMonth} ${cost.checksPerMonth === 1 ? "run" : "runs"})` : " · live answers, ready in a few minutes"}`}
+                {mode === "schedule"
+                  ? `${cost.observations} ${cost.observations === 1 ? t("answer") : t("answers")} · ${t("about {cost} a month ({count} runs)", { cost: aiMoney(cost.monthlyCostUsd), count: cost.checksPerMonth })}`
+                  : `${cost.observations} ${cost.observations === 1 ? t("answer") : t("answers")} · ${t("live answers, ready in a few minutes")}`}
               </FieldDescription>
             </Field>
             {start.error && <AiQueryError error={start.error} />}

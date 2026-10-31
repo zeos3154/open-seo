@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/client/components/ui/table";
 import { useOrganizations } from "@/client/features/settings/useOrganizations";
+import { useT } from "@/client/lib/i18n";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {
   listMcpConnections,
@@ -25,6 +26,7 @@ import {
 
 export function McpConnectionsSettings() {
   const queryClient = useQueryClient();
+  const t = useT();
   const [disconnecting, setDisconnecting] = useState<{
     id: string;
     clientName: string;
@@ -49,8 +51,10 @@ export function McpConnectionsSettings() {
 
   return (
     <section className="space-y-3">
-      <SectionHeader title="Connected agents" />
-      <p className="text-sm">AI clients signed in to OpenSEO with OAuth.</p>
+      <SectionHeader title={t("Connected agents")} />
+      <p className="text-sm">
+        {t("AI clients signed in to OpenSEO with OAuth.")}
+      </p>
 
       <QueryState
         query={connectionsQuery}
@@ -59,18 +63,18 @@ export function McpConnectionsSettings() {
         {(connections) =>
           connections.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No agents connected yet.
+              {t("No agents connected yet.")}
             </p>
           ) : (
             <TableCard>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Client</TableHead>
+                    <TableHead>{t("Client")}</TableHead>
                     {showOrganization ? (
-                      <TableHead>Organization</TableHead>
+                      <TableHead>{t("Organization")}</TableHead>
                     ) : null}
-                    <TableHead>Connected</TableHead>
+                    <TableHead>{t("Connected")}</TableHead>
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -90,7 +94,9 @@ export function McpConnectionsSettings() {
                       </TableCell>
                       <TableCell>
                         <RowActionsMenu
-                          label={`Actions for ${connection.clientName}`}
+                          label={t("Actions for {name}", {
+                            name: connection.clientName,
+                          })}
                         >
                           <DropdownMenuItem
                             variant="destructive"
@@ -102,7 +108,7 @@ export function McpConnectionsSettings() {
                             }
                           >
                             <Unplug />
-                            Disconnect
+                            {t("Disconnect")}
                           </DropdownMenuItem>
                         </RowActionsMenu>
                       </TableCell>
@@ -117,14 +123,14 @@ export function McpConnectionsSettings() {
 
       {disconnecting ? (
         <ConfirmDialog
-          title={`Disconnect “${disconnecting.clientName}”?`}
-          confirmLabel="Disconnect"
+          title={t("Disconnect “{name}”?", { name: disconnecting.clientName })}
+          confirmLabel={t("Disconnect")}
           destructive
           pending={disconnectMutation.isPending}
           onClose={() => setDisconnecting(null)}
           onConfirm={() => disconnectMutation.mutate(disconnecting.id)}
         >
-          It will have to sign in to OpenSEO again.
+          {t("It will have to sign in to OpenSEO again.")}
         </ConfirmDialog>
       ) : null}
     </section>

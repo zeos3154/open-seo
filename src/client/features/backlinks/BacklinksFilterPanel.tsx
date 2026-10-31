@@ -14,6 +14,7 @@ import {
   type BacklinksTabFilterValues,
 } from "./backlinksFilterTypes";
 import type { BacklinksFiltersState } from "./useBacklinksFilters";
+import { useT } from "@/client/lib/i18n";
 
 /**
  * Filters are applied explicitly (not per keystroke) because every change
@@ -33,6 +34,7 @@ export function BacklinksFilterPanel({
   /** Scope filters can consume part of the DataForSEO condition budget. */
   maxConditions?: number;
 }) {
+  const t = useT();
   if (activeTab === "backlinks") {
     const state = filters.backlinks;
     return (
@@ -82,7 +84,7 @@ export function BacklinksFilterPanel({
           onApplied();
         }}
         renderExtra={(draft, setValue) => (
-          <BacklinksToggleControls draft={draft} setValue={setValue} />
+          <BacklinksToggleControls draft={draft} setValue={setValue} t={t} />
         )}
       />
     );
@@ -187,16 +189,22 @@ const LINK_TYPE_ITEMS = [
 function BacklinksToggleControls({
   draft,
   setValue,
+  t,
 }: {
   draft: BacklinksTabFilterValues;
   setValue: (key: keyof BacklinksTabFilterValues, value: string) => void;
+  t: (key: string) => string;
 }) {
+  const linkTypeItems = LINK_TYPE_ITEMS.map((item) => ({
+    ...item,
+    label: t(item.label),
+  }));
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-      <DataTableFilterGroup label="Link Type">
+      <DataTableFilterGroup label={t("Link Type")}>
         <SegmentedToggle
           showLabels
-          items={LINK_TYPE_ITEMS}
+          items={linkTypeItems}
           value={draft.linkType || "all"}
           onChange={(value) =>
             setValue("linkType", value === "all" ? "" : value)
@@ -204,17 +212,17 @@ function BacklinksToggleControls({
         />
       </DataTableFilterGroup>
 
-      <DataTableFilterGroup label="Visibility">
+      <DataTableFilterGroup label={t("Visibility")}>
         <div className="flex h-7 items-center gap-4">
           <VisibilityCheckbox
-            label="Hide lost"
+            label={t("Hide lost")}
             checked={draft.hideLost === "true"}
             onCheckedChange={(checked) =>
               setValue("hideLost", checked ? "true" : "")
             }
           />
           <VisibilityCheckbox
-            label="Hide broken"
+            label={t("Hide broken")}
             checked={draft.hideBroken === "true"}
             onCheckedChange={(checked) =>
               setValue("hideBroken", checked ? "true" : "")

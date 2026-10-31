@@ -12,11 +12,11 @@ import {
   SelectValue,
 } from "@/client/components/ui/select";
 import type { searchPerformanceInputSchema } from "@/types/schemas/search-performance";
+import { useT } from "@/client/lib/i18n";
 
-const MATCH_ITEMS = [
-  { value: "contains", label: "Contains" },
-  { value: "equals", label: "Exactly matches" },
-];
+// Operator values stay API enum strings; labels translate at render.
+const MATCH_VALUES = ["contains", "equals"] as const;
+type MatchValue = (typeof MATCH_VALUES)[number];
 
 export type TextFilters = Pick<
   z.infer<typeof searchPerformanceInputSchema>,
@@ -34,6 +34,7 @@ export function SearchPerformanceTextFilters({
   onApply: (filters: TextFilters) => void;
   onReset: () => void;
 }) {
+  const t = useT();
   const [page, setPage] = useState(value.pageFilter?.expression ?? "");
   const [query, setQuery] = useState(value.queryFilter?.expression ?? "");
   const [pageOperator, setPageOperator] = useState<"contains" | "equals">(
@@ -51,6 +52,10 @@ export function SearchPerformanceTextFilters({
       query.trim() !== (value.queryFilter?.expression ?? "") ||
         queryOperator !== (value.queryFilter?.operator ?? "contains"),
     );
+  const MATCH_ITEMS = [
+    { value: "contains" as MatchValue, label: t("Contains") },
+    { value: "equals" as MatchValue, label: t("Exactly matches") },
+  ];
   const cancel = () => {
     setPage(value.pageFilter?.expression ?? "");
     setQuery(value.queryFilter?.expression ?? "");
@@ -79,13 +84,15 @@ export function SearchPerformanceTextFilters({
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">Refine table results</p>
+          <p className="text-sm font-semibold">{t("Refine table results")}</p>
           {activeFilterCount > 0 ? (
-            <Badge size="sm">{activeFilterCount} active</Badge>
+            <Badge size="sm">
+              {t("{count} active", { count: activeFilterCount })}
+            </Badge>
           ) : null}
           {dirtyCount > 0 ? (
             <Badge variant="warning" size="sm">
-              {dirtyCount} unapplied
+              {t("{count} unapplied", { count: dirtyCount })}
             </Badge>
           ) : null}
         </div>
@@ -103,13 +110,13 @@ export function SearchPerformanceTextFilters({
           }}
         >
           <RotateCcw data-icon="inline-start" />
-          Clear all
+          {t("Clear all")}
         </Button>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Page URL
+            {t("Page URL")}
           </span>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Select
@@ -122,7 +129,7 @@ export function SearchPerformanceTextFilters({
               <SelectTrigger
                 size="sm"
                 className="w-full sm:w-44 sm:shrink-0"
-                aria-label="Page match"
+                aria-label={t("Page match")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -136,17 +143,17 @@ export function SearchPerformanceTextFilters({
             </Select>
             <Input
               className="h-7 w-full min-w-0 sm:flex-1"
-              aria-label="Page URL filter"
+              aria-label={t("Page URL filter")}
               value={page}
               maxLength={4096}
               onChange={(event) => setPage(event.target.value)}
-              placeholder="URL or subfolder"
+              placeholder={t("URL or subfolder")}
             />
           </div>
         </div>
         <div className="space-y-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Query
+            {t("Query")}
           </span>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Select
@@ -159,7 +166,7 @@ export function SearchPerformanceTextFilters({
               <SelectTrigger
                 size="sm"
                 className="w-full sm:w-44 sm:shrink-0"
-                aria-label="Query match"
+                aria-label={t("Query match")}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -173,19 +180,19 @@ export function SearchPerformanceTextFilters({
             </Select>
             <Input
               className="h-7 w-full min-w-0 sm:flex-1"
-              aria-label="Query filter"
+              aria-label={t("Query filter")}
               value={query}
               maxLength={4096}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search term"
+              placeholder={t("Search term")}
             />
           </div>
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        All filters must match. Contains ignores case and matches text anywhere,
-        including a subfolder. Exactly matches compares the full URL or query,
-        including case.
+        {t(
+          "All filters must match. Contains ignores case and matches text anywhere, including a subfolder. Exactly matches compares the full URL or query, including case.",
+        )}
       </p>
       <div className="flex items-center justify-end gap-2 pt-1">
         <Button
@@ -195,10 +202,10 @@ export function SearchPerformanceTextFilters({
           onClick={cancel}
           disabled={dirtyCount === 0}
         >
-          Cancel
+          {t("Cancel")}
         </Button>
         <Button size="sm" type="submit" disabled={dirtyCount === 0}>
-          Apply filters
+          {t("Apply filters")}
           {dirtyCount > 0 ? (
             <Badge variant="secondary" size="sm" className="ml-1">
               {dirtyCount}

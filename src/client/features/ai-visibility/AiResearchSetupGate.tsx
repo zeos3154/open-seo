@@ -9,6 +9,7 @@ import { Textarea } from "@/client/components/ui/textarea";
 import { InsufficientCreditsError } from "@/client/features/billing/InsufficientCreditsError";
 import { getErrorCode } from "@/client/lib/error-messages";
 import { isEveryAppClientAuthMode } from "@/lib/auth-mode";
+import { useT } from "@/client/lib/i18n";
 import { projectsQueryOptions } from "@/client/features/projects/projectQueries";
 import { WebsiteResearchProgress } from "@/client/features/projects/WebsiteResearchProgress";
 import { WebsiteSetupReview } from "@/client/features/projects/WebsiteSetupReview";
@@ -42,6 +43,7 @@ export function AiResearchSetupGate({
   projectId: string;
   children: ReactNode;
 }) {
+  const t = useT();
   const queryClient = useQueryClient();
   const setupOptions = aiResearchSetupQueryOptions(projectId);
   const setup = useQuery(setupOptions);
@@ -154,7 +156,7 @@ export function AiResearchSetupGate({
         <WebsiteResearchProgress
           missingOverview={setup.data.missingOverview}
           missingCompetitors={setup.data.missingCompetitors}
-          note="You can leave this page; setup keeps running."
+          note={t("You can leave this page; setup keeps running.")}
         />
       </div>
     );
@@ -170,24 +172,33 @@ export function AiResearchSetupGate({
               <Sparkles className="size-5" />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Set up AI visibility
+              {t("Set up AI visibility")}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              We’ll research your brand and find the most relevant topics to
-              monitor.
+              {t(
+                "We’ll research your brand and find the most relevant topics to monitor.",
+              )}
             </p>
           </div>
           {getErrorCode(start.error) === "INSUFFICIENT_CREDITS" ? (
-            <InsufficientCreditsError title="We couldn’t set up AI visibility" />
+            <InsufficientCreditsError
+              title={t("We couldn’t set up AI visibility")}
+            />
           ) : (
             failed && (
               <Alert variant="destructive">
                 <AlertDescription>
                   {unreadable
-                    ? "We couldn’t read this website. Its bot protection may be blocking us. Describe your business below and try again, or check the URL in project settings."
+                    ? t(
+                        "We couldn’t read this website. Its bot protection may be blocking us. Describe your business below and try again, or check the URL in project settings.",
+                      )
                     : isEveryAppClientAuthMode()
-                      ? "We couldn’t finish setting up AI visibility. It needs DataForSEO and OpenRouter on your Every App gateway: if they aren’t set up yet, an owner or admin runs pnpm everyapp secret set DATAFORSEO_API_KEY OPENROUTER_API_KEY. Then try again."
-                      : "We couldn’t finish setting up AI visibility. Try again."}
+                      ? t(
+                          "We couldn’t finish setting up AI visibility. It needs DataForSEO and OpenRouter on your Every App gateway: if they aren’t set up yet, an owner or admin runs pnpm everyapp secret set DATAFORSEO_API_KEY OPENROUTER_API_KEY. Then try again.",
+                        )
+                      : t(
+                          "We couldn’t finish setting up AI visibility. Try again.",
+                        )}
                 </AlertDescription>
               </Alert>
             )
@@ -195,7 +206,7 @@ export function AiResearchSetupGate({
           {unreadable && (
             <Field>
               <FieldLabel htmlFor="business-overview">
-                What you sell, who buys it, and where
+                {t("What you sell, who buys it, and where")}
               </FieldLabel>
               <Textarea
                 id="business-overview"
@@ -206,7 +217,7 @@ export function AiResearchSetupGate({
               />
               {saveOverview.isError && (
                 <p className="text-sm text-destructive">
-                  We couldn’t save your description. Try again.
+                  {t("We couldn’t save your description. Try again.")}
                 </p>
               )}
             </Field>
@@ -220,12 +231,16 @@ export function AiResearchSetupGate({
                 overview.trim() ? saveOverview.mutate() : start.mutate()
               }
             >
-              {failed ? "Try again" : "Start research"}
+              {failed ? t("Try again") : t("Start research")}
             </Button>
             <p className="text-xs leading-relaxed text-muted-foreground">
               {isEveryAppClientAuthMode()
-                ? "Research and a first run of your prompts use the DataForSEO and OpenRouter keys on your Every App gateway."
-                : "Research and a first run of your prompts use a small amount of usage credits."}
+                ? t(
+                    "Research and a first run of your prompts use the DataForSEO and OpenRouter keys on your Every App gateway.",
+                  )
+                : t(
+                    "Research and a first run of your prompts use a small amount of usage credits.",
+                  )}
             </p>
           </div>
         </CardContent>

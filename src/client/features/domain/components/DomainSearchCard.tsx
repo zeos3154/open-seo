@@ -1,4 +1,5 @@
 import type { FormEvent } from "react";
+import { useMemo } from "react";
 import { useStore } from "@tanstack/react-form";
 import { getFieldError } from "@/client/lib/forms";
 import type { DomainOverviewControlsForm } from "@/client/features/domain/DomainOverviewPage";
@@ -16,6 +17,7 @@ import {
   SelectValue,
 } from "@/client/components/ui/select";
 import type { ResearchScope } from "@/shared/researchScope";
+import { useT } from "@/client/lib/i18n";
 
 const SORT_ITEMS: { value: DomainSortMode; label: string }[] = [
   { value: "rank", label: "By Rank" },
@@ -47,19 +49,24 @@ export function DomainSearchCard({
   const domainError = useStore(controlsForm.store, (state) =>
     getFieldError(state.fieldMeta.domain?.errors ?? []),
   );
+  const t = useT();
+  const sortItems = useMemo(
+    () => SORT_ITEMS.map((item) => ({ ...item, label: t(item.label) })),
+    [t],
+  );
 
   return (
     <SearchCard
       onSubmit={onSubmit}
       pending={isLoading}
-      error={domainError}
+      error={domainError ? t(domainError) : null}
       errorId="domain-input-error"
     >
       <controlsForm.Field name="domain">
         {(field) => (
           <SearchInput
-            placeholder="Enter a domain or URL"
-            aria-label="Domain or URL"
+            placeholder={t("Enter a domain or URL")}
+            aria-label={t("Domain or URL")}
             value={field.state.value}
             onChange={(event) => {
               field.handleChange(event.target.value);
@@ -101,7 +108,7 @@ export function DomainSearchCard({
       <controlsForm.Field name="sort">
         {(field) => (
           <Select
-            items={SORT_ITEMS}
+            items={sortItems}
             value={field.state.value}
             onValueChange={(value) => {
               const next = toSortMode(value ?? "") ?? "traffic";
@@ -110,7 +117,7 @@ export function DomainSearchCard({
             }}
           >
             <SelectTrigger
-              aria-label="Sort keywords"
+              aria-label={t("Sort keywords")}
               className="w-full shrink-0 lg:w-36"
             >
               <SelectValue />

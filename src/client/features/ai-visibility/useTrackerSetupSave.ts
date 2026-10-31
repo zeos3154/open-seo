@@ -6,6 +6,7 @@ import {
   setAiVisibilitySchedule,
 } from "@/serverFunctions/ai-visibility";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent } from "@/client/lib/i18n";
 import type { AiRun, AiTrackerState } from "@/shared/ai-visibility";
 import type { TrackerSetupReviewData } from "./TrackerSetupReview";
 
@@ -47,7 +48,7 @@ export function useTrackerSetupSave({
       onSaved(result.state, result.run);
       if (result.scheduleError)
         toast.error(
-          `${result.state.tracker?.enabled ? "Weekly tracking is on, but the first check couldn't start." : "Prompts saved. We couldn't start weekly tracking."} ${getStandardErrorMessage(result.scheduleError)}`,
+          `${translateCurrent(result.state.tracker?.enabled ? "Weekly tracking is on, but the first check couldn't start." : "Prompts saved. We couldn't start weekly tracking.")} ${translateCurrent(getStandardErrorMessage(result.scheduleError))}`,
         );
     },
   });

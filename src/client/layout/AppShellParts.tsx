@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/client/components/ui/dialog";
+import { useT } from "@/client/lib/i18n";
 
 function SeoApiStatusBanners({
   shouldShowSeoApiWarning,
@@ -21,13 +22,14 @@ function SeoApiStatusBanners({
   shouldShowSeoApiWarning: boolean;
   seoApiKeyStatusError: boolean;
 }) {
+  const t = useT();
   const icon = <AlertTriangle className="size-4 shrink-0" />;
   const helpLink = (
     <Link
       {...dataforseoHelpLinkOptions}
       className="font-medium text-primary underline-offset-4 hover:underline"
     >
-      help page
+      {t("help page")}
     </Link>
   );
   return (
@@ -36,15 +38,20 @@ function SeoApiStatusBanners({
         <AppBanner variant="warning" icon={icon}>
           {isEveryAppClientAuthMode() ? (
             <>
-              DataForSEO isn&apos;t set up on your Every App gateway yet. An
-              owner or admin sets it with{" "}
-              <code>pnpm everyapp secret set DATAFORSEO_API_KEY</code>. Steps on
-              the {helpLink}.
+              {t(
+                "DataForSEO isn't set up on your Every App gateway yet. An owner or admin sets it with",
+              )}{" "}
+              <code>pnpm everyapp secret set DATAFORSEO_API_KEY</code>
+              {t(". Steps on the")} {helpLink}
+              {t(".")}
             </>
           ) : (
             <>
-              Setup needed: add your DataForSEO API key to use OpenSEO features.
-              See the quick steps on the {helpLink}.
+              {t(
+                "Setup needed: add your DataForSEO API key to use OpenSEO features. See the quick steps on the",
+              )}{" "}
+              {helpLink}
+              {t(".")}
             </>
           )}
         </AppBanner>
@@ -52,8 +59,11 @@ function SeoApiStatusBanners({
 
       {seoApiKeyStatusError ? (
         <AppBanner variant="info" icon={icon}>
-          We could not verify your DataForSEO setup. If features are not
-          working, check the setup steps on the {helpLink}.
+          {t(
+            "We could not verify your DataForSEO setup. If features are not working, check the setup steps on the",
+          )}{" "}
+          {helpLink}
+          {t(".")}
         </AppBanner>
       ) : null}
     </>
@@ -70,20 +80,22 @@ function LegacyDockerBanner() {
   const [dismissed, setDismissed] = useState(
     () => localStorage.getItem(DOCKER_MOVE_DISMISSED_KEY) === "1",
   );
+  const t = useT();
   if (import.meta.env.VITE_OPENSEO_LEGACY_DOCKER !== "true" || dismissed) {
     return null;
   }
   return (
     <AppBanner variant="info" icon={<Info className="size-4 shrink-0" />}>
-      A new OpenSEO Docker setup starts in seconds and supports accounts. This
-      image keeps getting updates, and moving keeps your data.{" "}
+      {t(
+        "A new OpenSEO Docker setup starts in seconds and supports accounts. This image keeps getting updates, and moving keeps your data.",
+      )}{" "}
       <a
         href={DOCKER_MOVE_URL}
         target="_blank"
         rel="noreferrer"
         className="font-medium text-primary underline-offset-4 hover:underline"
       >
-        How to move
+        {t("How to move")}
       </a>{" "}
       ·{" "}
       <button
@@ -94,13 +106,14 @@ function LegacyDockerBanner() {
           setDismissed(true);
         }}
       >
-        Dismiss
+        {t("Dismiss")}
       </button>
     </AppBanner>
   );
 }
 
 function MissingSeoSetupModal({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const everyApp = isEveryAppClientAuthMode();
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -112,33 +125,33 @@ function MissingSeoSetupModal({ onClose }: { onClose: () => void }) {
           <div className="space-y-2">
             <DialogTitle>
               {everyApp
-                ? "DataForSEO isn't set up yet"
-                : "One quick setup step"}
+                ? t("DataForSEO isn't set up yet")
+                : t("One quick setup step")}
             </DialogTitle>
             <DialogDescription>
               {everyApp ? (
                 <>
-                  Keyword, domain, backlink and rank data comes from DataForSEO
-                  through your Every App gateway. An owner or admin sets it once
-                  for every app with{" "}
-                  <code>pnpm everyapp secret set DATAFORSEO_API_KEY</code>; the
-                  setup guide has the steps.
+                  {t(
+                    "Keyword, domain, backlink and rank data comes from DataForSEO through your Every App gateway. An owner or admin sets it once for every app with",
+                  )}{" "}
+                  <code>pnpm everyapp secret set DATAFORSEO_API_KEY</code>
+                  {t("; the setup guide has the steps.")}
                 </>
               ) : (
-                "Add your DataForSEO API key to start using OpenSEO."
+                t("Add your DataForSEO API key to start using OpenSEO.")
               )}
             </DialogDescription>
           </div>
         </DialogHeader>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
-            Dismiss
+            {t("Dismiss")}
           </Button>
           <Button
             nativeButton={false}
             render={<Link {...dataforseoHelpLinkOptions} onClick={onClose} />}
           >
-            Open setup guide
+            {t("Open setup guide")}
             <ExternalLink className="size-4" />
           </Button>
         </DialogFooter>

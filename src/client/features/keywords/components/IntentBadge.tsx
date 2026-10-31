@@ -1,4 +1,5 @@
 import type { KeywordIntent } from "@/types/keywords";
+import { useLocale, useT } from "@/client/lib/i18n";
 import { Badge } from "@/client/components/ui/badge";
 import {
   Tooltip,
@@ -66,7 +67,14 @@ const DESCRIPTIONS: Record<
 };
 
 export function IntentBadge({ intent }: { intent: KeywordIntent }) {
+  const t = useT();
+  const locale = useLocale();
   const details = DESCRIPTIONS[intent];
+  const label = t(details.label);
+  // English keeps the compact abbreviations; Chinese shows the full intent
+  // label because the shortened forms would collide with severity labels
+  // (e.g. "Info" as 提示) and read ambiguously.
+  const display = locale === "zh-CN" ? label : SHORT_LABELS[intent];
 
   return (
     <Tooltip>
@@ -79,13 +87,13 @@ export function IntentBadge({ intent }: { intent: KeywordIntent }) {
             className="h-6 min-w-11 cursor-help font-semibold"
           />
         }
-        aria-label={`${details.label} search intent`}
+        aria-label={t("{label} search intent", { label })}
       >
-        {SHORT_LABELS[intent]}
+        {display}
       </TooltipTrigger>
       <TooltipContent className="flex-col items-start gap-1">
-        <span className="font-semibold">{details.label}</span>
-        <span>{details.description}</span>
+        <span className="font-semibold">{label}</span>
+        <span>{t(details.description)}</span>
       </TooltipContent>
     </Tooltip>
   );

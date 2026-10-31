@@ -1,4 +1,5 @@
 import { ExternalPage } from "./siteTabParts";
+import { useT } from "@/client/lib/i18n";
 import type { ColumnDef } from "@tanstack/react-table";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
 import type { ComponentProps } from "react";
@@ -59,9 +60,10 @@ export function DashboardKeywordTable({
   ComponentProps<typeof DashboardDataTable>,
   "tabs" | "resetKey" | "isLoading" | "error" | "empty"
 >) {
+  const t = useT();
   const pageColumn: ColumnDef<Keyword> = {
     accessorKey: "page",
-    header: "Page",
+    header: () => t("Page"),
     filterFn: "includesString",
     cell: ({ row }) => <ExternalPage url={row.original.page ?? null} />,
   };

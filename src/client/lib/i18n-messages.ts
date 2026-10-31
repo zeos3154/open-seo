@@ -1,3 +1,7 @@
+import { researchMessages } from "@/client/lib/i18n/research";
+import { trackingMessages } from "@/client/lib/i18n/tracking";
+import { workbenchMessages } from "@/client/lib/i18n/workbench";
+
 /**
  * Simplified Chinese UI strings, keyed by their English source text. Keys are
  * the exact English strings rendered by the app, so an entry missing here (or
@@ -9,6 +13,10 @@
  * must never be translated.
  */
 export const zhCN: Record<string, string> = {
+  ...researchMessages,
+  ...trackingMessages,
+  ...workbenchMessages,
+
   // Sidebar navigation (src/client/navigation/items.ts)
   Dashboard: "仪表盘",
   "Keyword Research": "关键词研究",

@@ -41,12 +41,18 @@ import {
   TableBulkExportMenu,
 } from "@/client/components/table/TableBulkActionBar";
 
-function formatTrendRangeLabel(trend: KeywordResearchRow["trend"]): string {
+import { useT } from "@/client/lib/i18n";
+
+function formatTrendRangeLabel(
+  trend: KeywordResearchRow["trend"],
+  t: (key: string) => string,
+): string {
   const last12 = lastTwelveMonths(trend);
-  if (last12.length === 0) return "Last 12 available months";
+  if (last12.length === 0) return t("Last 12 available months");
 
   const [startLabel, endLabel] = [last12[0], last12[last12.length - 1]].map(
-    (m) => `${MONTH_SHORT_LABELS[m.month - 1] ?? `M${m.month}`} ${m.year}`,
+    (m) =>
+      `${t(MONTH_SHORT_LABELS[m.month - 1] ?? "") || `M${m.month}`} ${m.year}`,
   );
   return startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`;
 }
@@ -70,6 +76,7 @@ export function KeywordResearchResults({ controller }: Props) {
 }
 
 function MobileTabs({ controller }: Props) {
+  const t = useT();
   return (
     <Tabs
       value={controller.mobileTab}
@@ -78,15 +85,16 @@ function MobileTabs({ controller }: Props) {
     >
       <TabsList variant="line" className="w-full">
         <TabsTrigger value="keywords">
-          Keywords ({controller.filteredRows.length})
+          {t("Keywords ({count})", { count: controller.filteredRows.length })}
         </TabsTrigger>
-        <TabsTrigger value="serp">SERP Analysis</TabsTrigger>
+        <TabsTrigger value="serp">{t("SERP Analysis")}</TabsTrigger>
       </TabsList>
     </Tabs>
   );
 }
 
 function KeywordPanel({ controller }: Props) {
+  const t = useT();
   const { mobileTab, searchedKeyword, showApproximateMatchNotice } = controller;
 
   return (
@@ -96,9 +104,10 @@ function KeywordPanel({ controller }: Props) {
       {showApproximateMatchNotice ? (
         <Alert variant="warning" role="status">
           <AlertDescription className="text-foreground">
-            No exact match for{" "}
-            <span className="font-medium">"{searchedKeyword}"</span>. Showing
-            closest related keywords instead.
+            {t(
+              'No exact match for "{keyword}". Showing closest related keywords instead.',
+              { keyword: searchedKeyword },
+            )}
           </AlertDescription>
         </Alert>
       ) : null}
@@ -120,16 +129,20 @@ function TableCard({ controller }: Props) {
     selectedKeywordRows,
     showFilters,
   } = controller;
+  const t = useT();
   const { page, pageSize, pageRange, pageRows, setPage, setPageSize } =
     useKeywordResearchPagination(filteredRows);
   const keywordCount = filteredRows.length;
 
   const keywordCountLabel =
     selectedKeywordRows.length > 0
-      ? `${selectedKeywordRows.length} selected`
+      ? t("{count} selected", { count: selectedKeywordRows.length })
       : activeFilterCount > 0
-        ? `Showing ${keywordCount} of ${rows.length} keywords`
-        : `Showing ${keywordCount} keywords`;
+        ? t("Showing {count} of {total} keywords", {
+            count: keywordCount,
+            total: rows.length,
+          })
+        : t("Showing {count} keywords", { count: keywordCount });
 
   return (
     <>
@@ -142,17 +155,18 @@ function TableCard({ controller }: Props) {
               icon={<Save className="size-3.5" />}
               onClick={controller.handleSaveKeywords}
             >
-              Save<span className="hidden md:inline"> Keywords</span>
+              {t("Save")}
+              <span className="hidden md:inline"> {t("Keywords")}</span>
             </TableBulkActionButton>
             <TableBulkExportMenu
               actions={[
                 {
-                  label: "Export to Sheets",
+                  label: t("Export to Sheets"),
                   icon: <Sheet className="size-4" />,
                   onClick: () => controller.exportSelection("sheets"),
                 },
                 {
-                  label: "Export CSV",
+                  label: t("Export CSV"),
                   icon: <FileDown className="size-4" />,
                   onClick: () => controller.exportSelection("csv"),
                 },
@@ -266,6 +280,7 @@ function TableFilters({ controller }: Props) {
 }
 
 function SerpPanel({ controller }: Props) {
+  const t = useT();
   const { mobileTab, overviewKeyword } = controller;
 
   return (
@@ -276,9 +291,9 @@ function SerpPanel({ controller }: Props) {
         <Card size="sm" className="hidden shrink-0 md:flex">
           <CardHeader>
             <CardTitle>
-              Search Trends{" "}
+              {t("Search Trends")}{" "}
               <span className="font-normal text-muted-foreground">
-                {formatTrendRangeLabel(overviewKeyword.trend)}
+                {formatTrendRangeLabel(overviewKeyword.trend, t)}
               </span>
             </CardTitle>
           </CardHeader>
