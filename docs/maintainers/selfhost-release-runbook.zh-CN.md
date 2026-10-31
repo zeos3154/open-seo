@@ -2,6 +2,8 @@
 
 适用实例：`openseo.willship.dev`，主 Worker `open-seo-selfhost`，审计 Worker `open-seo-selfhost-audit`，Alchemy stack `open-seo` / stage `selfhost`。这份文档说明操作流程；每次实际执行的版本号、备份、时间和验收结果另存私有发布记录，不提交到 Git。
 
+当前选择：保留 CLI 手动发布，不新增 GitHub 自动构建连接。每次更新按本 SOP 先备份、检查，再合并代码并执行 `pnpm deploy:selfhost --yes`。如以后改用自动发布，另行配置和验收构建凭据、环境文件及备份流程后再启用。
+
 ## 1. 先确认 main 与线上之间的关系
 
 GitHub 的 main 是源码分支；Cloudflare Worker version 是线上运行版本，两者不自动等同。
@@ -25,9 +27,18 @@ Wrangler 当前没有直接查询 Workers Builds 配置的子命令，可以从 
 GET /accounts/{account_id}/builds/workers/{worker_tag}/triggers
 ```
 
-`worker_tag` 是 Workers API 返回的不可变 tag，不是 Worker 名称。该读取接口接受 `Workers CI Read` 或 `Workers CI Write`。现有部署 OAuth 登录可能只有 `Workers Scripts` 等权限，能发布 Worker 也不代表能读取 Builds；反复执行同一命令或重新申请同一组 OAuth scopes 不能补出缺少的权限。
+`worker_tag` 是 Workers API 返回的不可变 tag，不是 Worker 名称。该读取接口接受 `Workers CI Read` 或 `Workers CI Write`。现有默认部署 OAuth 登录可能只有 `Workers Scripts` 等权限，能发布 Worker也不代表能读取 Builds；重新申请同一组默认 scopes 不会增加缺少的权限。
 
-只核查触发器时，使用限定当前账号的用户 API Token 并授予 `Workers CI Read`；需要查询实际 DNS 记录时，额外限定目标 zone 的 `DNS Read`。不要为此创建全权限令牌。令牌从安全环境或私有文件读取，不放进命令行参数、聊天或 Git。官方权限依据：[列出 Worker 构建触发器](https://developers.cloudflare.com/api/resources/workers_builds/subresources/triggers/methods/list/)。
+项目使用的 Alchemy CLI 提供更完整的自定义 OAuth scopes，可在默认选中项之外加上 `access:write`（维护原 Access 应用及策略）、`workers_builds:read`（查询构建配置）和 `dns_records:read`（读取 DNS 备份）：
+
+```sh
+pnpm alchemy login deploy/alchemy/alchemy.run.ts \
+  --env-file .env.selfhost --configure
+```
+
+选择 OAuth，Customize OAuth scopes 选择 Yes，保留默认选项并勾选上述所需项，再完成打开页面中的授权。随后以实际 API 查询和部署预演验证。该命令需指定本仓库的 stack 文件；省略时会查找不存在的根目录 `alchemy.run.ts`。重新登录时不要把之前补过的 Access 权限丢掉。
+
+也可使用限定当前账号、具备 `Workers CI Read` 的用户 API Token；需要查询实际 DNS 记录时，额外限定目标 zone 的 `DNS Read`。不要为此创建全权限令牌。令牌从安全环境或私有文件读取，不放进命令行参数、聊天或 Git。官方权限依据：[列出 Worker 构建触发器](https://developers.cloudflare.com/api/resources/workers_builds/subresources/triggers/methods/list/)。
 
 DNS 的公开解析可用 DNS-over-HTTPS 查询并保存，避免本机代理的 Fake-IP 被当成真实解析。公开 A/AAAA 结果不是控制台 DNS 记录的完整备份：它不包含 record ID、原始 CNAME 目标及代理设置。应与 Worker custom-domain 配置分开记录。
 
