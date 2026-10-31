@@ -21,7 +21,6 @@
     "lint:fix": "oxlint . --type-aware --fix",
     "preview": "npm run build && vite preview --port 3001",
     "deploy": "npm run db:migrate:prod && npm run build && wrangler deploy -c dist/open_seo_audit/wrangler.json && wrangler deploy",
-    "selfhost:prepare-build": "node scripts/prepare-selfhost-build.mjs",
     "deploy:selfhost": "node scripts/selfhost-deploy-preflight.mjs && pnpm build:report-widgets && vite build --mode selfhost && tsc --noEmit && pnpm alchemy deploy deploy/alchemy/alchemy.run.ts --env-file .env.selfhost --stage selfhost",
     "deploy:prod": "gh workflow run deploy-production.yml --repo bensenescu/open-seo --ref main",
     "deploy:web": "gh workflow run deploy-website.yml --repo bensenescu/open-seo --ref main",
