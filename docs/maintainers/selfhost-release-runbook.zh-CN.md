@@ -31,6 +31,44 @@ GET /accounts/{account_id}/builds/workers/{worker_tag}/triggers
 
 DNS 的公开解析可用 DNS-over-HTTPS 查询并保存，避免本机代理的 Fake-IP 被当成真实解析。公开 A/AAAA 结果不是控制台 DNS 记录的完整备份：它不包含 record ID、原始 CNAME 目标及代理设置。应与 Worker custom-domain 配置分开记录。
 
+### 在 Cloudflare 中配置本实例的自动发布
+
+先在现有 `open-seo-selfhost` 上关联仓库；`open-seo-selfhost-audit` 由同一 Alchemy stack 管理，不另配一条并行发布链路。配置完成并验收前，打开“禁用构建”、关闭“启用预览构建”。
+
+| 表单项          | 值                                             |
+| --------------- | ---------------------------------------------- |
+| Git 账户 / 仓库 | 自己的 fork，例如 `zeos3154/open-seo`          |
+| 生产分支        | `main`                                         |
+| 路径            | `/`                                            |
+| 构建命令        | `pnpm selfhost:prepare-build && pnpm ci:check` |
+| 部署命令        | `pnpm deploy:selfhost --yes`                   |
+| 预览构建        | 初期关闭；预览需要单独隔离的资源和 Access 配置 |
+| 构建是否启用    | 全部配置及发布准备通过后再启用                 |
+
+构建环境使用 Node 24（例如构建变量 `NODE_VERSION=24`）以及仓库 `packageManager` 锁定的 pnpm 版本。部署命令会完成自托管生产构建，不需要再填默认的 `pnpm run build`。
+
+在**构建变量和机密**中配置：
+
+- `CLOUDFLARE_ACCOUNT_ID`：现有实例所在账号 ID，普通变量。
+- `OPENSEO_SELFHOST_ENV_B64`：原 `.env.selfhost` 完整字节的 base64，必须设为加密 Secret。它包含运行密钥；base64 本身不是加密。不要使用模板文件替代现有配置，不要放进 Git。
+- 构建环境的部署凭据：必须供 Alchemy 读取到 `CLOUDFLARE_API_TOKEN`。平台默认 build token 是否已经注入、权限是否足够，需要在首次部署前核对。
+
+在可信本机终端复制原配置的 base64 到剪贴板，不向终端或聊天输出密钥：
+
+```sh
+base64 < .env.selfhost | tr -d '\n' | pbcopy
+```
+
+将剪贴板内容粘贴进上述**构建 Secret**。`selfhost:prepare-build` 在全新构建机恢复权限为 `600` 的 `.env.selfhost`；遇到不同的既有文件会拒绝覆盖。它保留原始字节，拒绝 `hosted`/`local_noauth` 的生产配置，不打印变量值。它只准备配置，不做备份或发布。
+
+Alchemy 在新构建机还需连接原有的 `alchemy-state-store`；沿用 `open-seo/selfhost`，不能换 stage 或重新 bootstrap。当前锁定版本首次在 CI 读取状态凭据时，会通过现有 Secrets Store 与临时 edge preview 获取状态访问令牌，因此部署凭据还要满足这条路径的权限。
+
+发布凭据至少应覆盖现有自托管 stack 实际使用的资源：Workers Scripts、D1、Workers KV、Workers R2、目标 zone 的 Workers Routes，以及 Access Apps and Policies 的更新；还需账号/zone 读取、原 Zero Trust organization 读取，以及上述 Secrets Store 状态访问路径。以当前资源计划和实际 API 权限核对，限定为当前账号和目标 zone。不要把“能上传一个 Worker”当作整个 Alchemy stack 的权限已经齐全。
+
+构建页提示缺少 `artifacts_read`/`artifacts_write`，只说明这两项尚未授权；它不是本 stack 其余权限的检测结果。预览关闭后仍应按所使用的平台功能核对令牌，不能仅补齐这两项就认为部署已经就绪。
+
+首次启用前，准备脚本必须已包含在目标 main SHA；确认原环境配置和状态能读取，备份校验通过，Alchemy 计划没有意外资源变化。这个配置尚未实现自动导出全部存储；**每次推送 main 前仍须完成第 3 节的备份**。需要把备份也放进流水线时，应先指定私有持久化位置、保留期和恢复校验，再启用无人值守发布。
+
 ## 2. 发布准入检查
 
 记录操作者、目标仓库/分支和准确 Git SHA，确认当前 Cloudflare 账号以及 Worker、D1、R2、KV 的实际 ID。不要把默认 Wrangler 配置中的 `DB` 当成已确认的生产数据库。
