@@ -74,6 +74,20 @@ Invite them from Team settings. The app copies an invitation link; the invited a
 
 MCP clients connect to `https://YOUR_WORKER_HOSTNAME/mcp` and sign in with your OpenSEO account, the same way they connect to the hosted service. Follow the [MCP setup guide](https://openseo.so/docs/mcp) with your Worker URL in place of the hosted one.
 
+## Using your own domain
+
+Use a hostname in an active Cloudflare zone in the same account, such as `seo.example.com`. Set it in `.env.selfhost` without a scheme or path:
+
+```dotenv
+SELFHOST_DOMAIN=seo.example.com
+```
+
+With `AUTH_MODE=cloudflare_access`, first add this hostname as another public destination on the existing Access application. Keep its workers.dev hostname, policies, allowed emails, and Managed OAuth settings. Both hostnames then use the same Access audience.
+
+Run `pnpm deploy:selfhost --yes`. The deploy attaches the custom domain to the existing Worker; Cloudflare manages its DNS and certificate. The workers.dev address stays available, and the existing database and storage are reused. Declare the hostname in `.env.selfhost` so later deployments retain it.
+
+OpenSEO is available at `https://seo.example.com`, and MCP clients connect to `https://seo.example.com/mcp`. Sign in again when connecting a client at the new address. Password-mode deployments use the custom hostname as their authentication URL automatically.
+
 ## Forgot a password?
 
 There is no email delivery, so an operator resets passwords from a terminal. See [Manage accounts](./SELF_HOSTING_CLOUDFLARE_OPERATIONS.md#manage-accounts).

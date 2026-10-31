@@ -333,6 +333,10 @@ export default Alchemy.Stack(
       );
     }
     const workersSubdomain = yield* readWorkersSubdomain({ required: false });
+    const selfHostDomain =
+      stage === "selfhost"
+        ? (yield* optionalVar("SELFHOST_DOMAIN")).trim()
+        : "";
 
     // Auth needs an absolute BETTER_AUTH_URL. Prod sets it explicitly;
     // previews always derive it from the deterministic worker name — a wrong
@@ -347,6 +351,8 @@ export default Alchemy.Stack(
           ),
         );
       }
+    } else if (selfHostDomain && authMode === "password") {
+      authUrl = `https://${selfHostDomain}`;
     } else if (workersSubdomain) {
       authUrl = `https://${workerName(stage)}.${workersSubdomain}`;
     } else if (authMode === "password") {
@@ -460,8 +466,11 @@ export default Alchemy.Stack(
 
     const app = yield* Cloudflare.Worker("open-seo", {
       name: workerName(stage),
-      // Prod serves the real domains; the zone is inferred from the hostname.
-      domain: prod ? ["app.openseo.so", "www.app.openseo.so"] : undefined,
+      // Declare self-host domains here so later deploys retain the binding.
+      // The zone is inferred from the hostname; workers.dev stays available.
+      domain: prod
+        ? ["app.openseo.so", "www.app.openseo.so"]
+        : selfHostDomain || undefined,
       // Prebuilt worker from `vite build` (@cloudflare/vite-plugin). The entry
       // exports the DO + WorkflowEntrypoint classes (re-exported by
       // src/server.ts), which `bundle: false` requires. Sibling chunks under
