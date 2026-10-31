@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ApiKeySettings } from "@/client/features/settings/ApiKeySettings";
+import { LanguagePreferenceRadio } from "@/client/components/LanguagePreferenceRadio";
 import { SectionHeader } from "@/client/components/PageHeader";
 import { ThemePreferenceRadio } from "@/client/components/ThemePreferenceMenuItems";
+import { useT } from "@/client/lib/i18n";
 import { everyAppAccountQueryOptions } from "@/client/features/every-app/everyAppAccountQueries";
 import { McpConnectionsSettings } from "@/client/features/settings/McpConnectionsSettings";
 import { PrivacySettings } from "@/client/features/settings/PrivacySettings";
@@ -19,16 +21,21 @@ export const Route = createFileRoute("/_app/settings/")({
 
 function PersonalSettings() {
   const isHosted = isHostedClientAuthMode();
+  const t = useT();
   // API keys need Better Auth accounts (hosted or the standalone Docker
   // edition); the analytics choices only exist on hosted.
   const hasAccounts = usesBetterAuthClient();
   return (
     <div className="space-y-10">
       <section className="space-y-3">
-        <SectionHeader title="Appearance" />
+        <SectionHeader title={t("Appearance")} />
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm">Theme</span>
+          <span className="text-sm">{t("Theme")}</span>
           <ThemePreferenceRadio />
+        </div>
+        <div className="flex items-center justify-between gap-6">
+          <span className="text-sm">{t("Interface language")}</span>
+          <LanguagePreferenceRadio />
         </div>
       </section>
 
@@ -42,9 +49,9 @@ function PersonalSettings() {
         <PrivacySettings />
       ) : (
         <section className="space-y-3">
-          <SectionHeader title="About" />
+          <SectionHeader title={t("About")} />
           <div className="flex items-center justify-between gap-6">
-            <span className="text-sm">Version</span>
+            <span className="text-sm">{t("Version")}</span>
             <span className="font-mono text-sm text-muted-foreground">
               v{version}
             </span>

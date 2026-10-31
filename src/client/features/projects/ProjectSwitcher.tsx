@@ -18,6 +18,7 @@ import {
 import { Button } from "@/client/components/ui/button";
 import { Separator } from "@/client/components/ui/separator";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { useT } from "@/client/lib/i18n";
 import type { ProjectSummary } from "./types";
 
 const SEARCH_THRESHOLD = 8;
@@ -43,6 +44,7 @@ export function ProjectSwitcher({
   const router = useRouter();
   const [creating, setCreating] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const t = useT();
   const projectsQuery = useQuery({ ...projectsQueryOptions(), enabled: ready });
   const projects = projectsQuery.data ?? [];
   const activeProject =
@@ -109,12 +111,12 @@ export function ProjectSwitcher({
       >
         <div className="flex items-stretch rounded-lg border border-sidebar-border bg-card">
           <ComboboxTrigger
-            aria-label="Switch project"
+            aria-label={t("Switch project")}
             className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-l-lg px-3 py-1.5 text-left hover:bg-accent"
           >
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-medium">
-                {activeProject?.name ?? "Select project"}
+                {activeProject?.name ?? t("Select project")}
               </span>
               {activeProject?.domain ? (
                 <span className="truncate text-xs text-muted-foreground">
@@ -130,8 +132,8 @@ export function ProjectSwitcher({
                 <Link
                   to="/p/$projectId/settings"
                   params={{ projectId: activeProject.id }}
-                  aria-label="Project settings"
-                  title="Project settings"
+                  aria-label={t("Project settings")}
+                  title={t("Project settings")}
                   onClick={() => {
                     setOpen(false);
                     onCloseDrawer?.();
@@ -149,13 +151,13 @@ export function ProjectSwitcher({
           {projects.length >= SEARCH_THRESHOLD ? (
             <ComboboxInput
               className="w-auto"
-              placeholder="Find project…"
-              aria-label="Filter projects"
+              placeholder={t("Find project…")}
+              aria-label={t("Filter projects")}
               showTrigger={false}
             />
           ) : null}
           {projects.length > 0 ? (
-            <ComboboxEmpty>No projects match.</ComboboxEmpty>
+            <ComboboxEmpty>{t("No projects match.")}</ComboboxEmpty>
           ) : null}
           <ComboboxList className="max-h-[min(60vh,21rem)]">
             {(project: ProjectSummary) => (
@@ -182,7 +184,7 @@ export function ProjectSwitcher({
               }}
             >
               <Plus className="size-4" />
-              New project
+              {t("New project")}
             </Button>
             <Button
               nativeButton={false}
@@ -199,7 +201,7 @@ export function ProjectSwitcher({
               className="justify-start"
             >
               <FolderCog className="size-4" />
-              Manage projects
+              {t("Manage projects")}
             </Button>
           </div>
         </ComboboxContent>

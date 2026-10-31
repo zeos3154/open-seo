@@ -1,4 +1,5 @@
 import { NavTab, NavTabs } from "@/client/components/NavTabs";
+import { useT } from "@/client/lib/i18n";
 
 const tabs = [
   { to: "/p/$projectId/settings" as const, label: "General", exact: true },
@@ -6,8 +7,10 @@ const tabs = [
 ];
 
 export function SettingsTabs({ projectId }: { projectId: string }) {
+  const t = useT();
+
   return (
-    <NavTabs label="Project settings sections">
+    <NavTabs label={t("Project settings sections")}>
       {tabs.map((tab) => (
         <NavTab
           key={tab.to}
@@ -15,7 +18,7 @@ export function SettingsTabs({ projectId }: { projectId: string }) {
           params={{ projectId }}
           activeOptions={{ exact: tab.exact ?? false }}
         >
-          {tab.label}
+          {t(tab.label)}
         </NavTab>
       ))}
     </NavTabs>

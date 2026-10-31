@@ -8,6 +8,7 @@ import {
   DropdownMenuRadioItem,
 } from "@/client/components/ui/dropdown-menu";
 import { type ThemePreference, useThemePreference } from "@/client/lib/theme";
+import { useT } from "@/client/lib/i18n";
 
 const THEME_OPTIONS: {
   value: ThemePreference;
@@ -19,13 +20,22 @@ const THEME_OPTIONS: {
   { value: "dark", label: "Dark", icon: <Moon /> },
 ];
 
+/** Labels are translated at render so the control follows the current locale. */
+function localizedThemeOptions(t: (key: string) => string) {
+  return THEME_OPTIONS.map((option) => ({
+    ...option,
+    label: t(option.label),
+  }));
+}
+
 /** System / Light / Dark segmented radio, shared by Settings and account menus. */
 export function ThemePreferenceRadio() {
   const { themePreference, setThemePreference } = useThemePreference();
+  const t = useT();
 
   return (
     <SegmentedToggle
-      items={THEME_OPTIONS}
+      items={localizedThemeOptions(t)}
       value={themePreference}
       onChange={setThemePreference}
     />
@@ -34,10 +44,11 @@ export function ThemePreferenceRadio() {
 
 export function ThemePreferenceDropdownItems() {
   const { themePreference, setThemePreference } = useThemePreference();
+  const t = useT();
 
   return (
     <DropdownMenuGroup>
-      <DropdownMenuLabel>Theme</DropdownMenuLabel>
+      <DropdownMenuLabel>{t("Theme")}</DropdownMenuLabel>
       <DropdownMenuRadioGroup
         value={themePreference}
         onValueChange={(value) => {
@@ -45,7 +56,7 @@ export function ThemePreferenceDropdownItems() {
           if (option) setThemePreference(option.value);
         }}
       >
-        {THEME_OPTIONS.map(({ value, label, icon }) => (
+        {localizedThemeOptions(t).map(({ value, label, icon }) => (
           <DropdownMenuRadioItem key={value} value={value}>
             {icon} {label}
           </DropdownMenuRadioItem>

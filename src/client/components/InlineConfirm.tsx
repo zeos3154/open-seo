@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 
 /**
  * Two-step delete for a list row: the trash icon swaps to an explicit
@@ -25,6 +26,7 @@ export function InlineConfirm({
   onConfirm: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
+  const t = useT();
   const size = triggerLabel ? "sm" : "xs";
 
   if (confirming) {
@@ -46,7 +48,7 @@ export function InlineConfirm({
           size={size}
           onClick={() => setConfirming(false)}
         >
-          Cancel
+          {t("Cancel")}
         </Button>
       </>
     );
