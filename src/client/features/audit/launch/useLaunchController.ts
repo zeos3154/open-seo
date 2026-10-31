@@ -23,6 +23,7 @@ import {
 } from "@/client/lib/error-messages";
 import { renderingCreditsNeededText } from "@/shared/audit-rendering";
 import { useAuditCapabilities } from "@/client/features/audit/shared";
+import { translateCurrent } from "@/client/lib/i18n";
 
 function getLaunchValidationErrors(
   value: LaunchFormValues,
@@ -101,7 +102,7 @@ export function useLaunchController({
           lighthouseStrategy: value.runLighthouse ? "auto" : "none",
           renderJavaScript: value.renderJavaScript,
         });
-        toast.success("Audit started!");
+        toast.success(translateCurrent("Audit started!"));
         onAuditStarted(result.auditId);
       } catch (error) {
         // Starting an audit refuses for credits only when the rendering hold
@@ -171,7 +172,7 @@ function useLaunchMutations({ projectId }: { projectId: string }) {
       deleteAudit({ data: { projectId, auditId } }),
     onSuccess: () => {
       void invalidateHistory();
-      toast.success("Audit deleted");
+      toast.success(translateCurrent("Audit deleted"));
     },
   });
 

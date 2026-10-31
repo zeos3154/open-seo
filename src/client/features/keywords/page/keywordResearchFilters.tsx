@@ -10,13 +10,15 @@ import {
   toggleIntentFilter,
 } from "@/client/features/keywords/keywordResearchTypes";
 import { INTENT_LABELS } from "@/client/features/keywords/components/IntentBadge";
+import { useT } from "@/client/lib/i18n";
 import type { KeywordResearchControllerState } from "./types";
 
 type FiltersForm = KeywordResearchControllerState["filtersForm"];
 
 export function FilterIntentSelect({ form }: { form: FiltersForm }) {
+  const t = useT();
   return (
-    <DataTableFilterGroup label="Intent">
+    <DataTableFilterGroup label={t("Intent")}>
       <form.Field name="intents">
         {(field) => {
           const selected = parseIntentFilter(field.state.value);
@@ -35,7 +37,7 @@ export function FilterIntentSelect({ form }: { form: FiltersForm }) {
                     )
                   }
                 >
-                  {INTENT_LABELS[intent]}
+                  {t(INTENT_LABELS[intent])}
                 </Toggle>
               ))}
             </div>
@@ -57,14 +59,15 @@ export function FilterTextInput({
   label: string;
   placeholder: string;
 }) {
+  const t = useT();
   return (
-    <DataTableFilterGroup label={label}>
+    <DataTableFilterGroup label={t(label)}>
       <form.Field name={name}>
         {(field) => (
           <Input
-            aria-label={label}
+            aria-label={t(label)}
             className="h-7"
-            placeholder={placeholder}
+            placeholder={t(placeholder)}
             value={field.state.value}
             onChange={(event) => field.handleChange(event.target.value)}
           />
@@ -87,13 +90,14 @@ export function FilterRangeInputs({
   maxName: "maxVol" | "maxCpc" | "maxKd";
   step?: string;
 }) {
+  const t = useT();
   return (
     <form.Field name={minName}>
       {(minField) => (
         <form.Field name={maxName}>
           {(maxField) => (
             <DataTableRangeFilter
-              label={title}
+              label={t(title)}
               min={{
                 step,
                 value: minField.state.value,

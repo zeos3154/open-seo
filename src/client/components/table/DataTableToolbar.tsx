@@ -4,6 +4,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { Tabs, TabsList } from "@/client/components/ui/tabs";
+import { useT } from "@/client/lib/i18n";
 
 // The parts above a `DataTable`: a tab row, a toolbar row and a collapsible
 // filter panel. The page owns the filter values and the open state.
@@ -73,12 +74,16 @@ export function DataTableFilterToggle({
   activeCount: number;
   onToggle: () => void;
 }) {
+  const t = useT();
   return (
     <Button variant="outline" size="sm" aria-expanded={open} onClick={onToggle}>
       <SlidersHorizontal data-icon="inline-start" />
-      Filters
+      {t("Filters")}
       {activeCount > 0 ? (
-        <Badge size="sm" aria-label={`${activeCount} active`}>
+        <Badge
+          size="sm"
+          aria-label={t("{count} active", { count: activeCount })}
+        >
           {activeCount}
         </Badge>
       ) : null}
@@ -95,13 +100,16 @@ export function DataTableFilterPanel({
   onReset: () => void;
   children: ReactNode;
 }) {
+  const t = useT();
   return (
     <div className="space-y-3 border-b border-border bg-foreground/[0.02] px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">Refine results</p>
+          <p className="text-sm font-semibold">{t("Refine results")}</p>
           {activeCount > 0 ? (
-            <Badge size="sm">{activeCount} active</Badge>
+            <Badge size="sm">
+              {t("{count} active", { count: activeCount })}
+            </Badge>
           ) : null}
         </div>
         <Button
@@ -111,7 +119,7 @@ export function DataTableFilterPanel({
           disabled={activeCount === 0}
         >
           <RotateCcw data-icon="inline-start" />
-          Clear all
+          {t("Clear all")}
         </Button>
       </div>
       {children}
@@ -129,12 +137,14 @@ export function DataTableFilterGroup({
   icon?: ReactNode;
   children: ReactNode;
 }) {
+  // Labels arrive as English source text from every feature; translate here.
+  const t = useT();
   return (
     <div className="space-y-2 rounded-lg border border-border bg-card p-2.5">
       <div className="flex items-center gap-2">
         {icon}
         <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-          {label}
+          {t(label)}
         </p>
       </div>
       {children}
@@ -152,20 +162,21 @@ export function DataTableRangeFilter({
   min: ComponentProps<typeof Input>;
   max: ComponentProps<typeof Input>;
 }) {
+  const t = useT();
   return (
     <DataTableFilterGroup label={label}>
       <div className="grid grid-cols-2 gap-2">
         <Input
           type="number"
-          placeholder="Min"
-          aria-label={`${label} min`}
+          placeholder={t("Min")}
+          aria-label={t("{label} min", { label: t(label) })}
           className="h-7"
           {...min}
         />
         <Input
           type="number"
-          placeholder="Max"
-          aria-label={`${label} max`}
+          placeholder={t("Max")}
+          aria-label={t("{label} max", { label: t(label) })}
           className="h-7"
           {...max}
         />

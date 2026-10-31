@@ -12,6 +12,7 @@ import {
 import { QueryState } from "@/client/components/QueryState";
 import { listReports, type ReportListItem } from "@/serverFunctions/reports";
 import { REPORT_APP_LIST_LIMIT } from "@/types/schemas/reports";
+import { useT } from "@/client/lib/i18n";
 
 export const Route = createFileRoute("/_app/p/$projectId/reports/")({
   component: ReportsPage,
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_app/p/$projectId/reports/")({
 
 function ReportsPage() {
   const { projectId } = Route.useParams();
+  const t = useT();
   const [pendingDelete, setPendingDelete] = useState<ReportListItem | null>(
     null,
   );
@@ -40,8 +42,8 @@ function ReportsPage() {
     <div className="overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl space-y-4">
         <PageHeader
-          title="Reports"
-          description="HTML reports your agents saved to this project."
+          title={t("Reports")}
+          description={t("HTML reports your agents saved to this project.")}
           actions={
             <Button
               variant="ghost"
@@ -53,7 +55,7 @@ function ReportsPage() {
                 />
               }
             >
-              Templates
+              {t("Templates")}
             </Button>
           }
         />

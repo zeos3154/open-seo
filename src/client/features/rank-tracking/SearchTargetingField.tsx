@@ -10,6 +10,7 @@ import {
   FieldSet,
 } from "@/client/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/client/components/ui/radio-group";
+import { useT } from "@/client/lib/i18n";
 
 type TargetingMode = "national" | "local";
 
@@ -30,12 +31,13 @@ export function SearchTargetingField({
   error?: string;
 }) {
   const id = useId();
+  const t = useT();
   // Warm the moment Local targeting is in play.
   usePrewarmSerpLocations(countryCode, mode === "local");
   return (
     <FieldSet className="gap-2" data-invalid={error ? true : undefined}>
       <FieldLegend variant="label" className="mb-0">
-        Search Targeting
+        {t("Search Targeting")}
       </FieldLegend>
       <RadioGroup
         value={mode}
@@ -51,39 +53,41 @@ export function SearchTargetingField({
         <Field orientation="horizontal" className="w-auto">
           <RadioGroupItem value="national" id={`${id}-national`} />
           <FieldLabel htmlFor={`${id}-national`} className="font-normal">
-            National
+            {t("National")}
           </FieldLabel>
         </Field>
         <Field orientation="horizontal" className="w-auto">
           <RadioGroupItem value="local" id={`${id}-local`} />
           <FieldLabel htmlFor={`${id}-local`} className="font-normal">
-            Local
+            {t("Local")}
           </FieldLabel>
         </Field>
       </RadioGroup>
       <FieldDescription>
         {mode === "local" ? (
           <>
-            <span className="font-medium text-success">Best for:</span> "near
-            me" queries, city/county keywords, service-area pages.
+            <span className="font-medium text-success">{t("Best for:")}</span>{" "}
+            {t('"near me" queries, city/county keywords, service-area pages.')}
           </>
         ) : (
           <>
-            Local targeting can understate rankings for non-geo-modified terms.
+            {t(
+              "Local targeting can understate rankings for non-geo-modified terms.",
+            )}
           </>
         )}
       </FieldDescription>
       {mode === "local" && (
         <>
           <FieldLabel htmlFor={`${id}-city`} className="sr-only">
-            City or region
+            {t("City or region")}
           </FieldLabel>
           <SerpLocationCombobox
             id={`${id}-city`}
             value={locationName}
             onChange={onLocationNameChange}
             countryCode={countryCode}
-            placeholder="Search cities..."
+            placeholder={t("Search cities...")}
             invalid={Boolean(error)}
           />
         </>

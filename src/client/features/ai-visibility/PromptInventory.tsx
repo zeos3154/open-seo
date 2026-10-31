@@ -11,7 +11,6 @@ import {
 } from "@/shared/ai-visibility";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { Button } from "@/client/components/ui/button";
-import { Skeleton } from "@/client/components/ui/skeleton";
 import { Spinner } from "@/client/components/ui/spinner";
 import {
   Table,
@@ -21,11 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/client/components/ui/table";
+import { useT } from "@/client/lib/i18n";
+import { PromptRate, promptHasResults } from "./PromptInventoryParts";
 import { EngineLabel } from "./EngineLabel";
 import { PromptActionsMenu } from "./PromptActions";
 import { RenameTopicDialog } from "./RenameTopicDialog";
-import { aiRate } from "./shared";
 import type { AiTrackerPatch } from "@/types/schemas/ai-visibility";
+
+export { promptHasResults } from "./PromptInventoryParts";
 
 export function PromptInventory({
   projectId,
@@ -59,6 +61,7 @@ export function PromptInventory({
   onReview: (patch: AiTrackerPatch) => void;
 }) {
   const [collapsed, setCollapsed] = useState<string[]>([]);
+  const t = useT();
   const [archiving, setArchiving] = useState<{
     kind: "prompt" | "topic";
     name: string;
@@ -71,7 +74,7 @@ export function PromptInventory({
   if (!prompts.some(matches))
     return (
       <p className="p-8 text-center text-sm text-muted-foreground">
-        No matching prompts. Add prompts or adjust your search.
+        {t("No matching prompts. Add prompts or adjust your search.")}
       </p>
     );
   return (
@@ -79,12 +82,12 @@ export function PromptInventory({
       <Table className="min-w-[900px]">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-full">Prompts by topic</TableHead>
-            <TableHead>Engines</TableHead>
-            <TableHead>Brand mentions</TableHead>
-            <TableHead>Owned citations</TableHead>
+            <TableHead className="w-full">{t("Prompts by topic")}</TableHead>
+            <TableHead>{t("Engines")}</TableHead>
+            <TableHead>{t("Brand mentions")}</TableHead>
+            <TableHead>{t("Owned citations")}</TableHead>
             <TableHead>
-              <span className="sr-only">Manage tracking</span>
+              <span className="sr-only">{t("Manage tracking")}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -120,9 +123,10 @@ export function PromptInventory({
                     <span className="inline-flex items-center gap-2">
                       {topic}
                       <span className="text-xs font-normal text-muted-foreground">
-                        {shownPrompts.length}{" "}
-                        {shownPrompts.length === 1 ? "prompt" : "prompts"}
-                        {paused ? " · Paused" : ""}
+                        {t("{count} prompts", {
+                          count: shownPrompts.length,
+                        })}
+                        {paused ? t(" · Paused") : ""}
                       </span>
                     </span>
                   </Button>
@@ -140,7 +144,7 @@ export function PromptInventory({
                 <TableCell>
                   <div className="flex justify-end">
                     <PromptActionsMenu
-                      label={`Actions for topic ${topic}`}
+                      label={t("Actions for topic {name}", { name: topic })}
                       kind="topic"
                       paused={paused}
                       scheduled={scheduled}
@@ -205,11 +209,11 @@ export function PromptInventory({
                         <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                           {running && <Spinner className="size-3" />}
                           {running
-                            ? "Collecting answers"
+                            ? t("Collecting answers")
                             : prompt.paused
-                              ? "Paused"
-                              : "Active"}{" "}
-                          · {prompt.branded ? "Branded" : "Non-branded"}
+                              ? t("Paused")
+                              : t("Active")}{" "}
+                          · {prompt.branded ? t("Branded") : t("Non-branded")}
                         </p>
                       </TableCell>
                       <TableCell className={dim}>
@@ -242,7 +246,9 @@ export function PromptInventory({
                       <TableCell>
                         <div className="flex justify-end">
                           <PromptActionsMenu
-                            label={`Actions for ${prompt.text}`}
+                            label={t("Actions for {name}", {
+                              name: prompt.text,
+                            })}
                             kind="prompt"
                             paused={prompt.paused}
                             scheduled={scheduled}
@@ -299,8 +305,10 @@ export function PromptInventory({
       )}
       {archiving && (
         <ConfirmDialog
-          title={`Archive ${archiving.kind}?`}
-          confirmLabel="Archive"
+          title={t("Archive {kind}?", {
+            kind: archiving.kind === "topic" ? t("topic") : t("prompt"),
+          })}
+          confirmLabel={t("Archive")}
           destructive
           onConfirm={() => {
             onReduce({ archivePromptIds: archiving.promptIds });
@@ -309,67 +317,16 @@ export function PromptInventory({
           onClose={() => setArchiving(null)}
         >
           {archiving.kind === "topic"
-            ? `This stops tracking every prompt in "${archiving.name}".`
-            : `This stops tracking "${archiving.name}".`}{" "}
-          You can't view archived prompts yet. Their answer history is kept and
-          returns if you add the same prompt again.
+            ? t('This stops tracking every prompt in "{name}".', {
+                name: archiving.name,
+              })
+            : t('This stops tracking "{name}".', { name: archiving.name })}{" "}
+          {t(
+            "You can't view archived prompts yet. Their answer history is kept and returns if you add the same prompt again.",
+          )}
         </ConfirmDialog>
       )}
     </>
-  );
-}
-
-/**
- * The tracker state knows earlier runs; answers arriving in the current run
- * unlock a prompt before the state refreshes.
- */
-export function promptHasResults(
-  prompt: AiPrompt,
-  rows: AiObservationRow[] | undefined,
-) {
-  return (
-    prompt.hasResults ||
-    !!rows?.some(
-      (row) => row.promptId === prompt.id && row.answerStatus === "answered",
-    )
-  );
-}
-
-function PromptRate({
-  rows,
-  kind,
-  loading,
-}: {
-  rows: AiObservationRow[] | undefined;
-  kind: "mentioned" | "cited";
-  loading: boolean;
-}) {
-  if (loading) return <Skeleton className="h-4 w-10" />;
-  const eligible =
-    rows?.filter(
-      (row) =>
-        row.answerStatus === "answered" &&
-        row.brands.some((brand) => brand.own),
-    ) ?? [];
-  const count = eligible.filter((row) =>
-    row.brands.some((brand) => brand.own && brand[kind]),
-  ).length;
-  return (
-    <span
-      className="flex flex-col text-sm tabular-nums"
-      title={
-        rows
-          ? `${count} of ${eligible.length} eligible answers`
-          : "No results available"
-      }
-    >
-      {aiRate(count, eligible.length)}
-      {eligible.length > 0 && (
-        <span className="text-xs text-muted-foreground">
-          {count} of {eligible.length}
-        </span>
-      )}
-    </span>
   );
 }
 
@@ -380,24 +337,25 @@ function EngineResult({
   engine: AiEngine;
   row: AiObservationRow | undefined;
 }) {
+  const t = useT();
   const own = row?.brands.find((brand) => brand.own);
   const result = !row
-    ? "No result available"
+    ? t("No result available")
     : row.status === "failed"
-      ? "Failed"
+      ? t("Failed")
       : row.status === "pending"
-        ? "Running"
+        ? t("Running")
         : row.answerStatus === "no_answer"
-          ? aiNoAnswerLabel(engine)
+          ? t(aiNoAnswerLabel(engine))
           : row.answerStatus !== "answered"
-            ? "Answer unavailable"
+            ? t("Answer unavailable")
             : own?.mentioned
-              ? "Mentioned"
-              : "Not mentioned";
+              ? t("Mentioned")
+              : t("Not mentioned");
   return (
     <span
       title={`${AI_ENGINE_LABELS[engine]}: ${result}`}
-      className={`inline-flex h-6 items-center text-xs ${result === "Mentioned" ? "text-success" : result === "Failed" ? "text-destructive" : "text-muted-foreground"}`}
+      className={`inline-flex h-6 items-center text-xs ${result === t("Mentioned") ? "text-success" : result === t("Failed") ? "text-destructive" : "text-muted-foreground"}`}
     >
       <EngineLabel engine={engine} />
     </span>

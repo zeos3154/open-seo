@@ -23,6 +23,7 @@ import {
   toScopeSearchParam,
   type ResearchScope,
 } from "@/shared/researchScope";
+import { useT } from "@/client/lib/i18n";
 
 type Props = {
   projectId: string;
@@ -64,6 +65,7 @@ export function BrandLookupPage({
   onSearchChange,
 }: Props) {
   const planStatus = useHostedPlanGate();
+  const t = useT();
   const [query, setQuery] = useState(initialQuery);
   // The user's explicit scope pick, or undefined to follow the input's default.
   const [scopeChoice, setScopeChoice] = useState<ResearchScope | undefined>(
@@ -99,7 +101,7 @@ export function BrandLookupPage({
   // Only grey the control once the input is clearly a brand keyword — an
   // empty box shouldn't look disabled before the user has typed anything.
   const scopeDisabledReason =
-    query.trim() !== "" && !scopeTarget ? KEYWORD_SCOPE_REASON : undefined;
+    query.trim() !== "" && !scopeTarget ? t(KEYWORD_SCOPE_REASON) : undefined;
 
   const lookupQuery = useQuery({
     queryKey: [
@@ -148,7 +150,7 @@ export function BrandLookupPage({
     if (trimmed.length > BRAND_LOOKUP_MAX_INPUT_LENGTH) {
       setValidationError({
         field: "query",
-        message: `Keep it under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
+        message: "Keep it under {max} characters",
       });
       return;
     }
@@ -163,7 +165,7 @@ export function BrandLookupPage({
     if (tooLong) {
       setValidationError({
         field: "competitors",
-        message: `Keep each competitor under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
+        message: "Keep each competitor under {max} characters",
       });
       return;
     }
@@ -205,13 +207,18 @@ export function BrandLookupPage({
 
   return (
     <ResearchPageShell
-      title="Brand Lookup"
-      description="See how AI search cites any brand name or domain."
+      title={t("Brand Lookup")}
+      description={t("See how AI search cites any brand name or domain.")}
       gate={{
-        feature: "Brand Lookup",
-        description:
+        feature: t("Brand Lookup"),
+        description: t(
           "See how ChatGPT and Google AI Overview cite any brand or domain — total mentions, sample prompts where it appears, and the pages cited alongside it.",
-        features: BRAND_LOOKUP_BULLETS,
+        ),
+        features: BRAND_LOOKUP_BULLETS.map((bullet) => ({
+          ...bullet,
+          title: t(bullet.title),
+          body: t(bullet.body),
+        })),
         alternative: (
           <PromptTrackingWithoutUpgradeButton projectId={projectId} />
         ),
@@ -265,7 +272,7 @@ export function BrandLookupPage({
           search={{ q: undefined, c: undefined, scope: undefined }}
           replace
         >
-          Recent searches
+          {t("Recent searches")}
         </BackLink>
       }
       renderResults={(result) => (
@@ -277,7 +284,7 @@ export function BrandLookupPage({
           loaded={historyLoaded}
           onRemove={removeHistoryItem}
           emptyIcon={Sparkles}
-          emptyTitle="Search a brand name or domain to see how AI cites it"
+          emptyTitle={t("Search a brand name or domain to see how AI cites it")}
           getTitle={(item) => (
             <>
               {item.query}
@@ -285,14 +292,14 @@ export function BrandLookupPage({
                   adds information the query string doesn't carry. */}
               {item.scope ? (
                 <Badge variant="secondary" className="ml-2">
-                  {RESEARCH_SCOPE_LABELS[item.scope]}
+                  {t(RESEARCH_SCOPE_LABELS[item.scope])}
                 </Badge>
               ) : null}
             </>
           )}
           getSubtitle={(item) =>
             item.competitors.length > 0
-              ? `vs ${item.competitors.join(", ")}`
+              ? t("vs {list}", { list: item.competitors.join(", ") })
               : null
           }
           renderLink={(item, props) => (

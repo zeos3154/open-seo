@@ -13,6 +13,7 @@ import {
 } from "@/shared/local-seo";
 import { LocalRankGrid, type LocalGridDisplayPoint } from "./LocalRankGrid";
 import { LocalPointResults } from "./LocalPointResults";
+import { useT } from "@/client/lib/i18n";
 import type { LocalSeoSearch } from "@/types/schemas/local-seo-search";
 
 type TrackerData = Awaited<ReturnType<typeof getLocalTracker>>;
@@ -45,6 +46,7 @@ export function LocalKeywordMap({
         : false,
   });
   const data = query.data;
+  const t = useT();
   const points: LocalGridDisplayPoint[] =
     data?.points ??
     buildLocalGrid(tracker, tracker.gridSize, tracker.spacingKm).map(
@@ -66,8 +68,8 @@ export function LocalKeywordMap({
           <h3 className="text-sm font-semibold">{keyword.keyword}</h3>
           <p className="text-xs text-muted-foreground">
             {selectedScan
-              ? `${historical ? "Saved check" : "Latest check"} · ${new Date(selectedScan.createdAt).toLocaleString()}`
-              : "Not checked yet"}
+              ? `${historical ? t("Saved check") : t("Latest check")} · ${new Date(selectedScan.createdAt).toLocaleString()}`
+              : t("Not checked yet")}
           </p>
         </div>
         {historical && (
@@ -76,7 +78,7 @@ export function LocalKeywordMap({
             variant="ghost"
             onClick={() => onSearchChange({ keyword: keyword.id })}
           >
-            Back to latest
+            {t("Back to latest")}
           </Button>
         )}
       </div>
@@ -84,7 +86,7 @@ export function LocalKeywordMap({
       {query.isError && (
         <QueryError
           error={query.error}
-          fallback="Failed to load ranking results."
+          fallback={t("Failed to load ranking results.")}
           onRetry={() => void query.refetch()}
         />
       )}
@@ -118,7 +120,9 @@ export function LocalKeywordMap({
         ) : (
           <Card className="justify-center px-6 py-0 shadow-none">
             <p className="text-center text-sm text-muted-foreground">
-              Run a check to see where this business ranks across the area.
+              {t(
+                "Run a check to see where this business ranks across the area.",
+              )}
             </p>
           </Card>
         )}

@@ -25,6 +25,7 @@ import {
   type AiAnswer,
 } from "@/shared/ai-visibility";
 import { DomainFavicon } from "./DomainFavicon";
+import { useT } from "@/client/lib/i18n";
 import {
   AiLoading,
   AiMatchBadge,
@@ -61,6 +62,7 @@ export function AnswerContent({
 
 function AnswerEvidence({ answer }: { answer: AiAnswer }) {
   const [view, setView] = useState("answer");
+  const t = useT();
   const citations = answer.sources;
   const answered = answer.observation.answerStatus === "answered";
   return (
@@ -68,9 +70,9 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
       {answer.observation.answerStatus === "no_answer" && (
         <p className="border-b px-5 py-3 text-sm text-warning border-border">
           {answer.observation.engine === "google_ai_overview"
-            ? "Google showed no AI Overview for this search."
-            : "No substantive answer was returned."}{" "}
-          This collection is excluded from visibility rates.
+            ? t("Google showed no AI Overview for this search.")
+            : t("No substantive answer was returned.")}{" "}
+          {t("This collection is excluded from visibility rates.")}
         </p>
       )}
       {answer.observation.error && (
@@ -78,18 +80,20 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
           role="alert"
           className="border-b bg-destructive/5 px-5 py-3 text-sm text-destructive border-border"
         >
-          {getStandardErrorMessage(new Error(answer.observation.error))}
+          {t(getStandardErrorMessage(new Error(answer.observation.error)))}
         </p>
       )}
       {answer.truncated && (
         <p className="border-b px-5 py-3 text-xs text-warning border-border">
-          This response was truncated. The retained evidence may be incomplete.
+          {t(
+            "This response was truncated. The retained evidence may be incomplete.",
+          )}
         </p>
       )}
       <div
         className="flex gap-2 border-b px-5 py-3 lg:hidden border-border"
         role="group"
-        aria-label="Answer view"
+        aria-label={t("Answer view")}
       >
         <Button
           size="sm"
@@ -97,7 +101,7 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
           aria-pressed={view === "answer"}
           onClick={() => setView("answer")}
         >
-          Answer
+          {t("Answer")}
         </Button>
         <Button
           size="sm"
@@ -105,7 +109,7 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
           aria-pressed={view === "citations"}
           onClick={() => setView("citations")}
         >
-          Citations ({citations.length})
+          {t("Citations ({count})", { count: citations.length })}
         </Button>
         <Button
           size="sm"
@@ -113,13 +117,13 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
           aria-pressed={view === "brands"}
           onClick={() => setView("brands")}
         >
-          Brands
+          {t("Brands")}
         </Button>
       </div>
       <div className="grid lg:grid-cols-[minmax(0,1fr)_300px]">
         <article
           className={`min-w-0 space-y-5 p-5 text-sm sm:p-6 lg:block ${view !== "answer" ? "hidden" : ""}`}
-          aria-label="AI answer"
+          aria-label={t("AI answer")}
           data-ph-mask
         >
           {answer.answerMarkdown ? (
@@ -133,15 +137,20 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
             <div className="whitespace-pre-wrap">{answer.answerText}</div>
           ) : (
             <p className="text-muted-foreground">
-              No answer was captured. Status:{" "}
-              {aiObservationStatusLabel(answer.observation.status)}. This is not
-              a negative brand result.
+              {t(
+                "No answer was captured. Status: {status}. This is not a negative brand result.",
+                {
+                  status: t(
+                    aiObservationStatusLabel(answer.observation.status),
+                  ),
+                },
+              )}
             </p>
           )}
         </article>
         <aside
           className={`min-w-0 bg-muted/20 p-4 lg:block lg:border-l border-border ${view === "answer" ? "hidden" : ""}`}
-          aria-label="Answer evidence"
+          aria-label={t("Answer evidence")}
         >
           <Tabs
             value={view === "brands" ? "brands" : "citations"}
@@ -152,14 +161,14 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
           >
             <TabsList className="hidden w-full lg:flex">
               <TabsTrigger value="citations">
-                Citations ({citations.length})
+                {t("Citations ({count})", { count: citations.length })}
               </TabsTrigger>
-              <TabsTrigger value="brands">Brands</TabsTrigger>
+              <TabsTrigger value="brands">{t("Brands")}</TabsTrigger>
             </TabsList>
             <TabsContent value="citations" className="space-y-3">
               {!citations.length && (
                 <p className="text-sm text-muted-foreground">
-                  This answer has no citations.
+                  {t("This answer has no citations.")}
                 </p>
               )}
               {citations.map((source) => (
@@ -181,12 +190,13 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
             </TabsContent>
             <TabsContent value="brands" className="space-y-3">
               <p className="text-xs text-muted-foreground">
-                Mentions appear in the answer text. Citations link to the
-                brand’s domain.
+                {t(
+                  "Mentions appear in the answer text. Citations link to the brand’s domain.",
+                )}
               </p>
               {!answer.observation.brands.length && (
                 <p className="text-sm text-muted-foreground">
-                  No brand evidence was captured.
+                  {t("No brand evidence was captured.")}
                 </p>
               )}
               {answer.observation.brands.map((brand) => {
@@ -218,7 +228,9 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
                       <Accordion>
                         <AccordionItem value="mentions">
                           <AccordionTrigger className="py-1 text-xs">
-                            Mention excerpts ({spans.length})
+                            {t("Mention excerpts ({count})", {
+                              count: spans.length,
+                            })}
                           </AccordionTrigger>
                           <AccordionContent
                             className="space-y-2 pt-2 text-xs text-muted-foreground"

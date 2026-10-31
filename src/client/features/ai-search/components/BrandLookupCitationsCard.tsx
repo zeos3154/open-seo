@@ -29,6 +29,7 @@ import {
 import { useBrandLookupFilters } from "@/client/features/ai-search/useBrandLookupFilters";
 import type { CitationTab } from "@/client/features/ai-search/brandLookupFilterTypes";
 import type { BrandLookupResult } from "@/types/schemas/ai-search";
+import { useT } from "@/client/lib/i18n";
 
 const DEFAULT_PAGES_SORT: SortingState = [{ id: "capturedVolume", desc: true }];
 const DEFAULT_QUERIES_SORT: SortingState = [
@@ -43,6 +44,7 @@ export function CitationTabsCard({
   projectId: string;
 }) {
   const [activeTab, setActiveTab] = useState<CitationTab>("queries");
+  const t = useT();
   const [pagesSort, setPagesSort] = useState<SortingState>(DEFAULT_PAGES_SORT);
   const [queriesSort, setQueriesSort] =
     useState<SortingState>(DEFAULT_QUERIES_SORT);
@@ -85,8 +87,9 @@ export function CitationTabsCard({
         targetDomain,
         projectId,
         brand,
+        t,
       }),
-    [showPagePlatform, targetDomain, projectId, brand],
+    [showPagePlatform, targetDomain, projectId, brand, t],
   );
   const queriesColumns = useMemo(
     () =>
@@ -94,8 +97,9 @@ export function CitationTabsCard({
         showPlatform: showQueryPlatform,
         projectId,
         brand,
+        t,
       }),
-    [showQueryPlatform, projectId, brand],
+    [showQueryPlatform, projectId, brand, t],
   );
 
   const pagesTable = useDataTable({
@@ -158,23 +162,25 @@ export function CitationTabsCard({
             <p className="min-w-0 break-words">
               {pagesActive ? (
                 <>
-                  {isUrlScoped
-                    ? "Cited pages within "
-                    : "Pages cited alongside "}
+                  {t(
+                    isUrlScoped
+                      ? "Cited pages within"
+                      : "Pages cited alongside",
+                  )}{" "}
                   <strong className="text-foreground">
                     {result.resolvedTarget}
                   </strong>
-                  {isUrlScoped ? "." : " in AI answers."} Prompt examples come
-                  from the fetched sample.
+                  {t(isUrlScoped ? "." : " in AI answers.")}{" "}
+                  {t("Prompt examples come from the fetched sample.")}
                 </>
               ) : (
                 <>
-                  Fetched sample of prompts whose AI answer cited{" "}
-                  {isUrlScoped ? "a page within " : null}
+                  {t("Fetched sample of prompts whose AI answer cited")}{" "}
+                  {isUrlScoped ? t("a page within") : null}{" "}
                   <strong className="text-foreground">
                     {result.resolvedTarget}
                   </strong>
-                  {isUrlScoped ? "." : " in its text or sources."}
+                  {t(isUrlScoped ? "." : " in its text or sources.")}
                 </>
               )}
             </p>
@@ -189,8 +195,8 @@ export function CitationTabsCard({
           </div>
         }
       >
-        <TabsTrigger value="queries">Queries</TabsTrigger>
-        <TabsTrigger value="pages">Cited sources</TabsTrigger>
+        <TabsTrigger value="queries">{t("Queries")}</TabsTrigger>
+        <TabsTrigger value="pages">{t("Cited sources")}</TabsTrigger>
       </DataTableTabs>
       <DataTableToolbar
         actions={
@@ -228,10 +234,12 @@ export function CitationTabsCard({
       table={pagesTable}
       empty={{
         title: isUrlScoped
-          ? `None of this domain's top cited pages fall under ${result.resolvedTarget}.`
-          : "No cited sources to show.",
+          ? t("None of this domain's top cited pages fall under {target}.", {
+              target: result.resolvedTarget,
+            })
+          : t("No cited sources to show."),
         description: isUrlScoped
-          ? "Broaden the scope to see domain-level citations."
+          ? t("Broaden the scope to see domain-level citations.")
           : undefined,
       }}
       {...tableProps}
@@ -241,10 +249,12 @@ export function CitationTabsCard({
       table={queriesTable}
       empty={{
         title: isUrlScoped
-          ? `No sampled prompts cited a page under ${result.resolvedTarget}.`
-          : "No matching queries found.",
+          ? t("No sampled prompts cited a page under {target}.", {
+              target: result.resolvedTarget,
+            })
+          : t("No matching queries found."),
         description: isUrlScoped
-          ? "Broaden the scope to see domain-level prompts."
+          ? t("Broaden the scope to see domain-level prompts.")
           : undefined,
       }}
       {...tableProps}

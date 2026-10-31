@@ -33,6 +33,7 @@ import {
 } from "@/serverFunctions/dashboard";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { usesBetterAuthClient } from "@/lib/auth-mode";
+import { useT } from "@/client/lib/i18n";
 
 export function DashboardPage({
   projectId,
@@ -43,6 +44,7 @@ export function DashboardPage({
   tab?: z.infer<typeof dashboardSiteTabSchema>;
   onTabChange: (tab: z.infer<typeof dashboardSiteTabSchema>) => void;
 }) {
+  const t = useT();
   const activationQuery = useQuery({
     queryKey: ["dashboardActivation", projectId],
     queryFn: () => getDashboardActivation({ data: { projectId } }),
@@ -165,13 +167,13 @@ export function DashboardPage({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Your website
+              {t("Your website")}
             </p>
             <h1 className="text-2xl font-semibold">
-              {activation.domain || "Dashboard"}
+              {activation.domain || t("Dashboard")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Search visibility, links and site health in one place.
+              {t("Search visibility, links and site health in one place.")}
             </p>
           </div>
           <Button
@@ -180,7 +182,7 @@ export function DashboardPage({
             render={<Link to="/p/$projectId/settings" params={{ projectId }} />}
           >
             <Settings />
-            Project settings
+            {t("Project settings")}
           </Button>
         </div>
 
@@ -223,12 +225,12 @@ export function DashboardPage({
           }}
           className="gap-4"
         >
-          <TabsList aria-label="Your website dashboard" className="h-9">
+          <TabsList aria-label={t("Your website dashboard")} className="h-9">
             {(
               [
-                ["overview", "Overview"],
-                ["keywords", "Keywords"],
-                ["backlinks", "Backlinks"],
+                ["overview", t("Overview")],
+                ["keywords", t("Keywords")],
+                ["backlinks", t("Backlinks")],
               ] as const
             ).map(([value, label]) => (
               <TabsTrigger key={value} value={value} className="px-3">
@@ -269,8 +271,10 @@ export function DashboardPage({
               <EmptyState
                 variant="card"
                 icon={Link2}
-                title="See who links to your website"
-                description="Add your website to track new and lost backlinks and the sites sending them."
+                title={t("See who links to your website")}
+                description={t(
+                  "Add your website to track new and lost backlinks and the sites sending them.",
+                )}
                 action={
                   <Button
                     nativeButton={false}
@@ -281,7 +285,7 @@ export function DashboardPage({
                       />
                     }
                   >
-                    Add your website
+                    {t("Add your website")}
                   </Button>
                 }
               />

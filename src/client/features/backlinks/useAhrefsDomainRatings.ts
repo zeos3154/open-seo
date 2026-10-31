@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { chunk, unique } from "remeda";
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent } from "@/client/lib/i18n";
 import { getAhrefsDomainRatings } from "@/serverFunctions/ahrefs";
 
 /** Map of domain (as held in table rows) → Ahrefs DR, or null when unknown. */
@@ -47,7 +48,9 @@ export function useAhrefsDomainRatings(projectId: string) {
       } catch (error) {
         // Opt-in convenience feature — surface partial results, don't crash.
         toast.error(
-          getStandardErrorMessage(error, "Could not load Ahrefs DR."),
+          translateCurrent(
+            getStandardErrorMessage(error, "Could not load Ahrefs DR."),
+          ),
         );
       } finally {
         if (Object.keys(fetched).length > 0) {

@@ -23,6 +23,7 @@ import {
 } from "@/client/features/integrations/googleProviders";
 import { useGooglePickerResume } from "@/client/features/integrations/useGooglePickerResume";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 
 /**
  * Connects one project to Search Console or Google Analytics: link a Google
@@ -46,6 +47,7 @@ export function GoogleConnectionCard({
   const config = googleProviders[provider];
   const { Logo } = config;
   const queryClient = useQueryClient();
+  const t = useT();
   const { picking, setPicking, linkAccount, linking } = useGooglePickerResume(
     provider,
     projectId,
@@ -108,7 +110,9 @@ export function GoogleConnectionCard({
         (current: GoogleConnection | undefined) =>
           current ? { ...current, ...saved } : current,
       );
-      toast.success(`${config.name} connected`);
+      toast.success(
+        translateCurrent("{name} connected", { name: config.name }),
+      );
       afterChange();
     },
   });
@@ -116,7 +120,11 @@ export function GoogleConnectionCard({
     meta: { errorToast: false },
     mutationFn: () => config.disconnect(projectId),
     onSuccess: () => {
-      toast.success(`${config.name} disconnected from this project`);
+      toast.success(
+        translateCurrent("{name} disconnected from this project", {
+          name: config.name,
+        }),
+      );
       queryClient.setQueryData(
         connectionKey,
         (current: GoogleConnection | undefined) =>
@@ -138,7 +146,7 @@ export function GoogleConnectionCard({
       onClick={onDismiss}
       disabled={dismissing || changingConnection}
     >
-      Dismiss
+      {t("Dismiss")}
     </Button>
   ) : null;
   const handleConnect = () => void linkAccount(window.location.href);
@@ -166,7 +174,7 @@ export function GoogleConnectionCard({
       {connectionQuery.isPending ? (
         <div
           role="status"
-          aria-label="Loading connection"
+          aria-label={t("Loading connection")}
           className="space-y-3"
         >
           <Skeleton className="h-4 w-2/3" />
@@ -216,7 +224,7 @@ export function GoogleConnectionCard({
             onSave={() => selection && setPropertyMutation.mutate(selection)}
             saving={setPropertyMutation.isPending}
             secondaryAction={{
-              label: "Cancel",
+              label: t("Cancel"),
               disabled: setPropertyMutation.isPending,
               onClick: () => {
                 setPicking(false);
@@ -244,14 +252,16 @@ export function GoogleConnectionCard({
       )}
       {setPropertyMutation.isError || disconnectMutation.isError ? (
         <p role="alert" className="mt-3 text-sm text-destructive">
-          {getStandardErrorMessage(
-            setPropertyMutation.error ?? disconnectMutation.error,
+          {t(
+            getStandardErrorMessage(
+              setPropertyMutation.error ?? disconnectMutation.error,
+            ),
           )}
         </p>
       ) : null}
       {connectionQuery.isSuccess && !needsGoogleOAuthSetup && !canManage ? (
         <PermissionHint
-          action="change this project's connection"
+          action={t("change this project's connection")}
           className="mt-3"
         />
       ) : null}
@@ -266,16 +276,17 @@ function ConnectionStatusPill({
   connected: boolean;
   setupRequired: boolean;
 }) {
+  const t = useT();
   return (
     <Badge
       variant={connected ? "success" : setupRequired ? "warning" : "outline"}
     >
       <span className="size-1.5 rounded-full bg-current" />
       {connected
-        ? "Connected"
+        ? t("Connected")
         : setupRequired
-          ? "Setup required"
-          : "Not connected"}
+          ? t("Setup required")
+          : t("Not connected")}
     </Badge>
   );
 }

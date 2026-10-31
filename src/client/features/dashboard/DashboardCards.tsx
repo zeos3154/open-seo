@@ -33,6 +33,7 @@ import {
   TableRow,
 } from "@/client/components/ui/table";
 import type { DashboardAuditSummary } from "@/server/features/dashboard/services/DashboardService";
+import { useT } from "@/client/lib/i18n";
 
 // Plain string-keyed view of the registry: issue types from the DB are not
 // statically guaranteed to be registry keys.
@@ -49,6 +50,7 @@ export function GscCard({
   connected: boolean;
   siteUrl: string | null;
 }) {
+  const t = useT();
   const reportQuery = useQuery({
     queryKey: ["dashboardGscReport", projectId, siteUrl],
     queryFn: () =>
@@ -72,7 +74,7 @@ export function GscCard({
 
   return (
     <CardShell
-      title="Google Search Console Performance"
+      title={t("Google Search Console Performance")}
       icon={<GoogleSearchConsoleLogo className="size-5" />}
       action={
         <Link
@@ -80,16 +82,16 @@ export function GscCard({
           params={{ projectId }}
           className={moreDetailsClass}
         >
-          View GSC insights →
+          {t("View GSC insights →")}
         </Link>
       }
     >
       <p className="mb-4 text-sm font-medium text-muted-foreground">
-        Last 28 days
+        {t("Last 28 days")}
       </p>
       {reportQuery.isError ? (
         <p className="text-sm text-muted-foreground">
-          Couldn&rsquo;t load Search Console data. Try again shortly.
+          {t("Couldn't load Search Console data. Try again shortly.")}
         </p>
       ) : !report ? (
         <MetricsTableSkeleton />
@@ -97,15 +99,15 @@ export function GscCard({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Metric</TableHead>
-              <TableHead className="text-right">Value</TableHead>
-              <TableHead className="text-right">Change</TableHead>
+              <TableHead>{t("Metric")}</TableHead>
+              <TableHead className="text-right">{t("Value")}</TableHead>
+              <TableHead className="text-right">{t("Change")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {[
               {
-                label: "Clicks",
+                label: t("Clicks"),
                 value: formatCount(report.totals.clicks),
                 change: percentChange(
                   report.totals.clicks,
@@ -113,7 +115,7 @@ export function GscCard({
                 ),
               },
               {
-                label: "Impressions",
+                label: t("Impressions"),
                 value: formatCount(report.totals.impressions),
                 change: percentChange(
                   report.totals.impressions,
@@ -121,12 +123,12 @@ export function GscCard({
                 ),
               },
               {
-                label: "Click-through rate",
+                label: t("Click-through rate"),
                 value: formatCtr(report.totals.ctr),
                 change: null,
               },
               {
-                label: "Average position",
+                label: t("Average position"),
                 value: formatPosition(report.totals.position),
                 change: null,
               },
@@ -178,19 +180,23 @@ export function AuditHealthCard({
       }),
     meta: { errorToast: false },
   });
+  const t = useT();
   if (!audit)
     return (
-      <CardShell title="Site health">
+      <CardShell title={t("Site health")}>
         <div className="flex flex-1 flex-col items-center justify-center gap-3 py-6 text-center">
           <ScanSearch className="size-7 text-muted-foreground" />
-          <h3 className="font-medium">Find what's holding your website back</h3>
+          <h3 className="font-medium">
+            {t("Find what's holding your website back")}
+          </h3>
           <p className="max-w-sm text-sm text-muted-foreground">
-            Scan up to 50 pages for broken links, missing titles and pages
-            Google can't index.
+            {t(
+              "Scan up to 50 pages for broken links, missing titles and pages Google can't index.",
+            )}
           </p>
           {domain ? (
             <Button disabled={scan.isPending} onClick={() => scan.mutate()}>
-              {scan.isPending ? "Starting scan…" : "Scan my website"}
+              {scan.isPending ? t("Starting scan…") : t("Scan my website")}
             </Button>
           ) : (
             <Button
@@ -199,7 +205,7 @@ export function AuditHealthCard({
                 <Link to="/p/$projectId/settings" params={{ projectId }} />
               }
             >
-              Add your website
+              {t("Add your website")}
             </Button>
           )}
           {scan.isError && (
@@ -223,7 +229,7 @@ export function AuditHealthCard({
     // not the same as a healthy site, so show progress instead.
     return (
       <CardShell
-        title="Site health"
+        title={t("Site health")}
         action={
           <Link
             to="/p/$projectId/audit"
@@ -231,7 +237,7 @@ export function AuditHealthCard({
             search={{ auditId: audit.id }}
             className={moreDetailsClass}
           >
-            View progress
+            {t("View progress")}
           </Link>
         }
       >
@@ -239,27 +245,34 @@ export function AuditHealthCard({
           <LoaderCircle className="size-7 animate-spin text-muted-foreground" />
           <h3 className="font-medium">
             {isLighthouse
-              ? "Running Lighthouse checks"
+              ? t("Running Lighthouse checks")
               : isFinalizing
-                ? "Preparing your results"
+                ? t("Preparing your results")
                 : audit.currentPhase === "discovery"
-                  ? "Finding pages to scan"
-                  : "Scanning your website"}
+                  ? t("Finding pages to scan")
+                  : t("Scanning your website")}
           </h3>
           {!isFinalizing && (
             <Progress
               className="w-full max-w-xs"
               value={checked}
               max={total || 1}
-              aria-label={isLighthouse ? "Lighthouse checks" : "Pages crawled"}
+              aria-label={
+                isLighthouse ? t("Lighthouse checks") : t("Pages crawled")
+              }
             />
           )}
           <p className="text-sm text-muted-foreground tabular-nums">
             {isLighthouse
-              ? `${checked} of ${total} checks${audit.lighthouseFailed > 0 ? ` (${audit.lighthouseFailed} failed)` : ""}`
+              ? `${t("{checked} of {total} checks", { checked, total })}${audit.lighthouseFailed > 0 ? t(" ({failed} failed)", { failed: audit.lighthouseFailed }) : ""}`
               : isFinalizing
-                ? `${audit.pagesCrawled} pages crawled. Finishing your report.`
-                : `${checked} of up to ${total} pages crawled`}
+                ? t("{count} pages crawled. Finishing your report.", {
+                    count: audit.pagesCrawled,
+                  })
+                : t("{checked} of up to {total} pages crawled", {
+                    checked,
+                    total,
+                  })}
           </p>
         </div>
       </CardShell>
@@ -268,7 +281,7 @@ export function AuditHealthCard({
 
   return (
     <CardShell
-      title="Site health"
+      title={t("Site health")}
       action={
         <Link
           to="/p/$projectId/audit"
@@ -276,53 +289,60 @@ export function AuditHealthCard({
           search={{ auditId: audit.id, tab: "issues" }}
           className={moreDetailsClass}
         >
-          Review issues
+          {t("Review issues")}
         </Link>
       }
     >
       {audit.status === "failed" && (
         <p className="mb-4 text-sm text-destructive">
-          The latest scan didn’t finish. Review the results or try again.
+          {t("The latest scan didn’t finish. Review the results or try again.")}
         </p>
       )}
       {audit.status === "completed" && (
         <p className="mb-4 text-sm text-muted-foreground">
-          {audit.pagesCrawled} pages checked · {formatDay(audit.startedAt)}
+          {t("{count} pages checked · {date}", {
+            count: audit.pagesCrawled,
+            date: formatDay(audit.startedAt),
+          })}
         </p>
       )}
       {audit.topIssues.length === 0 ? (
         audit.status === "completed" ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Check className="size-4 text-success" />
-            No issues found — your site looks healthy.
+            {t("No issues found — your site looks healthy.")}
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Run the audit again to see issues.
+            {t("Run the audit again to see issues.")}
           </p>
         )
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Issue</TableHead>
-              <TableHead>Severity</TableHead>
-              <TableHead className="text-right">Pages affected</TableHead>
+              <TableHead>{t("Issue")}</TableHead>
+              <TableHead>{t("Severity")}</TableHead>
+              <TableHead className="text-right">
+                {t("Pages affected")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {audit.topIssues.map((issue) => (
               <TableRow key={issue.issueType}>
                 <TableCell>
-                  {issueTitles[issue.issueType] ?? issue.issueType}
+                  {issueTitles[issue.issueType]
+                    ? t(issueTitles[issue.issueType]!)
+                    : issue.issueType}
                 </TableCell>
                 <TableCell>
                   <SeverityBadge severity={issue.severity}>
                     {issue.severity === "critical"
-                      ? "Critical"
+                      ? t("Critical")
                       : issue.severity === "warning"
-                        ? "Warning"
-                        : "Info"}
+                        ? t("Warning")
+                        : t("Info")}
                   </SeverityBadge>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">

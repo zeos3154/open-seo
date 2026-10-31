@@ -6,6 +6,7 @@ import {
   AlertTitle,
 } from "@/client/components/ui/alert";
 import { isEveryAppClientAuthMode } from "@/lib/auth-mode";
+import { useT } from "@/client/lib/i18n";
 
 const EVERY_APP_GOOGLE_SETUP_URL =
   "https://everyapp.com/docs/providers/google#connect-accounts";
@@ -17,17 +18,19 @@ export function GoogleOAuthSetupWarning({
   integrationName: string;
   docsUrl: string;
 }) {
+  const t = useT();
   if (isEveryAppClientAuthMode()) {
     // Google connects through the gateway, which holds the Google client;
     // OpenSEO holds none here (server/features/google/googleAccess.ts).
     return (
       <Alert variant="info">
         <Info className="size-4" />
-        <AlertTitle>Add Google to Every App first</AlertTitle>
+        <AlertTitle>{t("Add Google to Every App first")}</AlertTitle>
         <AlertDescription>
           <p>
-            An owner or admin does this once: create a Google OAuth client with
-            the redirect URI{" "}
+            {t(
+              "An owner or admin does this once: create a Google OAuth client with the redirect URI",
+            )}{" "}
             <code>
               https://&lt;your gateway&gt;/connect/google-workspace/callback
             </code>
@@ -37,11 +40,13 @@ export function GoogleOAuthSetupWarning({
               pnpm everyapp secret set GOOGLE_WORKSPACE_CLIENT_ID
               GOOGLE_WORKSPACE_CLIENT_SECRET
             </code>
-            . Then connect {integrationName} here.
+            {t(". Then connect")}
+            {integrationName}
+            {t("here.")}
           </p>
           <SafeExternalLink
             url={EVERY_APP_GOOGLE_SETUP_URL}
-            label="How to add a provider"
+            label={t("How to add a provider")}
             className="inline-flex items-center gap-1 font-medium underline underline-offset-2"
           />
         </AlertDescription>
@@ -51,15 +56,17 @@ export function GoogleOAuthSetupWarning({
   return (
     <Alert variant="warning">
       <AlertTriangle className="size-4" />
-      <AlertTitle>Google OAuth client not configured</AlertTitle>
+      <AlertTitle>{t("Google OAuth client not configured")}</AlertTitle>
       <AlertDescription>
         <p>
-          Add your Google client ID and secret to this OpenSEO deployment before
-          connecting {integrationName}.
+          {t(
+            "Add your Google client ID and secret to this OpenSEO deployment before connecting {name}.",
+            { name: integrationName },
+          )}
         </p>
         <SafeExternalLink
           url={docsUrl}
-          label="Open setup guide"
+          label={t("Open setup guide")}
           className="inline-flex items-center gap-1 font-medium underline underline-offset-2"
         />
       </AlertDescription>

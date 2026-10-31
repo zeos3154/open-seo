@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/client/components/ui/table";
 import { LocalPointStatus } from "@/shared/local-seo";
+import { useT } from "@/client/lib/i18n";
 import type { LocalGridDisplayPoint } from "./LocalRankGrid";
 
 type PointResult = Awaited<ReturnType<typeof getLocalScan>>["results"][number];
@@ -34,12 +35,13 @@ export function LocalPointResults({
   gridSize: number;
   spacingKm: number;
 }) {
+  const t = useT();
   return (
     <Card className="h-full min-h-0 min-w-0 gap-0 overflow-hidden py-0 shadow-none">
       <CardHeader className="shrink-0 items-center gap-2 px-4 py-3">
-        <CardTitle className="text-sm">Results</CardTitle>
+        <CardTitle className="text-sm">{t("Results")}</CardTitle>
         <CardAction className="row-span-1 self-center text-xs text-muted-foreground">
-          {searchedFrom(point, gridSize, spacingKm)}
+          {searchedFrom(point, gridSize, spacingKm, t)}
         </CardAction>
       </CardHeader>
       <div className="min-h-0 flex-1 overflow-y-auto border-t border-border">
@@ -48,28 +50,32 @@ export function LocalPointResults({
             variant="plain"
             title={
               point.status === LocalPointStatus.Pending
-                ? "Search pending"
-                : "Search failed"
+                ? t("Search pending")
+                : t("Search failed")
             }
             description={
               point.status === LocalPointStatus.Pending
-                ? "The saved scan will update when results arrive."
-                : "This point has no ranking result. Other points remain available."
+                ? t("The saved scan will update when results arrive.")
+                : t(
+                    "This point has no ranking result. Other points remain available.",
+                  )
             }
           />
         ) : results.length === 0 ? (
           <EmptyState
             variant="plain"
-            title="No listings returned"
-            description="Google Maps returned no businesses at this coordinate."
+            title={t("No listings returned")}
+            description={t(
+              "Google Maps returned no businesses at this coordinate.",
+            )}
           />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Rank</TableHead>
-                <TableHead>Business</TableHead>
-                <TableHead>Reviews</TableHead>
+                <TableHead>{t("Rank")}</TableHead>
+                <TableHead>{t("Business")}</TableHead>
+                <TableHead>{t("Reviews")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -111,15 +117,16 @@ function searchedFrom(
   point: LocalGridDisplayPoint,
   gridSize: number,
   spacingKm: number,
+  t: (key: string, vars?: Record<string, string | number>) => string,
 ) {
   const center = (gridSize - 1) / 2;
   const north = (center - point.row) * spacingKm;
   const east = (point.col - center) * spacingKm;
   const parts = [
-    north && `${Math.abs(north)} km ${north > 0 ? "north" : "south"}`,
-    east && `${Math.abs(east)} km ${east > 0 ? "east" : "west"}`,
+    north && `${Math.abs(north)} km ${north > 0 ? t("north") : t("south")}`,
+    east && `${Math.abs(east)} km ${east > 0 ? t("east") : t("west")}`,
   ].filter(Boolean);
   return parts.length
-    ? `Searched ${parts.join(", ")} of your listing`
-    : "Searched from your listing";
+    ? t("Searched {parts} of your listing", { parts: parts.join(", ") })
+    : t("Searched from your listing");
 }

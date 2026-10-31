@@ -5,6 +5,7 @@ import {
   updateRankTrackingConfig,
 } from "@/serverFunctions/rank-tracking";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { translateCurrent } from "@/client/lib/i18n";
 import type {
   RankCheckScheduleTime,
   RankTrackingConfig,
@@ -54,7 +55,7 @@ export function useSaveConfigMutations(input: {
       }),
     onSuccess: (result) => {
       captureClientEvent("rank_tracking:config_create");
-      toast.success("Domain added for rank tracking");
+      toast.success(translateCurrent("Domain added for rank tracking"));
       onCreated(result.id);
     },
   });
@@ -74,7 +75,7 @@ export function useSaveConfigMutations(input: {
       }),
     onSuccess: () => {
       captureClientEvent("rank_tracking:config_update");
-      toast.success("Configuration updated");
+      toast.success(translateCurrent("Configuration updated"));
       onUpdated();
     },
   });

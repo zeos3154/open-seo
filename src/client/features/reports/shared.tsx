@@ -21,6 +21,7 @@ import {
 import { Input } from "@/client/components/ui/input";
 import { Switch } from "@/client/components/ui/switch";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {
   deleteReport,
@@ -67,7 +68,7 @@ export function useDeleteReport(projectId: string, onDeleted?: () => void) {
         project_id: projectId,
         report_id: reportId,
       });
-      toast.success("Report deleted");
+      toast.success(translateCurrent("Report deleted"));
       void queryClient.invalidateQueries({
         queryKey: reportsQueryKey(projectId),
       });
@@ -93,16 +94,17 @@ export function DeleteReportModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const t = useT();
   return (
     <ConfirmDialog
-      title={`Delete \u201c${title}\u201d?`}
-      confirmLabel="Delete report"
+      title={t("Delete “{title}”?", { title })}
+      confirmLabel={t("Delete report")}
       destructive
       pending={isPending}
       onClose={onClose}
       onConfirm={onConfirm}
     >
-      This cannot be undone.
+      {t("This cannot be undone.")}
     </ConfirmDialog>
   );
 }
@@ -123,6 +125,7 @@ export function ShareReportModal({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const switchId = useId();
   const { projectId, id: reportId } = report;
   // Share and unshare in one mutation, keyed by the state the toggle is moving
@@ -158,9 +161,9 @@ export function ShareReportModal({
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copied");
+      toast.success(translateCurrent("Link copied"));
     } catch {
-      toast.error("Clipboard not available");
+      toast.error(translateCurrent("Clipboard not available"));
     }
   };
 
@@ -173,7 +176,7 @@ export function ShareReportModal({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="min-w-0 pr-8">
-          <DialogTitle>Share</DialogTitle>
+          <DialogTitle>{t("Share")}</DialogTitle>
           <DialogDescription className="truncate">
             {report.title}
           </DialogDescription>
@@ -182,11 +185,13 @@ export function ShareReportModal({
         <div className="rounded-lg border border-border">
           <Field orientation="horizontal" className="p-4">
             <FieldContent>
-              <FieldLabel htmlFor={switchId}>Public link</FieldLabel>
+              <FieldLabel htmlFor={switchId}>{t("Public link")}</FieldLabel>
               <FieldDescription id={`${switchId}-description`}>
                 {shared
-                  ? "Anyone with the link can view. No sign-in needed."
-                  : "Only members of your organization can open it. A link that was open can keep loading for up to a minute."}
+                  ? t("Anyone with the link can view. No sign-in needed.")
+                  : t(
+                      "Only members of your organization can open it. A link that was open can keep loading for up to a minute.",
+                    )}
               </FieldDescription>
             </FieldContent>
             <Switch
@@ -206,7 +211,7 @@ export function ShareReportModal({
                 <Input
                   readOnly
                   value={url}
-                  aria-label="Share link"
+                  aria-label={t("Share link")}
                   onFocus={(event) => event.target.select()}
                   className="min-w-0 flex-1 basis-64"
                 />
@@ -215,22 +220,26 @@ export function ShareReportModal({
                     variant="outline"
                     size="icon"
                     nativeButton={false}
-                    aria-label="Open link"
-                    title="Open"
+                    aria-label={t("Open link")}
+                    title={t("Open")}
                     render={<a href={url} target="_blank" rel="noreferrer" />}
                   >
                     <ExternalLink />
                   </Button>
                   <Button onClick={() => void copy()}>
                     <Copy data-icon="inline-start" />
-                    Copy link
+                    {t("Copy link")}
                   </Button>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Shows the latest saved version. Hidden from search engines.
+                {t(
+                  "Shows the latest saved version. Hidden from search engines.",
+                )}
                 {report.sharedAt
-                  ? ` Link created ${formatRelativeTime(report.sharedAt)}.`
+                  ? t(" Link created {time}.", {
+                      time: formatRelativeTime(report.sharedAt),
+                    })
                   : ""}
               </p>
             </div>
@@ -241,9 +250,11 @@ export function ShareReportModal({
             the toggle that would not move. */}
         {mutation.isError ? (
           <p className="text-sm text-destructive">
-            {getStandardErrorMessage(
-              mutation.error,
-              "Failed to update sharing",
+            {t(
+              getStandardErrorMessage(
+                mutation.error,
+                "Failed to update sharing",
+              ),
             )}
           </p>
         ) : null}

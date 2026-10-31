@@ -12,6 +12,7 @@ import {
   PaidPlanGate,
   type PaidPlanGateCopy,
 } from "@/client/features/billing/PaidPlanGate";
+import { useT } from "@/client/lib/i18n";
 
 /**
  * The frame of Brand Lookup and Prompt Explorer: header, paid-plan gate,
@@ -79,10 +80,11 @@ export function ResearchPageShell<TData>({
     onSuccessRef.current();
   }, [hasActiveQuery, query.isSuccess, historyKey]);
 
+  const t = useT();
   const isLoading = hasActiveQuery && query.isPending;
   const errorMessage =
     hasActiveQuery && query.isError
-      ? getStandardErrorMessage(query.error, errorFallback)
+      ? t(getStandardErrorMessage(query.error, errorFallback))
       : null;
   const resultData = hasActiveQuery ? query.data : undefined;
 
@@ -111,7 +113,9 @@ export function ResearchPageShell<TData>({
               cause={query.error}
               fallback={
                 resultData
-                  ? `${errorMessage} Showing earlier results.`
+                  ? t("{message} Showing earlier results.", {
+                      message: errorMessage,
+                    })
                   : errorMessage
               }
               onRetry={() => void query.refetch()}

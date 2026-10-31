@@ -5,6 +5,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Progress } from "@/client/components/ui/progress";
 import { Spinner } from "@/client/components/ui/spinner";
+import { useT } from "@/client/lib/i18n";
 import { MoreMenu } from "./ToolbarMenus";
 
 export function RankTrackingTableToolbar({
@@ -47,6 +48,7 @@ export function RankTrackingTableToolbar({
   checkDisabled: boolean;
   hasData: boolean;
 }) {
+  const t = useT();
   // Once every keyword has had its first check, a running run is retrying the
   // ones that errored or came back missing. Retries wait on DataForSEO's task
   // queue, so a full progress bar would sit there for up to an hour.
@@ -66,12 +68,12 @@ export function RankTrackingTableToolbar({
             {
               value: "table" as const,
               icon: <Table className="size-3.5" />,
-              label: "Latest",
+              label: t("Latest"),
             },
             {
               value: "history" as const,
               icon: <CalendarDays className="size-3.5" />,
-              label: "History",
+              label: t("History"),
             },
           ]}
           value={viewMode}
@@ -85,10 +87,10 @@ export function RankTrackingTableToolbar({
         aria-pressed={showFilters}
         className="aria-pressed:bg-muted aria-pressed:text-foreground"
         onClick={onToggleFilters}
-        title="Toggle table filters"
+        title={t("Toggle table filters")}
       >
         <SlidersHorizontal data-icon="inline-start" />
-        Filters
+        {t("Filters")}
         {activeFilterCount > 0 && <Badge size="sm">{activeFilterCount}</Badge>}
       </Button>
 
@@ -97,20 +99,26 @@ export function RankTrackingTableToolbar({
           <Spinner className="size-3.5 text-primary" />
           {isDoubleChecking ? (
             <span>
-              Double-checking some results. This can take up to an hour.
+              {t("Double-checking some results. This can take up to an hour.")}
             </span>
           ) : (
             <>
               <span>
                 {latestRun.status === "pending"
-                  ? "Preparing..."
-                  : `Getting rankings for ${latestRun.keywordsTotal || "?"} keyword${latestRun.keywordsTotal !== 1 ? "s" : ""}...`}{" "}
+                  ? t("Preparing...")
+                  : latestRun.keywordsTotal === 1
+                    ? t("Getting rankings for 1 keyword...", {
+                        count: latestRun.keywordsTotal,
+                      })
+                    : t("Getting rankings for {count} keywords...", {
+                        count: latestRun.keywordsTotal || "?",
+                      })}{" "}
                 {latestRun.keywordsChecked}/{latestRun.keywordsTotal || "?"}
               </span>
               {latestRun.keywordsTotal > 0 && (
                 <Progress
                   className="w-24"
-                  aria-label="Rank check progress"
+                  aria-label={t("Rank check progress")}
                   value={latestRun.keywordsChecked}
                   max={latestRun.keywordsTotal}
                 />
@@ -120,7 +128,7 @@ export function RankTrackingTableToolbar({
         </div>
       ) : (
         <span className="text-sm text-muted-foreground">
-          {keywordCount} keywords
+          {t("{count} keywords", { count: keywordCount })}
         </span>
       )}
 
@@ -128,7 +136,7 @@ export function RankTrackingTableToolbar({
 
       <ExportMenu
         actions={["sheets", "csv", "copy-list"]}
-        copyListLabel="Copy keywords"
+        copyListLabel={t("Copy keywords")}
         onExport={onExport}
         disabled={!hasData}
       />

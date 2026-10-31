@@ -38,6 +38,12 @@ import {
   SAVED_KEYWORD_PAGE_SIZES,
   toSavedKeywordSort,
 } from "@/client/features/saved-keywords/savedKeywordsUtils";
+import {
+  keywordsCopiedToast,
+  keywordsRemovedToast,
+  statsUpdatedToast,
+  tagsUpdatedToast,
+} from "@/client/features/saved-keywords/savedKeywordsToasts";
 import { useSavedKeywordsExport } from "@/client/features/saved-keywords/useSavedKeywordsExport";
 import { useSavedKeywordsFilters } from "@/client/features/saved-keywords/useSavedKeywordsFilters";
 import { useTagManage } from "@/client/features/saved-keywords/useTagManage";
@@ -54,6 +60,7 @@ import {
   removeSavedKeywords,
   updateSavedKeywordTags,
 } from "@/serverFunctions/keywords";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import type { SavedKeywordTag } from "@/types/keywords";
 import {
   savedKeywordsSearchSchema,
@@ -205,6 +212,7 @@ function SavedKeywordsPage() {
   const selectedRows = savedKeywords.filter((row) => rowSelection[row.id]);
   const selectedIds = selectedRows.map((row) => row.id);
   const selectedCount = selectedIds.length;
+  const t = useT();
 
   const selectedRowTags = useMemo<SavedKeywordTag[]>(() => {
     const map = new Map<string, SavedKeywordTag>();
@@ -236,9 +244,7 @@ function SavedKeywordsPage() {
       captureClientEvent("saved_keywords:bulk_remove", {
         count: result.deletedCount,
       });
-      toast.success(
-        `${result.deletedCount} keyword${result.deletedCount !== 1 ? "s" : ""} removed`,
-      );
+      toast.success(keywordsRemovedToast(result.deletedCount));
     },
     onError: (error) => {
       setRemoveError(getStandardErrorMessage(error, "Remove failed."));
@@ -263,9 +269,7 @@ function SavedKeywordsPage() {
       setRowSelection({});
       setShowTagModal(false);
       void invalidateSavedKeywords();
-      toast.success(
-        `Updated tags for ${result.taggedCount} keyword${result.taggedCount !== 1 ? "s" : ""}`,
-      );
+      toast.success(tagsUpdatedToast(result.taggedCount));
     },
   });
 
@@ -273,9 +277,7 @@ function SavedKeywordsPage() {
     mutationFn: () => refreshSavedKeywordMetrics({ data: { projectId } }),
     onSuccess: (result) => {
       void invalidateSavedKeywords();
-      toast.success(
-        `Updated stats for ${result.updated} keyword${result.updated !== 1 ? "s" : ""}`,
-      );
+      toast.success(statsUpdatedToast(result.updated));
     },
   });
 
@@ -326,7 +328,7 @@ function SavedKeywordsPage() {
         {savedKeywordsQuery.isError ? (
           <QueryError
             error={savedKeywordsQuery.error}
-            fallback="Failed to load saved keywords."
+            fallback={t("Failed to load saved keywords.")}
             onRetry={() => void savedKeywordsQuery.refetch()}
             isRetrying={isFetching}
           />
@@ -384,11 +386,9 @@ function SavedKeywordsPage() {
             navigator.clipboard
               .writeText(selectedRows.map((row) => row.keyword).join("\n"))
               .then(
+                () => toast.success(keywordsCopiedToast(selectedCount)),
                 () =>
-                  toast.success(
-                    `${selectedCount} keyword${selectedCount !== 1 ? "s" : ""} copied`,
-                  ),
-                () => toast.error("Could not copy to clipboard"),
+                  toast.error(translateCurrent("Could not copy to clipboard")),
               );
           }}
           onOpenTags={() => setShowTagModal(true)}

@@ -12,6 +12,7 @@ import {
   RESEARCH_SCOPE_LABELS,
   type ResearchScope,
 } from "@/shared/researchScope";
+import { useT } from "@/client/lib/i18n";
 
 type Props = {
   value: ResearchScope;
@@ -21,11 +22,6 @@ type Props = {
   className?: string;
   "aria-label"?: string;
 };
-
-const SCOPE_ITEMS = RESEARCH_SCOPES.map((scope) => ({
-  value: scope,
-  label: RESEARCH_SCOPE_LABELS[scope],
-}));
 
 /**
  * The shared research-scope selector: Exact URL / Subfolder / Domain /
@@ -40,9 +36,14 @@ export function ResearchScopeSelect({
   className,
   "aria-label": ariaLabel = "Research scope",
 }: Props) {
+  const t = useT();
+  const items = RESEARCH_SCOPES.map((scope) => ({
+    value: scope,
+    label: t(RESEARCH_SCOPE_LABELS[scope]),
+  }));
   return (
     <Select
-      items={SCOPE_ITEMS}
+      items={items}
       value={value}
       onValueChange={(scope) => {
         if (scope != null) onChange(scope);
@@ -51,8 +52,8 @@ export function ResearchScopeSelect({
     >
       <SelectTrigger
         className={className}
-        aria-label={ariaLabel}
-        title={disabledReason}
+        aria-label={t(ariaLabel)}
+        title={disabledReason === undefined ? undefined : t(disabledReason)}
       >
         <SelectValue />
       </SelectTrigger>
@@ -60,9 +61,9 @@ export function ResearchScopeSelect({
         {RESEARCH_SCOPES.map((scope) => (
           <SelectItem key={scope} value={scope} className="items-start py-1.5">
             <span className="flex flex-col whitespace-normal">
-              <span>{RESEARCH_SCOPE_LABELS[scope]}</span>
+              <span>{t(RESEARCH_SCOPE_LABELS[scope])}</span>
               <span className="text-xs text-muted-foreground">
-                {RESEARCH_SCOPE_DESCRIPTIONS[scope]}
+                {t(RESEARCH_SCOPE_DESCRIPTIONS[scope])}
               </span>
               <span className="font-mono text-xs text-muted-foreground/70">
                 {RESEARCH_SCOPE_EXAMPLES[scope]}

@@ -6,6 +6,7 @@ import { ScoreBadge } from "@/client/components/table/ScoreBadge";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
+import { useT } from "@/client/lib/i18n";
 import type { RankTrackingRow } from "@/types/schemas/rank-tracking";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import {
@@ -20,6 +21,8 @@ import type { SelectionAnchor } from "@/client/components/table/tableSelection";
 export const RANK_TRACKING_HEADER_CLASS =
   "text-xs uppercase tracking-wide text-muted-foreground";
 
+// English source text; translate at render so a locale switch updates the
+// already-mounted table.
 const HEADER_TOOLTIPS: Record<string, string> = {
   keyword: "The search term being tracked in Google",
   volume: "Estimated monthly search volume from Google",
@@ -36,18 +39,23 @@ const HEADER_TOOLTIPS: Record<string, string> = {
 // Local configs fetch volume scoped to the tracked city, so the header must
 // say which number the user is looking at — national volume can overstate
 // local demand by orders of magnitude.
-function makeVolumeColumn(locationLabel?: string): ColumnDef<RankTrackingRow> {
+function makeVolumeColumn(
+  locationLabel: string | undefined,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): ColumnDef<RankTrackingRow> {
   return {
     id: "volume",
     accessorFn: (row) => row.searchVolume ?? undefined,
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label={locationLabel ? "Local volume" : "Volume"}
+        label={locationLabel ? t("Local volume") : t("Volume")}
         title={
           locationLabel
-            ? `Estimated monthly searches in ${locationLabel} from Google Ads`
-            : HEADER_TOOLTIPS.volume
+            ? t("Estimated monthly searches in {location} from Google Ads", {
+                location: locationLabel,
+              })
+            : t(HEADER_TOOLTIPS.volume)
         }
         className={RANK_TRACKING_HEADER_CLASS}
       />
@@ -60,41 +68,49 @@ function makeVolumeColumn(locationLabel?: string): ColumnDef<RankTrackingRow> {
   };
 }
 
-const kdColumn: ColumnDef<RankTrackingRow> = {
-  id: "kd",
-  accessorFn: (row) => row.keywordDifficulty ?? undefined,
-  header: ({ column }) => (
-    <SortableHeader
-      column={column}
-      label="KD"
-      title={HEADER_TOOLTIPS.kd}
-      className={RANK_TRACKING_HEADER_CLASS}
-    />
-  ),
-  size: 70,
-  cell: ({ getValue }) => (
-    <ScoreBadge value={getValue<number | undefined>() ?? null} />
-  ),
-  sortUndefined: "last",
-};
+function makeKdColumn(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): ColumnDef<RankTrackingRow> {
+  return {
+    id: "kd",
+    accessorFn: (row) => row.keywordDifficulty ?? undefined,
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        label="KD"
+        title={t(HEADER_TOOLTIPS.kd)}
+        className={RANK_TRACKING_HEADER_CLASS}
+      />
+    ),
+    size: 70,
+    cell: ({ getValue }) => (
+      <ScoreBadge value={getValue<number | undefined>() ?? null} />
+    ),
+    sortUndefined: "last",
+  };
+}
 
-const cpcColumn: ColumnDef<RankTrackingRow> = {
-  id: "cpc",
-  accessorFn: (row) => row.cpc ?? undefined,
-  header: ({ column }) => (
-    <SortableHeader
-      column={column}
-      label="CPC"
-      title={HEADER_TOOLTIPS.cpc}
-      className={RANK_TRACKING_HEADER_CLASS}
-    />
-  ),
-  size: 80,
-  cell: ({ getValue }) => (
-    <CpcCell value={getValue<number | undefined>() ?? null} />
-  ),
-  sortUndefined: "last",
-};
+function makeCpcColumn(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): ColumnDef<RankTrackingRow> {
+  return {
+    id: "cpc",
+    accessorFn: (row) => row.cpc ?? undefined,
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        label="CPC"
+        title={t(HEADER_TOOLTIPS.cpc)}
+        className={RANK_TRACKING_HEADER_CLASS}
+      />
+    ),
+    size: 80,
+    cell: ({ getValue }) => (
+      <CpcCell value={getValue<number | undefined>() ?? null} />
+    ),
+    sortUndefined: "last",
+  };
+}
 
 // Hidden column. The table always sorts by it first, so pinned keywords stay
 // on top and each group keeps the sort the user picked.
@@ -108,6 +124,7 @@ const pinnedColumn: ColumnDef<RankTrackingRow> = {
 function makeKeywordColumn(
   onKeywordClick: (row: RankTrackingRow) => void,
   onSetPinned: (vars: { trackingKeywordId: string; pinned: boolean }) => void,
+  t: (key: string, vars?: Record<string, string | number>) => string,
 ): ColumnDef<RankTrackingRow> {
   return {
     id: "keyword",
@@ -115,8 +132,8 @@ function makeKeywordColumn(
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Keyword"
-        title={HEADER_TOOLTIPS.keyword}
+        label={t("Keyword")}
+        title={t(HEADER_TOOLTIPS.keyword)}
         className={RANK_TRACKING_HEADER_CLASS}
       />
     ),
@@ -135,7 +152,7 @@ function makeKeywordColumn(
           type="button"
           className="text-left font-medium decoration-dotted underline-offset-2 hover:underline"
           onClick={() => onKeywordClick(row.original)}
-          title="View position history"
+          title={t("View position history")}
         >
           {row.original.keyword}
         </button>
@@ -144,7 +161,7 @@ function makeKeywordColumn(
             variant="secondary"
             size="sm"
             className="cursor-help"
-            title="Tracked exactly as typed, not lowercased"
+            title={t("Tracked exactly as typed, not lowercased")}
           >
             Aa
           </Badge>
@@ -162,7 +179,8 @@ function PinButton({
   pinned: boolean;
   onClick: () => void;
 }) {
-  const label = pinned ? "Unpin keyword" : "Pin keyword to top";
+  const t = useT();
+  const label = pinned ? t("Unpin keyword") : t("Pin keyword to top");
   return (
     <Button
       variant="ghost"
@@ -182,6 +200,7 @@ function PinButton({
 
 function makeDeviceColumn(
   device: "desktop" | "mobile",
+  t: (key: string, vars?: Record<string, string | number>) => string,
 ): ColumnDef<RankTrackingRow> {
   const id = device === "desktop" ? "desktopPosition" : "mobilePosition";
   return {
@@ -190,8 +209,8 @@ function makeDeviceColumn(
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        label="Position"
-        title={HEADER_TOOLTIPS[id]}
+        label={t("Position")}
+        title={t(HEADER_TOOLTIPS[id])}
         className={RANK_TRACKING_HEADER_CLASS}
       />
     ),
@@ -205,6 +224,7 @@ function makeDeviceColumn(
 function makeUrlColumn(
   device: "desktop" | "mobile",
   domain: string,
+  t: (key: string, vars?: Record<string, string | number>) => string,
 ): ColumnDef<RankTrackingRow> {
   return {
     id: device === "desktop" ? "desktopUrl" : "mobileUrl",
@@ -212,7 +232,7 @@ function makeUrlColumn(
     header: () => (
       <span
         className="cursor-help text-xs font-medium tracking-wide uppercase text-muted-foreground"
-        title={HEADER_TOOLTIPS.url}
+        title={t(HEADER_TOOLTIPS.url)}
       >
         URL
       </span>
@@ -226,6 +246,7 @@ function makeUrlColumn(
 
 function makeSerpColumn(
   device: "desktop" | "mobile",
+  t: (key: string, vars?: Record<string, string | number>) => string,
 ): ColumnDef<RankTrackingRow> {
   return {
     id: device === "desktop" ? "desktopSerp" : "mobileSerp",
@@ -233,9 +254,9 @@ function makeSerpColumn(
     header: () => (
       <span
         className="cursor-help text-xs font-medium tracking-wide uppercase text-muted-foreground"
-        title={HEADER_TOOLTIPS.serp}
+        title={t(HEADER_TOOLTIPS.serp)}
       >
-        SERP Features
+        {t("SERP Features")}
       </span>
     ),
     cell: ({ row }) => {
@@ -267,26 +288,31 @@ export function useRankTrackingColumns(options: {
   const locationLabel = locationName
     ? formatLocationLabel(locationName, 2)
     : undefined;
+  const t = useT();
   return useMemo(() => {
     const cols: ColumnDef<RankTrackingRow>[] = [
       pinnedColumn,
       makeSelectionColumn<RankTrackingRow>(selectAnchorRef),
-      makeKeywordColumn(onKeywordClick, onSetPinned),
+      makeKeywordColumn(onKeywordClick, onSetPinned, t),
     ];
     if (showDesktop) {
-      cols.push(makeDeviceColumn("desktop"));
-      cols.push(makeUrlColumn("desktop", domain));
+      cols.push(makeDeviceColumn("desktop", t));
+      cols.push(makeUrlColumn("desktop", domain, t));
     }
     if (showMobile) {
-      cols.push(makeDeviceColumn("mobile"));
-      cols.push(makeUrlColumn("mobile", domain));
+      cols.push(makeDeviceColumn("mobile", t));
+      cols.push(makeUrlColumn("mobile", domain, t));
     }
-    cols.push(makeVolumeColumn(locationLabel), kdColumn, cpcColumn);
+    cols.push(
+      makeVolumeColumn(locationLabel, t),
+      makeKdColumn(t),
+      makeCpcColumn(t),
+    );
     if (showDesktop) {
-      cols.push(makeSerpColumn("desktop"));
+      cols.push(makeSerpColumn("desktop", t));
     }
     if (showMobile) {
-      cols.push(makeSerpColumn("mobile"));
+      cols.push(makeSerpColumn("mobile", t));
     }
     return cols;
   }, [
@@ -297,5 +323,6 @@ export function useRankTrackingColumns(options: {
     onKeywordClick,
     onSetPinned,
     locationLabel,
+    t,
   ]);
 }

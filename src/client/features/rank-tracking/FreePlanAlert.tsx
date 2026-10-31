@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
+import { useT } from "@/client/lib/i18n";
 import { SUBSCRIBE_ROUTE } from "@/shared/billing";
 
 export function FreePlanAlert({ visible }: { visible: boolean }) {
+  const t = useT();
   if (!visible) return null;
 
   return (
@@ -11,13 +13,13 @@ export function FreePlanAlert({ visible }: { visible: boolean }) {
       <AlertTriangle />
       <AlertDescription className="text-foreground">
         <p>
-          We only start to track keyword positions once you{" "}
+          {t("We only start to track keyword positions once you")}{" "}
           <Link
             to={SUBSCRIBE_ROUTE}
             search={{ upgrade: true }}
             className="font-medium underline underline-offset-3"
           >
-            upgrade to the paid plan
+            {t("upgrade to the paid plan")}
           </Link>
           .
         </p>

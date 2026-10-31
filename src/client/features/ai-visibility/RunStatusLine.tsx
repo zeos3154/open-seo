@@ -1,5 +1,6 @@
 import { Progress } from "@/client/components/ui/progress";
 import { Spinner } from "@/client/components/ui/spinner";
+import { useT } from "@/client/lib/i18n";
 import type { AiRun, AiTrackerState } from "@/shared/ai-visibility";
 import { aiDate } from "./shared";
 
@@ -12,12 +13,16 @@ export function RunStatusLine({
   tracker: AiTrackerState["tracker"];
 }) {
   const pending = run?.status === "running" || run?.status === "queued";
+  const t = useT();
   if (run && pending) {
     return (
       <div className="space-y-1.5">
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <Spinner className="size-3.5" />
-          Collecting {run.completed + run.failed} of {run.expected} answers…
+          {t("Collecting {count} of {total} answers…", {
+            count: run.completed + run.failed,
+            total: run.expected,
+          })}
         </p>
         <Progress value={run.completed + run.failed} max={run.expected || 1} />
       </div>
@@ -27,8 +32,12 @@ export function RunStatusLine({
   return (
     <p className="text-xs text-muted-foreground">
       {[
-        run && `Updated ${aiDate(run.completedAt ?? run.createdAt)}`,
-        tracker?.enabled && `Next run ${aiDate(tracker.nextCheckAt)}`,
+        run &&
+          t("Updated {time}", {
+            time: aiDate(run.completedAt ?? run.createdAt),
+          }),
+        tracker?.enabled &&
+          t("Next run {time}", { time: aiDate(tracker.nextCheckAt) }),
       ]
         .filter(Boolean)
         .join(" · ")}

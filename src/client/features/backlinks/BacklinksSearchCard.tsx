@@ -12,6 +12,7 @@ import {
   parseResearchTarget,
 } from "@/shared/researchScope";
 import type { BacklinksSearchState } from "./backlinksPageTypes";
+import { useT } from "@/client/lib/i18n";
 
 type SearchDraft = Pick<BacklinksSearchState, "target" | "scope">;
 
@@ -75,6 +76,7 @@ export function BacklinksSearchCard({
   const targetError = useStore(form.store, (state) =>
     getFieldError(state.fieldMeta.target?.errors ?? []),
   );
+  const t = useT();
 
   return (
     <SearchCard
@@ -82,14 +84,14 @@ export function BacklinksSearchCard({
         event.preventDefault();
         void form.handleSubmit();
       }}
-      error={targetError}
+      error={targetError ? t(targetError) : null}
       errorId="backlinks-target-error"
     >
       <form.Field name="target">
         {(field) => (
           <SearchInput
-            placeholder="Enter a domain or URL"
-            aria-label="Domain or URL"
+            placeholder={t("Enter a domain or URL")}
+            aria-label={t("Domain or URL")}
             value={field.state.value}
             onChange={(event) => {
               const nextTarget = event.target.value;

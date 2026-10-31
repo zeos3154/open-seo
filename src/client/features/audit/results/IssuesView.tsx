@@ -9,6 +9,7 @@ import {
 import type { AuditResultsData } from "@/client/features/audit/results/types";
 import { SeverityBadge } from "@/client/features/audit/shared";
 import { EmptyState } from "@/client/components/EmptyState";
+import { useT } from "@/client/lib/i18n";
 
 type AuditIssueRow = AuditResultsData["issues"][number];
 
@@ -25,6 +26,9 @@ const SEVERITY_LABEL: Record<IssueSeverity, string> = {
   warning: "Warning",
   info: "Info",
 };
+
+// English labels exported for other severity renderers to translate at display.
+export { SEVERITY_LABEL };
 
 interface IssueGroup {
   issueType: string;
@@ -80,6 +84,7 @@ export function IssuesView({
   issues: AuditIssueRow[];
   tabs: ReactNode;
 }) {
+  const t = useT();
   const groups = useMemo(() => groupIssues(issues), [issues]);
 
   const sections = useMemo(
@@ -99,8 +104,8 @@ export function IssuesView({
       {issues.length === 0 ? (
         <EmptyState
           variant="plain"
-          title="No issues found."
-          description="Every crawled page passed the issue checks."
+          title={t("No issues found.")}
+          description={t("Every crawled page passed the issue checks.")}
         />
       ) : (
         <div>
@@ -118,6 +123,7 @@ function IssueSection({
 }: {
   section: { severity: IssueSeverity; groups: IssueGroup[] };
 }) {
+  const t = useT();
   const issueCount = section.groups.reduce(
     (sum, group) => sum + group.issues.length,
     0,
@@ -127,7 +133,7 @@ function IssueSection({
     <div className="border-t border-border first:border-t-0">
       <div className="flex items-center gap-2 bg-muted/50 px-4 py-1.5 border-b border-border">
         <SeverityBadge severity={section.severity}>
-          {SEVERITY_LABEL[section.severity]}
+          {t(SEVERITY_LABEL[section.severity])}
           <span className="tabular-nums">{issueCount}</span>
         </SeverityBadge>
       </div>
@@ -142,6 +148,7 @@ function IssueSection({
 
 function IssueRow({ group }: { group: IssueGroup }) {
   const [open, setOpen] = useState(false);
+  const t = useT();
 
   return (
     <div
@@ -158,10 +165,12 @@ function IssueRow({ group }: { group: IssueGroup }) {
         aria-expanded={open}
       >
         <span className="text-sm font-medium flex-1 min-w-0 truncate">
-          {group.title}
+          {t(group.title)}
         </span>
         <span className="text-xs tabular-nums text-muted-foreground shrink-0">
-          {group.issues.length} {group.issues.length === 1 ? "page" : "pages"}
+          {group.issues.length === 1
+            ? t("1 page")
+            : t("{count} pages", { count: group.issues.length })}
         </span>
         <ChevronRight
           className={`size-4 shrink-0 text-muted-foreground transition-transform ${
@@ -174,13 +183,13 @@ function IssueRow({ group }: { group: IssueGroup }) {
         <div className="pl-4 pr-4 pb-4 pt-0.5 space-y-3">
           {group.explanation && (
             <p className="text-sm text-muted-foreground max-w-prose">
-              {group.explanation}
+              {t(group.explanation)}
             </p>
           )}
           {group.howToFix && (
             <p className="text-sm max-w-prose">
-              <span className="font-medium">How to fix: </span>
-              <span className="text-foreground/80">{group.howToFix}</span>
+              <span className="font-medium">{t("How to fix: ")}</span>
+              <span className="text-foreground/80">{t(group.howToFix)}</span>
             </p>
           )}
           <AffectedUrlList issues={group.issues} />
@@ -191,6 +200,7 @@ function IssueRow({ group }: { group: IssueGroup }) {
 }
 
 function AffectedUrlList({ issues }: { issues: AuditIssueRow[] }) {
+  const t = useT();
   const rendered = issues.slice(0, MAX_RENDERED_URLS);
   const remaining = issues.length - rendered.length;
 
@@ -215,7 +225,9 @@ function AffectedUrlList({ issues }: { issues: AuditIssueRow[] }) {
       ))}
       {remaining > 0 && (
         <div className="px-3 py-2 text-xs text-muted-foreground">
-          …and {remaining} more — export the issues CSV for the full list.
+          {t("…and {count} more — export the issues CSV for the full list.", {
+            count: remaining,
+          })}
         </div>
       )}
     </div>

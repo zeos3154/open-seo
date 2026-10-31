@@ -15,21 +15,23 @@ import {
 } from "@/client/lib/active-project";
 import { toastInitialAudit } from "@/client/features/projects/initialAuditToast";
 import { archiveProject, updateProject } from "@/serverFunctions/projects";
+import { useT } from "@/client/lib/i18n";
 import { isEveryAppClientAuthMode } from "@/lib/auth-mode";
 import type { ProjectSummary } from "./types";
 
 export function ProjectGeneralSettings({ projectId }: { projectId: string }) {
   const projectsQuery = useQuery(projectsQueryOptions());
+  const t = useT();
 
   return (
     <QueryState
       query={projectsQuery}
-      errorFallback="Failed to load the project"
+      errorFallback={t("Failed to load the project")}
     >
       {(projects) => {
         const project = projects.find((entry) => entry.id === projectId);
         if (!project) {
-          return <QueryError fallback="This project was not found." />;
+          return <QueryError fallback={t("This project was not found.")} />;
         }
         return (
           <div className="space-y-8">
@@ -51,6 +53,7 @@ const generalSchema = z.object({
 
 function GeneralSection({ project }: { project: ProjectSummary }) {
   const queryClient = useQueryClient();
+  const t = useT();
 
   const updateMutation = useMutation({
     mutationFn: (values: z.infer<typeof generalSchema>) =>
@@ -72,7 +75,7 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
       await queryClient.invalidateQueries({
         queryKey: ["dashboardOverview", project.id],
       });
-      toast.success("Project updated");
+      toast.success(t("Project updated"));
       toastInitialAudit(saved.initialAudit);
     },
   });
@@ -99,28 +102,30 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
 
   return (
     <section className="space-y-3">
-      <SectionHeader title="General" />
+      <SectionHeader title={t("General")} />
       <form.AppForm>
         <form.Form className="flex flex-col gap-4">
           <form.AppField name="name">
             {(field) => (
-              <field.TextField label="Name" maxLength={120} required />
+              <field.TextField label={t("Name")} maxLength={120} required />
             )}
           </form.AppField>
 
           <p className="text-sm text-muted-foreground">
             {isEveryAppClientAuthMode()
-              ? "Adding your website starts a 50-page site audit."
-              : "Adding your website starts a 50-page scan with JavaScript rendering. Rendering uses your credits."}
+              ? t("Adding your website starts a 50-page site audit.")
+              : t(
+                  "Adding your website starts a 50-page scan with JavaScript rendering. Rendering uses your credits.",
+                )}
           </p>
           <form.AppField name="domain">
             {(field) => (
               <field.TextField
                 label={
                   <>
-                    Domain{" "}
+                    {t("Domain")}{" "}
                     <span className="font-normal text-muted-foreground">
-                      (optional)
+                      {t("(optional)")}
                     </span>
                   </>
                 }
@@ -140,8 +145,9 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
               )}
             </form.Field>
             <span className="text-xs text-muted-foreground">
-              Keyword, SERP, and domain data uses this country and language
-              unless a call asks for a different one.
+              {t(
+                "Keyword, SERP, and domain data uses this country and language unless a call asks for a different one.",
+              )}
             </span>
           </div>
 
@@ -149,7 +155,7 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
             <form.Subscribe selector={(state) => state.isDefaultValue}>
               {(isDefaultValue) => (
                 <form.SubmitButton disabled={isDefaultValue}>
-                  Save changes
+                  {t("Save changes")}
                 </form.SubmitButton>
               )}
             </form.Subscribe>
@@ -169,6 +175,7 @@ function DangerSection({
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const t = useT();
   const archiveMutation = useMutation({
     mutationFn: () => archiveProject({ data: { projectId: project.id } }),
     onSuccess: async () => {
@@ -176,7 +183,7 @@ function DangerSection({
       await queryClient.invalidateQueries({
         queryKey: projectsQueryOptions().queryKey,
       });
-      toast.success("Project archived");
+      toast.success(t("Project archived"));
       // Re-resolve to a remaining project via the landing redirect.
       void navigate({ to: "/" });
     },
@@ -184,18 +191,20 @@ function DangerSection({
 
   return (
     <section className="space-y-3 border-t border-border pt-8">
-      <SectionHeader title="Archive project" />
+      <SectionHeader title={t("Archive project")} />
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
           {canArchive
-            ? "Archiving removes the project from your workspace and stops its scheduled rank tracking. You can restore it later from the Projects page."
-            : "You can't archive your only project."}
+            ? t(
+                "Archiving removes the project from your workspace and stops its scheduled rank tracking. You can restore it later from the Projects page.",
+              )
+            : t("You can't archive your only project.")}
         </p>
         <div className="flex shrink-0 gap-2">
           <InlineConfirm
-            label={`Archive ${project.name}`}
-            triggerLabel="Archive project"
-            confirmLabel="Yes, archive project"
+            label={t("Archive {name}", { name: project.name })}
+            triggerLabel={t("Archive project")}
+            confirmLabel={t("Yes, archive project")}
             pending={archiveMutation.isPending}
             disabled={!canArchive}
             onConfirm={() => archiveMutation.mutate()}

@@ -16,6 +16,7 @@ import {
 } from "@/types/schemas/projectContext";
 import { EditableListSection } from "./EditableListSection";
 import { Provenance, useContextUpdate, type ContextKeyPage } from "./shared";
+import { useT } from "@/client/lib/i18n";
 
 const ROLE_LABELS: Record<KeyPageRole, string> = {
   hub: "Hub page",
@@ -42,6 +43,7 @@ export function KeyPagesSection({
   projectId: string;
   keyPages: ContextKeyPage[];
 }) {
+  const t = useT();
   const update = useContextUpdate(projectId);
 
   const save = (
@@ -84,12 +86,12 @@ export function KeyPagesSection({
           <div className="flex flex-wrap items-baseline gap-x-2">
             <span className="truncate text-sm font-medium">{item.url}</span>
             <Badge variant="secondary" size="sm">
-              {ROLE_LABELS[item.role]}
+              <RoleBadgeText role={item.role} />
             </Badge>
           </div>
           {item.topic ? (
             <p className="text-sm text-muted-foreground">
-              Target: {item.topic}
+              {t("Target: {topic}", { topic: item.topic })}
             </p>
           ) : null}
           {item.notes ? (
@@ -128,6 +130,7 @@ function KeyPageForm({
     notes: initial?.notes ?? "",
   });
 
+  const t = useT();
   return (
     <form
       className="space-y-2 bg-muted/40 p-3"
@@ -143,7 +146,7 @@ function KeyPageForm({
         onChange={(event) => setDraft({ ...draft, url: event.target.value })}
         placeholder="example.com/pricing"
         maxLength={2048}
-        aria-label="Page URL"
+        aria-label={t("Page URL")}
       />
       <div className="grid gap-2 sm:grid-cols-2">
         <Select
@@ -153,7 +156,7 @@ function KeyPageForm({
             if (role !== null) setDraft({ ...draft, role });
           }}
         >
-          <SelectTrigger className="w-full" aria-label="Page role">
+          <SelectTrigger className="w-full" aria-label={t("Page role")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -169,17 +172,17 @@ function KeyPageForm({
           onChange={(event) =>
             setDraft({ ...draft, topic: event.target.value })
           }
-          placeholder="Target topic (optional)"
+          placeholder={t("Target topic (optional)")}
           maxLength={200}
-          aria-label="Target topic"
+          aria-label={t("Target topic")}
         />
       </div>
       <Input
         value={draft.notes}
         onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
-        placeholder="Notes (optional)"
+        placeholder={t("Notes (optional)")}
         maxLength={500}
-        aria-label="Page notes"
+        aria-label={t("Page notes")}
       />
       <FormActions
         pending={pending}
@@ -189,4 +192,10 @@ function KeyPageForm({
       />
     </form>
   );
+}
+
+/** Renders a known role label translated; unknown roles fall back to raw. */
+function RoleBadgeText({ role }: { role: KeyPageRole }) {
+  const t = useT();
+  return t(ROLE_LABELS[role]);
 }

@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/client/components/ui/tooltip";
 import { ProjectMarketFields } from "@/client/features/projects/ProjectMarketFields";
+import { useT } from "@/client/lib/i18n";
 import {
   AI_UNSUPPORTED_LOCATIONS,
   aiCountryLabel,
@@ -37,6 +38,7 @@ export function TrackerTrackingFields({
   // Base UI checkboxes aren't native inputs, so a disabled <fieldset> misses them.
   disabled: boolean;
 }) {
+  const t = useT();
   const country = aiCountryLabel(value.locationCode);
   const engineGroup = (
     title: string,
@@ -45,20 +47,20 @@ export function TrackerTrackingFields({
   ) => (
     <div className="space-y-3">
       <div className="flex items-center gap-1.5">
-        <h3 className="text-sm font-semibold">{title}</h3>
+        <h3 className="text-sm font-semibold">{t(title)}</h3>
         <Tooltip>
           <TooltipTrigger
             render={
               <button
                 type="button"
-                aria-label={`About ${title.toLowerCase()}`}
+                aria-label={t("About {name}", { name: t(title).toLowerCase() })}
                 className="text-muted-foreground"
               />
             }
           >
             <Info className="size-3.5" />
           </TooltipTrigger>
-          <TooltipContent>{help}</TooltipContent>
+          <TooltipContent>{t(help)}</TooltipContent>
         </Tooltip>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
@@ -105,7 +107,10 @@ export function TrackerTrackingFields({
                 )}
               </TooltipTrigger>
               <TooltipContent>
-                {capability.label} can't collect answers in {country}.
+                {t("{engine} can't collect answers in {country}.", {
+                  engine: capability.label,
+                  country,
+                })}
               </TooltipContent>
             </Tooltip>
           );

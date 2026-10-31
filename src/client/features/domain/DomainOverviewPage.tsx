@@ -49,6 +49,7 @@ import {
   type ResearchScope,
 } from "@/shared/researchScope";
 import { shouldValidateFieldOnChange } from "@/client/lib/forms";
+import { useT } from "@/client/lib/i18n";
 import { buildDomainFiltersClearSearchUpdate } from "@/client/features/domain/domainFilterUtils";
 import { captureClientEvent } from "@/client/lib/posthog";
 import type { DomainOverviewRouteState } from "@/client/features/domain/domainRouteState";
@@ -447,6 +448,7 @@ export function DomainOverviewPage({
     routeState,
     projectId,
   });
+  const t = useT();
   const urlTabInput = useMemo<SearchTabInput | null>(() => {
     if (routeState.domain.trim() === "") return null;
     return {
@@ -509,7 +511,7 @@ export function DomainOverviewPage({
   // hostname plus subdomains, so anything narrower needs a label.
   const overviewMetricsHint =
     state.overview && state.overview.scope !== "subdomains"
-      ? "Whole domain incl. subdomains"
+      ? t("Whole domain incl. subdomains")
       : undefined;
 
   const tabs = (
@@ -519,8 +521,8 @@ export function DomainOverviewPage({
         state.handleTabChange(value === "pages" ? "pages" : "keywords")
       }
     >
-      <TabsTrigger value="keywords">Top Keywords</TabsTrigger>
-      <TabsTrigger value="pages">Top Pages</TabsTrigger>
+      <TabsTrigger value="keywords">{t("Top Keywords")}</TabsTrigger>
+      <TabsTrigger value="pages">{t("Top Pages")}</TabsTrigger>
     </DataTableTabs>
   );
 
@@ -529,7 +531,7 @@ export function DomainOverviewPage({
   const overviewError = state.overviewQuery.isError ? (
     <QueryError
       error={state.overviewQuery.error}
-      fallback="Lookup failed."
+      fallback={t("Lookup failed.")}
       onRetry={() => void state.overviewQuery.refetch()}
       isRetrying={state.overviewQuery.isFetching}
     />
@@ -550,8 +552,10 @@ export function DomainOverviewPage({
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
       <div className="mx-auto max-w-7xl space-y-4">
         <PageHeader
-          title="Domain Overview"
-          description="Analyze any domain's SEO profile: traffic, keywords, and backlinks."
+          title={t("Domain Overview")}
+          description={t(
+            "Analyze any domain's SEO profile: traffic, keywords, and backlinks.",
+          )}
           backLink={
             routeState.domain ? (
               <BackButton
@@ -560,7 +564,7 @@ export function DomainOverviewPage({
                   onShowRecentSearches();
                 }}
               >
-                Recent searches
+                {t("Recent searches")}
               </BackButton>
             ) : undefined
           }
@@ -597,9 +601,9 @@ export function DomainOverviewPage({
               loaded={state.historyLoaded}
               onRemove={state.removeHistoryItem}
               emptyIcon={Globe}
-              emptyTitle="Enter a domain to get started"
+              emptyTitle={t("Enter a domain to get started")}
               getTitle={(item) => item.domain}
-              getSubtitle={(item) => RESEARCH_SCOPE_LABELS[item.scope]}
+              getSubtitle={(item) => t(RESEARCH_SCOPE_LABELS[item.scope])}
               renderLink={(item, props) => (
                 <button
                   type="button"
@@ -617,8 +621,9 @@ export function DomainOverviewPage({
               <Alert variant="info">
                 <Info />
                 <AlertDescription className="text-foreground">
-                  Not enough data for this scope yet. Try another domain or a
-                  broader scope.
+                  {t(
+                    "Not enough data for this scope yet. Try another domain or a broader scope.",
+                  )}
                 </AlertDescription>
               </Alert>
             ) : null}
@@ -629,7 +634,7 @@ export function DomainOverviewPage({
                   {state.overview.displayTarget}
                 </h2>
                 <Badge variant="outline">
-                  {RESEARCH_SCOPE_LABELS[state.overview.scope]}
+                  {t(RESEARCH_SCOPE_LABELS[state.overview.scope])}
                 </Badge>
               </div>
               <div className="px-4 pb-4">
@@ -639,11 +644,11 @@ export function DomainOverviewPage({
                       {
                         label: overviewMetricsHint ? (
                           <HelpLabel
-                            label="Estimated organic traffic"
+                            label={t("Estimated organic traffic")}
                             helpText={overviewMetricsHint}
                           />
                         ) : (
-                          "Estimated organic traffic"
+                          t("Estimated organic traffic")
                         ),
                         value: formatMetric(
                           state.overview.organicTraffic,
@@ -653,11 +658,11 @@ export function DomainOverviewPage({
                       {
                         label: overviewMetricsHint ? (
                           <HelpLabel
-                            label="Organic keywords"
+                            label={t("Organic keywords")}
                             helpText={overviewMetricsHint}
                           />
                         ) : (
-                          "Organic keywords"
+                          t("Organic keywords")
                         ),
                         value: formatMetric(
                           state.overview.organicKeywords,

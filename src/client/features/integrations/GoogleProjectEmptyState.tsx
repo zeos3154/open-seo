@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { GoogleGlyph } from "@/client/features/gsc/GoogleGlyph";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 
 export function GoogleProjectEmptyState({
   name,
@@ -21,12 +22,15 @@ export function GoogleProjectEmptyState({
   onLink: () => void;
   children?: ReactNode;
 }) {
+  const t = useT();
   return (
     <div className="flex flex-1 flex-col gap-4">
       <p className="text-sm text-muted-foreground">
         {hasGrant
-          ? `Choose a ${name} property to finish connecting this project.`
-          : `Connect ${name} to see this project’s data.`}
+          ? t("Choose a {name} property to finish connecting this project.", {
+              name,
+            })
+          : t("Connect {name} to see this project’s data.", { name })}
       </p>
       {/* Actions sit bottom-right, with Dismiss (children) just left of the
           connect action. */}
@@ -49,12 +53,12 @@ export function GoogleProjectEmptyState({
               <GoogleGlyph className="size-[18px]" />
             )}
             {disabled
-              ? "Opening Google…"
+              ? t("Opening Google…")
               : canManage
                 ? hasGrant
-                  ? "Choose property"
-                  : "Connect"
-                : "Manage Google accounts"}
+                  ? t("Choose property")
+                  : t("Connect")
+                : t("Manage Google accounts")}
           </Button>
         ) : null}
       </div>

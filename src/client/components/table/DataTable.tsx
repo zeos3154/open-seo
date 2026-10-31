@@ -22,6 +22,7 @@ import { EmptyState } from "@/client/components/EmptyState";
 import { Button } from "@/client/components/ui/button";
 import { Checkbox } from "@/client/components/ui/checkbox";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import {
   Table,
   TableBody,
@@ -77,22 +78,16 @@ export function useSelectionAnchor(): MutableRefObject<SelectionAnchor | null> {
 export function makeSelectionColumn<TData>(
   anchorRef: MutableRefObject<SelectionAnchor | null>,
   /** Names each row checkbox for screen readers. */
-  rowLabel: (row: Row<TData>) => string = () => "Select row",
+  rowLabel: (row: Row<TData>) => string = () => translateCurrent("Select row"),
 ): ColumnDef<TData> {
   return {
     id: "select",
     size: 32,
     enableSorting: false,
     header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllRowsSelected()}
-        // Some-selected also counts rows that can't be selected.
-        indeterminate={
-          table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-        }
-        disabled={!table.getRowModel().rows.some((row) => row.getCanSelect())}
-        onCheckedChange={(checked) => table.toggleAllRowsSelected(checked)}
-        aria-label="Select all rows"
+      <SelectAllCheckbox
+        table={table}
+        selectable={table.getRowModel().rows.some((row) => row.getCanSelect())}
       />
     ),
     cell: ({ row, table }) => (
@@ -104,6 +99,28 @@ export function makeSelectionColumn<TData>(
       />
     ),
   };
+}
+
+function SelectAllCheckbox<TData>({
+  table,
+  selectable,
+}: {
+  table: TanStackTable<TData>;
+  selectable: boolean;
+}) {
+  const t = useT();
+  return (
+    <Checkbox
+      checked={table.getIsAllRowsSelected()}
+      // Some-selected also counts rows that can't be selected.
+      indeterminate={
+        table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+      }
+      disabled={!selectable}
+      onCheckedChange={(checked) => table.toggleAllRowsSelected(checked)}
+      aria-label={t("Select all rows")}
+    />
+  );
 }
 
 function SelectionCheckbox<TData>({
@@ -194,6 +211,7 @@ export function DataTable<TData>({
   /** Details shown in a full-width row under an expanded row. */
   renderExpandedRow?: (row: Row<TData>) => ReactNode;
 }) {
+  const t = useT();
   const columns = table.getVisibleLeafColumns();
   const rows = table.getRowModel().rows;
 
@@ -248,8 +266,10 @@ export function DataTable<TData>({
                     <EmptyState
                       kind="filtered"
                       variant="plain"
-                      title="No rows match these filters"
-                      description="Change or clear the filters to see more rows."
+                      title={t("No rows match these filters")}
+                      description={t(
+                        "Change or clear the filters to see more rows.",
+                      )}
                       action={
                         onClearFilters ? (
                           <Button
@@ -257,7 +277,7 @@ export function DataTable<TData>({
                             size="sm"
                             onClick={onClearFilters}
                           >
-                            Clear filters
+                            {t("Clear filters")}
                           </Button>
                         ) : undefined
                       }

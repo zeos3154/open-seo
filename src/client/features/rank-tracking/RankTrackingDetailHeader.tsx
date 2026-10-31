@@ -15,6 +15,7 @@ import {
 } from "@/client/components/ui/tooltip";
 import { LOCATIONS } from "@/client/features/keywords/locations";
 import { devicesLabel, scheduleLabel } from "@/shared/rank-tracking";
+import { useT } from "@/client/lib/i18n";
 import { formatNextCheck } from "./scheduleTime";
 import { formatLocationLabel } from "@/shared/keyword-locations";
 import type { RankTrackingConfig } from "@/types/schemas/rank-tracking";
@@ -53,6 +54,7 @@ export function RankTrackingDetailHeader({
   onEdit: () => void;
   onToggleAddKeywords: () => void;
 }) {
+  const t = useT();
   return (
     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 px-4 pt-4 pb-3">
       <div>
@@ -63,7 +65,7 @@ export function RankTrackingDetailHeader({
             : (LOCATIONS[config.locationCode] ?? "US")}{" "}
           &middot;{" "}
           {config.devices === "desktop" ? (
-            devicesLabel(config.devices)
+            t(devicesLabel(config.devices))
           ) : (
             <Tooltip>
               <TooltipTrigger
@@ -72,26 +74,40 @@ export function RankTrackingDetailHeader({
                   <span className="cursor-help underline decoration-dotted underline-offset-2" />
                 }
               >
-                {devicesLabel(config.devices)}
+                {t(devicesLabel(config.devices))}
               </TooltipTrigger>
               <TooltipContent>
-                Mobile results often differ from desktop. Search Console
-                averages both, so its positions may not match.
+                {t(
+                  "Mobile results often differ from desktop. Search Console averages both, so its positions may not match.",
+                )}
               </TooltipContent>
             </Tooltip>
           )}{" "}
-          &middot; {scheduleLabel(config.scheduleInterval)}
+          &middot; {t(scheduleLabel(config.scheduleInterval))}
           {config.scheduleInterval !== "manual" && config.nextCheckAt && (
-            <> &middot; Next: {formatNextCheck(config.nextCheckAt)}</>
+            <>
+              {" "}
+              &middot;{" "}
+              {t("Next: {time}", { time: formatNextCheck(config.nextCheckAt) })}
+            </>
           )}
           {run?.lastCheckedAt && (
             <>
               {" "}
-              &middot; Last: {new Date(run.lastCheckedAt).toLocaleDateString()}
+              &middot;{" "}
+              {t("Last: {time}", {
+                time: new Date(run.lastCheckedAt).toLocaleDateString(),
+              })}
             </>
           )}
           {costEstimate && costEstimate.keywordCount > 0 && (
-            <> &middot; up to ${costEstimate.costUsd.toFixed(2)}/check</>
+            <>
+              {" "}
+              &middot;{" "}
+              {t("up to {cost}/check", {
+                cost: `$${costEstimate.costUsd.toFixed(2)}`,
+              })}
+            </>
           )}
         </p>
       </div>
@@ -102,12 +118,12 @@ export function RankTrackingDetailHeader({
               {
                 value: "desktop" as const,
                 icon: <Monitor className="size-3.5" />,
-                label: "Desktop",
+                label: t("Desktop"),
               },
               {
                 value: "mobile" as const,
                 icon: <Smartphone className="size-3.5" />,
-                label: "Mobile",
+                label: t("Mobile"),
               },
             ]}
             value={activeDevice}
@@ -115,7 +131,10 @@ export function RankTrackingDetailHeader({
           />
         )}
         <Select
-          items={COMPARE_ITEMS}
+          items={COMPARE_ITEMS.map((item) => ({
+            ...item,
+            label: t(item.label),
+          }))}
           value={comparePeriod}
           onValueChange={(value) => {
             const parsed = comparePeriodSchema.safeParse(value);
@@ -124,8 +143,8 @@ export function RankTrackingDetailHeader({
         >
           <SelectTrigger
             size="sm"
-            aria-label="Comparison period"
-            title="Comparison period"
+            aria-label={t("Comparison period")}
+            title={t("Comparison period")}
             className="text-xs"
           >
             <SelectValue />
@@ -133,7 +152,7 @@ export function RankTrackingDetailHeader({
           <SelectContent>
             {COMPARE_ITEMS.map((item) => (
               <SelectItem key={item.value} value={item.value}>
-                {item.label}
+                {t(item.label)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -141,11 +160,11 @@ export function RankTrackingDetailHeader({
         <div className="hidden h-6 w-px bg-border sm:block" />
         <Button variant="outline" size="sm" onClick={onEdit}>
           <Settings data-icon="inline-start" />
-          Configure
+          {t("Configure")}
         </Button>
         <Button size="sm" onClick={onToggleAddKeywords}>
           <Plus data-icon="inline-start" />
-          Add Keywords
+          {t("Add Keywords")}
         </Button>
       </div>
     </div>

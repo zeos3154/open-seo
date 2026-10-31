@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { buildCsv, type CsvValue } from "@/client/lib/csv";
 import { downloadFile } from "@/client/lib/download";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
+import { translateCurrent } from "@/client/lib/i18n";
 import { captureClientEvent } from "@/client/lib/posthog";
 
 export type ExportFormat = "csv" | "excel" | "json" | "copy-json" | "sheets";
@@ -25,7 +26,7 @@ export async function exportRows(args: {
 }): Promise<void> {
   const { format, feature, headers, rows, filename, scope } = args;
   if (rows.length === 0) {
-    toast.error("No data to export");
+    toast.error(translateCurrent("No data to export"));
     return;
   }
 
@@ -44,9 +45,9 @@ export async function exportRows(args: {
   if (format === "copy-json") {
     try {
       await navigator.clipboard.writeText(JSON.stringify(records, null, 2));
-      toast.success("Copied data");
+      toast.success(translateCurrent("Copied data"));
     } catch {
-      toast.error("Could not copy to clipboard");
+      toast.error(translateCurrent("Could not copy to clipboard"));
       return;
     }
   } else if (format === "json") {

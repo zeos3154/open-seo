@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Package } from "lucide-react";
 import { CopyButton } from "@/client/components/CopyButton";
+import { useT } from "@/client/lib/i18n";
 
 export const AGENT_SETUP_DESCRIPTION =
   "Paste this prompt into your agent to automatically configure OpenSEO for you.";
@@ -20,6 +21,7 @@ export function AgentSetupPanel({
   /** Shown under the copy button, e.g. what to do after copying. */
   children?: ReactNode;
 }) {
+  const t = useT();
   return (
     <>
       <div className="rounded-xl border border-border bg-background/25 p-5">
@@ -28,9 +30,9 @@ export function AgentSetupPanel({
             <Package className="size-5 text-muted-foreground" />
           </span>
           <div>
-            <p className="text-sm font-medium">OpenSEO plugin</p>
+            <p className="text-sm font-medium">{t("OpenSEO plugin")}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              MCP connection + SEO skills
+              {t("MCP connection + SEO skills")}
             </p>
           </div>
         </div>
@@ -40,7 +42,7 @@ export function AgentSetupPanel({
             size="lg"
             className="w-full"
             value={prompt}
-            label="Copy setup prompt"
+            label={t("Copy setup prompt")}
             successMessage="Setup prompt copied"
             onCopy={onCopy}
           />
@@ -57,7 +59,7 @@ export function AgentSetupPanel({
           rel="noreferrer"
           className="text-xs text-muted-foreground underline decoration-muted-foreground/25 underline-offset-4 hover:text-foreground"
         >
-          Manual setup
+          {t("Manual setup")}
         </a>
       </div>
     </>

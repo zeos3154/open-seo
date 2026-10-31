@@ -17,6 +17,7 @@ import type {
   PagesFilters,
   PerformanceFilters,
 } from "@/client/features/audit/results/AuditResultsTableFilterLogic";
+import { useT } from "@/client/lib/i18n";
 
 export function PagesFilterBar({
   filters,
@@ -29,6 +30,9 @@ export function PagesFilterBar({
   activeFilterCount: number;
   onReset: () => void;
 }) {
+  // Option labels are English source text; translate at render so a locale
+  // switch updates the open panel. Option values stay stable API values.
+  const t = useT();
   return (
     <DataTableFilterPanel activeCount={activeFilterCount} onReset={onReset}>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
@@ -43,11 +47,11 @@ export function PagesFilterBar({
           value={filters.status}
           onChange={(status) => onChange({ ...filters, status })}
           options={[
-            ["all", "All"],
+            ["all", t("All")],
             ["ok", "2xx"],
             ["redirect", "3xx"],
             ["error", "4xx/5xx"],
-            ["missing", "Missing"],
+            ["missing", t("Missing")],
           ]}
         />
         <SelectFilter
@@ -55,11 +59,11 @@ export function PagesFilterBar({
           value={filters.fetchClass}
           onChange={(fetchClass) => onChange({ ...filters, fetchClass })}
           options={[
-            ["all", "All"],
-            ["ok", "Read"],
-            ["error", "Failed"],
-            ["blocked", "Blocked"],
-            ["rate_limited", "Rate limited"],
+            ["all", t("All")],
+            ["ok", t("Read")],
+            ["error", t("Failed")],
+            ["blocked", t("Blocked")],
+            ["rate_limited", t("Rate limited")],
           ]}
         />
         <SelectFilter
@@ -67,9 +71,9 @@ export function PagesFilterBar({
           value={filters.missingAlt}
           onChange={(missingAlt) => onChange({ ...filters, missingAlt })}
           options={[
-            ["all", "All"],
-            ["yes", "Missing alt"],
-            ["no", "No missing alt"],
+            ["all", t("All")],
+            ["yes", t("Missing alt")],
+            ["no", t("No missing alt")],
           ]}
         />
       </div>
@@ -108,6 +112,7 @@ export function PerformanceFilterBar({
   activeFilterCount: number;
   onReset: () => void;
 }) {
+  const t = useT();
   return (
     <DataTableFilterPanel activeCount={activeFilterCount} onReset={onReset}>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
@@ -122,9 +127,9 @@ export function PerformanceFilterBar({
           value={filters.device}
           onChange={(device) => onChange({ ...filters, device })}
           options={[
-            ["all", "All"],
-            ["desktop", "Desktop"],
-            ["mobile", "Mobile"],
+            ["all", t("All")],
+            ["desktop", t("Desktop")],
+            ["mobile", t("Mobile")],
           ]}
         />
         <SelectFilter
@@ -132,9 +137,9 @@ export function PerformanceFilterBar({
           value={filters.status}
           onChange={(status) => onChange({ ...filters, status })}
           options={[
-            ["all", "All"],
-            ["ok", "OK"],
-            ["failed", "Failed"],
+            ["all", t("All")],
+            ["ok", t("OK")],
+            ["failed", t("failed")],
           ]}
         />
         <TextFilter
@@ -179,11 +184,15 @@ export function ResultsTableToolbar({
   resultCount: number;
   totalCount: number;
 }) {
+  const t = useT();
   return (
     <DataTableToolbar
       actions={
         <span className="text-sm tabular-nums text-muted-foreground">
-          {resultCount.toLocaleString()} of {totalCount.toLocaleString()}
+          {t("{count} of {total}", {
+            count: resultCount.toLocaleString(),
+            total: totalCount.toLocaleString(),
+          })}
         </span>
       }
     >
@@ -219,13 +228,14 @@ function TextFilter({
   type?: "text" | "number";
   onChange: (value: string) => void;
 }) {
+  const t = useT();
   return (
     <DataTableFilterGroup label={label}>
       <Input
-        aria-label={label}
+        aria-label={t(label)}
         type={type}
         value={value}
-        placeholder={placeholder}
+        placeholder={t(placeholder)}
         onChange={(event) => onChange(event.target.value)}
       />
     </DataTableFilterGroup>
@@ -265,6 +275,7 @@ function SelectFilter<T extends string>({
   options: Array<[T, string]>;
   onChange: (value: T) => void;
 }) {
+  const t = useT();
   const items = options.map(([optionValue, optionLabel]) => ({
     value: optionValue,
     label: optionLabel,
@@ -278,7 +289,7 @@ function SelectFilter<T extends string>({
           if (next !== null) onChange(next);
         }}
       >
-        <SelectTrigger aria-label={label} className="w-full">
+        <SelectTrigger aria-label={t(label)} className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

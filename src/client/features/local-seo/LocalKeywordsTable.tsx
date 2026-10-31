@@ -5,6 +5,7 @@ import { Button } from "@/client/components/ui/button";
 import { Badge } from "@/client/components/ui/badge";
 import { DataTable, useDataTable } from "@/client/components/table/DataTable";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
+import { useT } from "@/client/lib/i18n";
 import { RANK_TRACKING_HEADER_CLASS } from "@/client/features/rank-tracking/RankTrackingColumns";
 import { isLocalScanActive, LocalScanStatus } from "@/shared/local-seo";
 import type { getLocalTracker } from "@/serverFunctions/local-seo";
@@ -44,6 +45,7 @@ export function LocalKeywordsTable({
   onManage: () => void;
 }) {
   const { keywords, scans, checks } = data;
+  const t = useT();
   const [sorting, setSorting] = useState<SortingState>([
     { id: "keyword", desc: false },
   ]);
@@ -61,11 +63,11 @@ export function LocalKeywordsTable({
       accessorKey: "keyword",
       header: ({ column }) =>
         history ? (
-          "Keyword"
+          t("Keyword")
         ) : (
           <SortableHeader
             column={column}
-            label="Keyword"
+            label={t("Keyword")}
             className={RANK_TRACKING_HEADER_CLASS}
           />
         ),
@@ -75,7 +77,7 @@ export function LocalKeywordsTable({
           type="button"
           className="text-left font-medium decoration-dotted underline-offset-2 hover:underline"
           aria-pressed={row.id === selectedKeywordId}
-          title="View ranking map"
+          title={t("View ranking map")}
           onClick={(event) => {
             event.stopPropagation();
             onSelect(row.id);
@@ -121,14 +123,17 @@ export function LocalKeywordsTable({
                   type="button"
                   className="font-mono text-xs decoration-dotted underline-offset-2 hover:underline aria-pressed:text-primary"
                   aria-pressed={scan.id === selectedScanId}
-                  title={`View map for ${row.original.keyword}, ${new Date(check.createdAt).toLocaleString()}`}
+                  title={t("View map for {keyword}, {time}", {
+                    keyword: row.original.keyword,
+                    time: new Date(check.createdAt).toLocaleString(),
+                  })}
                   onClick={(event) => {
                     event.stopPropagation();
                     onSelect(row.id, scan.id);
                   }}
                 >
                   {scan.status === LocalScanStatus.Failed
-                    ? "Failed"
+                    ? t("Failed")
                     : (scan.summary?.averageRank ?? "—")}
                 </button>
               );
@@ -144,7 +149,7 @@ export function LocalKeywordsTable({
         header: ({ column }) => (
           <SortableHeader
             column={column}
-            label="Avg. rank"
+            label={t("Avg. rank")}
             className={RANK_TRACKING_HEADER_CLASS}
           />
         ),
@@ -158,7 +163,7 @@ export function LocalKeywordsTable({
         header: ({ column }) => (
           <SortableHeader
             column={column}
-            label="Top-3 coverage"
+            label={t("Top-3 coverage")}
             className={RANK_TRACKING_HEADER_CLASS}
           />
         ),
@@ -175,7 +180,7 @@ export function LocalKeywordsTable({
         header: ({ column }) => (
           <SortableHeader
             column={column}
-            label="Points found"
+            label={t("Points found")}
             className={RANK_TRACKING_HEADER_CLASS}
           />
         ),
@@ -192,7 +197,7 @@ export function LocalKeywordsTable({
         header: ({ column }) => (
           <SortableHeader
             column={column}
-            label="Last checked"
+            label={t("Last checked")}
             className={RANK_TRACKING_HEADER_CLASS}
           />
         ),
@@ -201,7 +206,7 @@ export function LocalKeywordsTable({
         sortUndefined: "last",
       },
     ];
-  }, [history, checks, scans, onSelect, selectedKeywordId, selectedScanId]);
+  }, [history, checks, scans, onSelect, selectedKeywordId, selectedScanId, t]);
   const table = useDataTable({
     data: rows,
     columns,
@@ -217,12 +222,13 @@ export function LocalKeywordsTable({
       activeRowId={selectedKeywordId}
       onRowClick={(row) => onSelect(row.id)}
       empty={{
-        title: "Add keywords to start tracking",
-        description:
+        title: t("Add keywords to start tracking"),
+        description: t(
           "Enter the searches customers use to find this business. Then check its rankings across the map.",
+        ),
         action: (
           <Button size="sm" onClick={onManage}>
-            Add keywords
+            {t("Add keywords")}
           </Button>
         ),
       }}
@@ -231,7 +237,8 @@ export function LocalKeywordsTable({
 }
 
 function LastChecked({ scan }: { scan: KeywordRow["latest"] }) {
-  if (!scan) return "Not checked";
+  const t = useT();
+  if (!scan) return t("Not checked");
   return (
     <span className="flex flex-wrap items-center gap-2">
       {new Date(scan.createdAt).toLocaleString()}
@@ -241,9 +248,22 @@ function LastChecked({ scan }: { scan: KeywordRow["latest"] }) {
             scan.status === LocalScanStatus.Failed ? "destructive" : "secondary"
           }
         >
-          {scan.status === LocalScanStatus.Running ? "Checking" : scan.status}
+          {scan.status === LocalScanStatus.Running
+            ? t("Checking")
+            : t(scanStatusValue(scan.status))}
         </Badge>
       )}
     </span>
   );
+}
+
+/** Display text for the stored scan status enum; values are never changed. */
+function scanStatusValue(status: LocalScanStatus): string {
+  return status === LocalScanStatus.Queued
+    ? "Queued"
+    : status === LocalScanStatus.Partial
+      ? "Partial"
+      : status === LocalScanStatus.Failed
+        ? "Failed"
+        : status;
 }

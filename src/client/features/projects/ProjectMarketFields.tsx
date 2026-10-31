@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { CountryCombobox } from "@/client/components/CountryCombobox";
 import { Field, FieldLabel } from "@/client/components/ui/field";
+import { useT } from "@/client/lib/i18n";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ export function ProjectMarketFields({
 }) {
   const countryId = useId();
   const languageId = useId();
+  const t = useT();
   const languageItems = getLanguageOptions(value.locationCode).map(
     (option) => ({ value: option.code, label: option.label }),
   );
@@ -45,7 +47,7 @@ export function ProjectMarketFields({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <Field>
-        <FieldLabel htmlFor={countryId}>Country</FieldLabel>
+        <FieldLabel htmlFor={countryId}>{t("Country")}</FieldLabel>
         <CountryCombobox
           id={countryId}
           value={value.locationCode}
@@ -62,7 +64,7 @@ export function ProjectMarketFields({
         className={hideLanguageOnMobile ? "hidden sm:flex" : undefined}
         data-disabled={languageDisabled}
       >
-        <FieldLabel htmlFor={languageId}>Language</FieldLabel>
+        <FieldLabel htmlFor={languageId}>{t("Language")}</FieldLabel>
         <Select
           items={languageItems}
           value={value.languageCode}

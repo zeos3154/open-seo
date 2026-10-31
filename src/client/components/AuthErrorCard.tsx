@@ -15,6 +15,7 @@ import {
 } from "@/client/components/ui/card";
 import { getClientAuthMode, usesBetterAuthClient } from "@/lib/auth-mode";
 import { getSignInHref, getSignInHrefForLocation } from "@/lib/auth-redirect";
+import { useT } from "@/client/lib/i18n";
 
 const CLOUDFLARE_SETUP_GUIDE_URL =
   "https://github.com/every-app/open-seo/blob/main/docs/SELF_HOSTING_CLOUDFLARE.md#2-configure-authentication-and-secrets";
@@ -59,6 +60,7 @@ export function AuthErrorCard({
 }
 
 function AuthConfigErrorCard({ message, onRetry }: CardProps) {
+  const t = useT();
   // The hint names the settings of the mode the server actually runs; the
   // alert above already carries the server's exact message.
   const clientAuthMode = getClientAuthMode();
@@ -68,12 +70,12 @@ function AuthConfigErrorCard({ message, onRetry }: CardProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShieldAlert className="size-5 text-destructive" />
-          Authentication setup required
+          {t("Authentication setup required")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert variant="destructive">
-          <AlertDescription>{message}</AlertDescription>
+          <AlertDescription>{t(message)}</AlertDescription>
         </Alert>
 
         {clientAuthMode === "hosted" ? (
@@ -94,16 +96,19 @@ function AuthConfigErrorCard({ message, onRetry }: CardProps) {
         ) : null}
         {clientAuthMode === "cloudflare_access" ? (
           <p className="text-muted-foreground">
-            Cloudflare Access mode requires
-            <code className="mx-1">TEAM_DOMAIN</code> (a full https URL) and
-            <code className="mx-1">POLICY_AUD</code> set on the deployment, with
-            an Access application protecting this hostname.
+            {t("Cloudflare Access mode requires")}
+            <code className="mx-1">TEAM_DOMAIN</code>
+            {t(" (a full https URL) and ")}
+            <code className="mx-1">POLICY_AUD</code>
+            {t(
+              " set on the deployment, with an Access application protecting this hostname.",
+            )}
           </p>
         ) : null}
       </CardContent>
       <CardFooter className="justify-end gap-2">
         <Button variant="ghost" onClick={onRetry}>
-          Try Again
+          {t("Try Again")}
         </Button>
         <Button
           nativeButton={false}
@@ -115,7 +120,7 @@ function AuthConfigErrorCard({ message, onRetry }: CardProps) {
             />
           }
         >
-          Open Setup Guide
+          {t("Open Setup Guide")}
         </Button>
       </CardFooter>
     </Card>
@@ -123,6 +128,7 @@ function AuthConfigErrorCard({ message, onRetry }: CardProps) {
 }
 
 function UnauthenticatedErrorCard({ message, onRetry }: CardProps) {
+  const t = useT();
   // A sign-in page exists wherever Better Auth accounts do.
   const hasSignIn = usesBetterAuthClient();
   const signInHref =
@@ -145,17 +151,18 @@ function UnauthenticatedErrorCard({ message, onRetry }: CardProps) {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Authentication required</CardTitle>
+        <CardTitle>{t("Authentication required")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 text-muted-foreground">
-        <p>{message}</p>
+        <p>{t(message)}</p>
         <p>
-          This deployment uses external authentication. Refresh your access
-          session, then try again.
+          {t(
+            "This deployment uses external authentication. Refresh your access session, then try again.",
+          )}
         </p>
       </CardContent>
       <CardFooter className="justify-end">
-        <Button onClick={onRetry}>Try Again</Button>
+        <Button onClick={onRetry}>{t("Try Again")}</Button>
       </CardFooter>
     </Card>
   );

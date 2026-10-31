@@ -28,6 +28,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/client/components/ui/card";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 
 const formatDate = (value: string) => new Date(value).toLocaleDateString();
 
@@ -38,6 +39,7 @@ const formatDate = (value: string) => new Date(value).toLocaleDateString();
  */
 export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const [isAdding, setIsAdding] = useState(false);
 
   const credentialsQuery = useQuery({
@@ -52,7 +54,7 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
       await queryClient.invalidateQueries({
         queryKey: crawlerCredentialsQueryKey,
       });
-      toast.success("Crawler access removed");
+      toast.success(translateCurrent("Crawler access removed"));
     },
   });
 
@@ -70,17 +72,16 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
             size="sm"
             onClick={() => setIsAdding((value) => !value)}
           >
-            {isAdding ? "Cancel" : "Connect"}
+            {isAdding ? t("Cancel") : t("Connect")}
           </Button>
         </CardAction>
       </CardHeader>
       {isAdding ? (
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            Let the audit crawler through Shopify. Paste the signature you
-            created in Shopify admin under Online Store &rarr; Preferences
-            &rarr; Crawler access. Every audit of that domain in your
-            organization sends it with each request.
+            {t(
+              "Let the audit crawler through Shopify. Paste the signature you created in Shopify admin under Online Store → Preferences → Crawler access. Every audit of that domain in your organization sends it with each request.",
+            )}
           </p>
           <CrawlerAccessForm
             projectId={projectId}
@@ -93,17 +94,17 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
         <CardContent>
           {credentialsQuery.isError ? (
             <p className="text-sm text-destructive">
-              We couldn't load your crawler access.
+              {t("We couldn't load your crawler access.")}
             </p>
           ) : credentials.length > 0 ? (
             <TableCard>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Domain</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead>Expires</TableHead>
+                    <TableHead>{t("Domain")}</TableHead>
+                    <TableHead>{t("Type")}</TableHead>
+                    <TableHead>{t("Added")}</TableHead>
+                    <TableHead>{t("Expires")}</TableHead>
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -114,7 +115,7 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
                         {credential.host}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        Shopify signature
+                        {t("Shopify signature")}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatDate(credential.createdAt)}
@@ -122,16 +123,20 @@ export function CrawlerAccessSettings({ projectId }: { projectId: string }) {
                       <TableCell className="text-muted-foreground">
                         {credential.expiresAt
                           ? formatDate(credential.expiresAt)
-                          : "Unknown"}
+                          : t("Unknown")}
                         {isCrawlerAccessExpired(credential.expiresAt) && (
-                          <span className="ml-2 text-destructive">Expired</span>
+                          <span className="ml-2 text-destructive">
+                            {t("Expired")}
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>
                         <Button
                           variant="ghost"
                           size="icon-xs"
-                          aria-label={`Remove crawler access for ${credential.host}`}
+                          aria-label={t("Remove crawler access for {host}", {
+                            host: credential.host,
+                          })}
                           disabled={deleteMutation.isPending}
                           onClick={() => deleteMutation.mutate(credential.id)}
                         >

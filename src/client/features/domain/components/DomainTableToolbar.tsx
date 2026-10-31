@@ -7,6 +7,7 @@ import {
 } from "@/client/components/table/DataTableToolbar";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import type { ExportFormat } from "@/client/lib/exportRows";
+import { useT } from "@/client/lib/i18n";
 
 type Props = {
   /** The scope's condition limit when saved filters exceed it, else null. */
@@ -35,6 +36,7 @@ export function DomainTableToolbar({
   filterPanel,
   children,
 }: Props) {
+  const t = useT();
   return (
     <>
       <DataTableToolbar
@@ -51,7 +53,7 @@ export function DomainTableToolbar({
           onToggle={onToggleFilters}
         />
         <span className="text-sm text-muted-foreground">
-          {(totalCount ?? fallbackCount).toLocaleString()} {countLabel}
+          {(totalCount ?? fallbackCount).toLocaleString()} {t(countLabel)}
         </span>
         {children}
       </DataTableToolbar>
@@ -61,8 +63,10 @@ export function DomainTableToolbar({
           <Alert variant="warning">
             <AlertTriangle />
             <AlertDescription className="text-foreground">
-              Saved filters exceed this scope&apos;s {overBudgetLimit}-condition
-              limit and were not applied. Open Filters to trim them.
+              {t(
+                "Saved filters exceed this scope's {max}-condition limit and were not applied. Open Filters to trim them.",
+                { max: overBudgetLimit },
+              )}
             </AlertDescription>
           </Alert>
         </div>

@@ -16,6 +16,7 @@ import { usePrewarmSerpLocations } from "@/client/components/usePrewarmSerpLocat
 import { Field, FieldError, FieldLabel } from "@/client/components/ui/field";
 import { useProjectMarket } from "@/client/features/projects/useProjectMarket";
 import { getIsoCountryCode } from "@/shared/keyword-locations";
+import { useT } from "@/client/lib/i18n";
 import { cleanKeywords, LocalKeywordFields } from "./LocalKeywordFields";
 import { LocalListingChoices, type Listing } from "./LocalListingChoices";
 
@@ -57,6 +58,7 @@ function ListingLookup({
   onSelect: (listing: Listing) => void;
 }) {
   const market = useProjectMarket(projectId);
+  const t = useT();
   const countryCode = market ? getIsoCountryCode(market.locationCode) : "us";
   usePrewarmSerpLocations(countryCode, Boolean(market));
   const [selected, setSelected] = useState(0);
@@ -85,30 +87,30 @@ function ListingLookup({
   const listings = lookup.data && lookup.data.length > 1 ? lookup.data : null;
   return (
     <FormDialog
-      title="Add business"
+      title={t("Add business")}
       onClose={onClose}
       wide={Boolean(listings)}
       actions={
         listings ? (
           <>
             <Button variant="outline" onClick={() => lookup.reset()}>
-              Search again
+              {t("Search again")}
             </Button>
             <Button onClick={() => onSelect(listings[selected])}>
-              Use this listing
+              {t("Use this listing")}
             </Button>
           </>
         ) : (
           <>
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button
               type="submit"
               form="local-business-lookup"
               pending={lookup.isPending}
             >
-              Find listing
+              {t("Find listing")}
             </Button>
           </>
         )
@@ -138,8 +140,8 @@ function ListingLookup({
             <form.AppField name="query">
               {(field) => (
                 <field.TextField
-                  label="Business name"
-                  placeholder="e.g. Joe's Pizza"
+                  label={t("Business name")}
+                  placeholder={t("e.g. Joe's Pizza")}
                 />
               )}
             </form.AppField>
@@ -148,7 +150,9 @@ function ListingLookup({
                 const error = field.state.meta.errors[0]?.message;
                 return (
                   <Field data-invalid={Boolean(error) || undefined}>
-                    <FieldLabel htmlFor="local-business-city">City</FieldLabel>
+                    <FieldLabel htmlFor="local-business-city">
+                      {t("City")}
+                    </FieldLabel>
                     <SerpLocationCombobox
                       id="local-business-city"
                       value={field.state.value || undefined}
@@ -166,20 +170,21 @@ function ListingLookup({
       )}
       {lookup.isPending && (
         <p className="text-sm text-muted-foreground">
-          Searching Google Maps. This usually takes a few seconds.
+          {t("Searching Google Maps. This usually takes a few seconds.")}
         </p>
       )}
       {lookup.isError && (
         <QueryError
-          title="Could not look up this business"
+          title={t("Could not look up this business")}
           cause={lookup.error}
-          fallback="Please try again in a moment."
+          fallback={t("Please try again in a moment.")}
         />
       )}
       {lookup.isSuccess && lookup.data.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          No Google Maps listing found. Check the name matches the listing and
-          the city is right.
+          {t(
+            "No Google Maps listing found. Check the name matches the listing and the city is right.",
+          )}
         </p>
       )}
     </FormDialog>
@@ -204,6 +209,16 @@ const AREAS = {
 } as const;
 type Area = keyof typeof AREAS;
 
+/** Area option labels translate at render; the stored value stays the key. */
+function areaItems(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+) {
+  return Object.entries(AREAS).map(([value, { label }]) => ({
+    value,
+    label: t(label),
+  }));
+}
+
 function TrackerSettings({
   projectId,
   listing,
@@ -217,6 +232,7 @@ function TrackerSettings({
 }) {
   const { business, suggestedKeywords } = listing;
   const queryClient = useQueryClient();
+  const t = useT();
   const create = useMutation({
     mutationFn: (input: Parameters<typeof createLocalTracker>[0]["data"]) =>
       createLocalTracker({ data: input }),
@@ -243,7 +259,7 @@ function TrackerSettings({
   });
   return (
     <FormDialog
-      title="Set up local tracking"
+      title={t("Set up local tracking")}
       onClose={onClose}
       actions={
         <>
@@ -252,14 +268,14 @@ function TrackerSettings({
             disabled={create.isPending}
             onClick={onClose}
           >
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button
             type="submit"
             form="local-tracker-settings"
             pending={create.isPending}
           >
-            Save business
+            {t("Save business")}
           </Button>
         </>
       }
@@ -281,12 +297,11 @@ function TrackerSettings({
           <form.AppField name="area">
             {(field) => (
               <field.SelectField
-                label="Area to check"
-                description="We search Google Maps from points spread across this area, centered on your listing."
-                items={Object.entries(AREAS).map(([value, { label }]) => ({
-                  value,
-                  label,
-                }))}
+                label={t("Area to check")}
+                description={t(
+                  "We search Google Maps from points spread across this area, centered on your listing.",
+                )}
+                items={areaItems(t)}
               />
             )}
           </form.AppField>
@@ -295,7 +310,7 @@ function TrackerSettings({
       {create.isError && (
         <QueryError
           error={create.error}
-          fallback="Could not save this business."
+          fallback={t("Could not save this business.")}
         />
       )}
     </FormDialog>

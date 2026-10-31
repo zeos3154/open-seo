@@ -25,6 +25,7 @@ import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { EmptyState } from "@/client/components/EmptyState";
 import { GetCreditsButton } from "@/client/features/billing/InsufficientCreditsError";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 import {
   Card,
   CardAction,
@@ -64,6 +65,7 @@ export function RankTrackingDomainList({
   onAddDomain: () => void;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const [archiveTarget, setArchiveTarget] = useState<ConfigSummary | null>(
     null,
   );
@@ -107,7 +109,11 @@ export function RankTrackingDomainList({
     // the select matches the URL.
     const { device, loc } = search;
     if (device && !options.devices.some((o) => o.value === device)) {
-      options.devices.push({ value: device, label: devicesLabel(device) });
+      options.devices.push({
+        value: device,
+        // Shared devicesLabel output; translate at display, keep the value.
+        label: t(devicesLabel(device)),
+      });
     }
     if (loc && !options.locations.some((o) => o.value === String(loc))) {
       options.locations.push({
@@ -116,7 +122,7 @@ export function RankTrackingDomainList({
       });
     }
     return options;
-  }, [allSummaries, search]);
+  }, [allSummaries, search, t]);
   const activeFilterCount = countActiveDomainListFilters(filters);
 
   const archiveMutation = useMutation({
@@ -132,7 +138,7 @@ export function RankTrackingDomainList({
       void queryClient.invalidateQueries({
         queryKey: ["rankTrackingConfigs", projectId],
       });
-      toast.success("Domain archived");
+      toast.success(t("Domain archived"));
     },
   });
 
@@ -140,12 +146,12 @@ export function RankTrackingDomainList({
     <Card className="gap-0 py-0">
       <CardHeader className="px-5 pt-4 pb-3">
         <CardTitle>
-          <h2 className="text-sm font-semibold">Tracked Domains</h2>
+          <h2 className="text-sm font-semibold">{t("Tracked Domains")}</h2>
         </CardTitle>
         <CardAction className="self-center">
           <Button size="sm" onClick={onAddDomain}>
             <Plus data-icon="inline-start" />
-            Add Domain
+            {t("Add Domain")}
           </Button>
         </CardAction>
       </CardHeader>
@@ -164,7 +170,7 @@ export function RankTrackingDomainList({
           <div className="px-5 py-4">
             <QueryError
               error={summariesQuery.error}
-              fallback="Failed to load tracked domains"
+              fallback={t("Failed to load tracked domains")}
               onRetry={() => void summariesQuery.refetch()}
               isRetrying={summariesQuery.isFetching}
             />
@@ -183,18 +189,20 @@ export function RankTrackingDomainList({
           <EmptyState
             variant="plain"
             icon={Globe}
-            title="No tracked domains yet"
-            description="Add a domain to start monitoring keyword rankings over time."
+            title={t("No tracked domains yet")}
+            description={t(
+              "Add a domain to start monitoring keyword rankings over time.",
+            )}
           />
         ) : filteredSummaries.length === 0 ? (
           <EmptyState
             variant="plain"
             kind="filtered"
-            title="No matching tracked domains"
-            description="Try clearing search or adjusting filters."
+            title={t("No matching tracked domains")}
+            description={t("Try clearing search or adjusting filters.")}
             action={
               <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear filters
+                {t("Clear filters")}
               </Button>
             }
           />
@@ -220,15 +228,16 @@ export function RankTrackingDomainList({
 
       {archiveTarget && (
         <ConfirmDialog
-          title={`Archive ${archiveTarget.domain}?`}
-          confirmLabel="Archive"
+          title={t("Archive {name}", { name: archiveTarget.domain })}
+          confirmLabel={t("Archive")}
           destructive
           pending={archiveMutation.isPending}
           onConfirm={() => archiveMutation.mutate(archiveTarget.id)}
           onClose={() => setArchiveTarget(null)}
         >
-          Scheduled checks will stop and this domain will be hidden from the
-          list. Ranking history is preserved.
+          {t(
+            "Scheduled checks will stop and this domain will be hidden from the list. Ranking history is preserved.",
+          )}
         </ConfirmDialog>
       )}
     </Card>
@@ -246,13 +255,14 @@ function DomainRow({
   showLanguage: boolean;
   onArchive: () => void;
 }) {
+  const t = useT();
   return (
     <div className="relative flex w-full items-center gap-4 px-5 py-3.5 transition-colors hover:bg-foreground/[0.03]">
       <Link
         to="/p/$projectId/rank-tracking/$configId"
         params={{ projectId, configId: summary.id }}
         className="absolute inset-0 z-0"
-        aria-label={`Open ${summary.domain}`}
+        aria-label={t("Open {domain}", { domain: summary.domain })}
       />
       <div className="min-w-0 flex-1 pointer-events-none">
         <p className="font-medium truncate">{summary.domain}</p>
@@ -268,23 +278,31 @@ function DomainRow({
               )?.label ?? summary.languageCode}{" "}
             </>
           )}
-          &middot; {devicesLabel(summary.devices)} &middot;{" "}
-          {scheduleLabel(summary.scheduleInterval)}
+          &middot; {t(devicesLabel(summary.devices))} &middot;{" "}
+          {t(scheduleLabel(summary.scheduleInterval))}
           {summary.scheduleInterval !== "manual" && summary.nextCheckAt && (
-            <> &middot; Next: {formatNextCheck(summary.nextCheckAt)}</>
+            <>
+              {" "}
+              &middot;{" "}
+              {t("Next: {time}", {
+                time: formatNextCheck(summary.nextCheckAt),
+              })}
+            </>
           )}
           {summary.lastRunCompletedAt && (
             <>
               {" "}
-              &middot; Last:{" "}
-              {new Date(summary.lastRunCompletedAt).toLocaleDateString()}
+              &middot;{" "}
+              {t("Last: {time}", {
+                time: new Date(summary.lastRunCompletedAt).toLocaleDateString(),
+              })}
             </>
           )}
         </p>
         {summary.lastSkipReason === "insufficient_credits" && (
           <div className="mt-1 flex items-center gap-2 text-xs text-destructive">
             <CircleAlert className="size-3" />
-            Scheduled check skipped: out of credits
+            {t("Scheduled check skipped: out of credits")}
             {/* Above the row link, like the archive button. */}
             <span className="pointer-events-auto relative z-10">
               <GetCreditsButton />
@@ -294,7 +312,7 @@ function DomainRow({
         {summary.lastSkipReason === "plan_required" && (
           <p className="flex items-center gap-1 text-xs text-warning">
             <AlertTriangle className="size-3" />
-            Scheduled check skipped — paid plan required
+            {t("Scheduled check skipped — paid plan required")}
           </p>
         )}
       </div>
@@ -302,7 +320,7 @@ function DomainRow({
         {summary.keywordCount > 0 && (
           <div className="text-center">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Keywords
+              {t("Keywords")}
             </p>
             <p className="font-mono font-medium">{summary.keywordCount}</p>
           </div>
@@ -312,8 +330,8 @@ function DomainRow({
         variant="ghost"
         size="icon-xs"
         className="relative z-10 text-muted-foreground hover:text-destructive"
-        title="Archive domain"
-        aria-label={`Archive ${summary.domain}`}
+        title={t("Archive domain")}
+        aria-label={t("Archive {name}", { name: summary.domain })}
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();

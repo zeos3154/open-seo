@@ -20,6 +20,7 @@ import type {
   PromptExplorerModelResult,
   PromptExplorerResult,
 } from "@/types/schemas/ai-search";
+import { useT } from "@/client/lib/i18n";
 
 type Props = {
   result: PromptExplorerResult;
@@ -49,6 +50,7 @@ function ModelResultCard({
   modelResult: PromptExplorerModelResult;
   highlightBrand: string | null;
 }) {
+  const t = useT();
   const accent = getModelAccent(modelResult.model);
 
   if (modelResult.status === "error") {
@@ -91,8 +93,15 @@ function ModelResultCard({
 
       <p className="px-5 pt-3 text-xs text-muted-foreground">
         {modelResult.webSearchCountryCode
-          ? `Country hint sent: ${formatCountryLabel(modelResult.webSearchCountryCode)}. This is not a verified search location.`
-          : "No country hint sent. Any search uses the provider’s default location."}
+          ? t(
+              "Country hint sent: {country}. This is not a verified search location.",
+              {
+                country: formatCountryLabel(modelResult.webSearchCountryCode),
+              },
+            )
+          : t(
+              "No country hint sent. Any search uses the provider's default location.",
+            )}
       </p>
       <div className="px-5 py-5">
         <MarkdownAnswer text={modelResult.text} />
@@ -108,7 +117,7 @@ function ModelResultCard({
       {modelResult.fanOutQueries.length > 0 ? (
         <div className="border-t border-border px-5 py-3">
           <p className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-            Related queries the model considered
+            {t("Related queries the model considered")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {modelResult.fanOutQueries.map((query, index) => (
@@ -134,10 +143,11 @@ function CitationsList({
   citations: PromptExplorerCitation[];
   highlightBrand: string | null;
 }) {
+  const t = useT();
   return (
     <div className="border-t border-border bg-muted/30 px-5 py-3">
       <p className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-        Cited sources ({citations.length})
+        {t("Cited sources ({count})", { count: citations.length })}
       </p>
       <ExpandableList
         items={citations}
@@ -189,6 +199,7 @@ function ModelHeader({
   highlightBrand: string | null;
   status: "success" | "error" | "skipped";
 }) {
+  const t = useT();
   const accent = getModelAccent(model);
   return (
     <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-5 py-3">
@@ -198,9 +209,11 @@ function ModelHeader({
         {modelName ? (
           <code className="text-xs text-muted-foreground">{modelName}</code>
         ) : null}
-        {status === "error" ? <Badge variant="destructive">Error</Badge> : null}
+        {status === "error" ? (
+          <Badge variant="destructive">{t("Error")}</Badge>
+        ) : null}
         {status === "skipped" ? (
-          <Badge variant="secondary">Skipped</Badge>
+          <Badge variant="secondary">{t("Skipped")}</Badge>
         ) : null}
         <BrandMentionBadge
           mentioned={brandMentioned}
@@ -209,20 +222,20 @@ function ModelHeader({
         {webSearch ? (
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <Globe className="size-3" />
-            web search
+            {t("web search")}
           </span>
         ) : webSearch === false ? (
           // The model chose not to browse for this answer — that's why there
           // are no cited sources on this card.
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <Globe className="size-3" />
-            no web search
+            {t("no web search")}
           </span>
         ) : null}
       </div>
       {tokens != null ? (
         <span className="text-xs text-muted-foreground tabular-nums">
-          {tokens.toLocaleString()} tokens
+          {tokens.toLocaleString()} {t("tokens")}
         </span>
       ) : null}
     </header>

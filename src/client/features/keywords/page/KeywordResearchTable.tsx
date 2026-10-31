@@ -19,6 +19,7 @@ import {
 import { SortableHeader } from "@/client/components/table/SortableHeader";
 import { ScoreBadge } from "@/client/components/table/ScoreBadge";
 import { formatNumber } from "@/client/features/keywords/utils";
+import { useT } from "@/client/lib/i18n";
 import type { KeywordResearchDisplayRow } from "@/client/features/keywords/groupSharedVolumeRows";
 import type { KeywordResearchRow } from "@/types/keywords";
 
@@ -53,6 +54,7 @@ export function KeywordResearchTable({
   toolbar,
   footer,
 }: Props) {
+  const t = useT();
   const selectAnchorRef = useSelectionAnchor();
   const rowSelection = useMemo<RowSelectionState>(
     () =>
@@ -73,7 +75,7 @@ export function KeywordResearchTable({
         header: () => (
           <SortableHeader
             column={sortColumn("keyword")}
-            label="Keyword"
+            label={t("Keyword")}
             className="min-w-48 md:min-w-0"
           />
         ),
@@ -85,7 +87,13 @@ export function KeywordResearchTable({
               className={`block whitespace-normal break-words capitalize md:truncate ${row.original.parentKeyword ? "font-normal" : "font-medium"}`}
               title={
                 row.original.parentKeyword
-                  ? `${row.original.keyword}: matching reported volume with ${row.original.parentKeyword}. Shared volumes may overlap.`
+                  ? t(
+                      "{keyword}: matching reported volume with {parent}. Shared volumes may overlap.",
+                      {
+                        keyword: row.original.keyword,
+                        parent: row.original.parentKeyword,
+                      },
+                    )
                   : row.original.keyword
               }
             >
@@ -104,7 +112,7 @@ export function KeywordResearchTable({
         header: () => (
           <SortableHeader
             column={sortColumn("searchVolume")}
-            label="Volume"
+            label={t("Volume")}
             align="right"
           />
         ),
@@ -121,7 +129,7 @@ export function KeywordResearchTable({
           <SortableHeader
             column={sortColumn("cpc")}
             label="CPC"
-            helpText="Cost per click in USD."
+            helpText={t("Cost per click in USD.")}
             align="right"
           />
         ),
@@ -140,8 +148,10 @@ export function KeywordResearchTable({
         header: () => (
           <SortableHeader
             column={sortColumn("competition")}
-            label="Comp."
-            helpText="Paid-search competition from Google Ads (0-1): higher means more advertisers bidding."
+            label={t("Comp.")}
+            helpText={t(
+              "Paid-search competition from Google Ads (0-1): higher means more advertisers bidding.",
+            )}
             align="right"
           />
         ),
@@ -160,8 +170,10 @@ export function KeywordResearchTable({
         header: () => (
           <SortableHeader
             column={sortColumn("keywordDifficulty")}
-            label="Score"
-            helpText="Organic ranking difficulty (0-100): higher means harder to reach Google's top 10."
+            label={t("Score")}
+            helpText={t(
+              "Organic ranking difficulty (0-100): higher means harder to reach Google's top 10.",
+            )}
             align="right"
           />
         ),
@@ -169,7 +181,7 @@ export function KeywordResearchTable({
         meta: { headerClassName: "text-right", cellClassName: "text-right" },
       }),
       keywordColumnHelper.accessor("intent", {
-        header: "Intent",
+        header: () => t("Intent"),
         cell: ({ getValue }) => <IntentBadge intent={getValue()} />,
         meta: {
           headerClassName: "text-center",
@@ -177,7 +189,7 @@ export function KeywordResearchTable({
         },
       }),
     ];
-  }, [selectAnchorRef, sortDir, sortField, toggleSort]);
+  }, [selectAnchorRef, sortDir, sortField, t, toggleSort]);
   const table = useDataTable({
     data: filteredRows,
     columns,
@@ -202,7 +214,7 @@ export function KeywordResearchTable({
       table={table}
       toolbar={toolbar}
       footer={footer}
-      empty={{ title: "No keywords" }}
+      empty={{ title: t("No keywords") }}
       isFiltered={isFiltered}
       onClearFilters={resetFilters}
       onRowClick={(row) => handleRowClick(row.original)}

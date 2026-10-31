@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/client/components/ui/dialog";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { useT, translateCurrent } from "@/client/lib/i18n";
 import { saveReportTemplate } from "@/serverFunctions/reportTemplates";
 import type { ReportTemplate } from "@/types/schemas/report-templates";
 
@@ -64,11 +65,16 @@ export function ReportTemplateForm({
         is_update: !result.created,
         source: "app",
       });
-      toast.success(result.created ? "Template created" : "Template saved");
+      toast.success(
+        result.created
+          ? translateCurrent("Template created")
+          : translateCurrent("Template saved"),
+      );
       onSaved();
     },
   });
 
+  const t = useT();
   const form = useAppForm({
     defaultValues: {
       name: template?.name ?? "",
@@ -92,14 +98,14 @@ export function ReportTemplateForm({
           <form.Form className="flex flex-col gap-4">
             <DialogHeader>
               <DialogTitle>
-                {template ? "Edit template" : "New template"}
+                {template ? t("Edit template") : t("New template")}
               </DialogTitle>
             </DialogHeader>
 
             <form.AppField name="name">
               {(field) => (
                 <field.TextField
-                  label="Name"
+                  label={t("Name")}
                   placeholder="Monthly client check-in"
                   required
                 />
@@ -109,8 +115,10 @@ export function ReportTemplateForm({
             <form.AppField name="description">
               {(field) => (
                 <field.TextField
-                  label="Description"
-                  description="One line saying when to use it. This is what an agent reads to decide."
+                  label={t("Description")}
+                  description={t(
+                    "One line saying when to use it. This is what an agent reads to decide.",
+                  )}
                   placeholder="The monthly update we send retainer clients."
                   required
                 />
@@ -120,8 +128,8 @@ export function ReportTemplateForm({
             <form.AppField name="instructions">
               {(field) => (
                 <field.TextareaField
-                  label="Instructions"
-                  description="Brand voice for the whole project lives in Context › Writing preferences."
+                  label={t("Instructions")}
+                  description={<InstructionsDescription />}
                   className="h-56 font-mono leading-relaxed md:text-xs"
                   placeholder={INSTRUCTIONS_PLACEHOLDER}
                   required
@@ -136,15 +144,22 @@ export function ReportTemplateForm({
                 onClick={onClose}
                 disabled={saveMutation.isPending}
               >
-                Cancel
+                {t("Cancel")}
               </Button>
               <form.SubmitButton>
-                {template ? "Save changes" : "Create template"}
+                {template ? t("Save changes") : t("Create template")}
               </form.SubmitButton>
             </DialogFooter>
           </form.Form>
         </form.AppForm>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function InstructionsDescription() {
+  const t = useT();
+  return t(
+    "Brand voice for the whole project lives in Context › Writing preferences.",
   );
 }

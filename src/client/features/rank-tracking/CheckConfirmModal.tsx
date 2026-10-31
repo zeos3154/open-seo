@@ -1,4 +1,5 @@
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
+import { useT } from "@/client/lib/i18n";
 import type { RankTrackingConfig } from "@/types/schemas/rank-tracking";
 import {
   devicesCount,
@@ -22,6 +23,7 @@ export function CheckConfirmModal({
   onRunNow: () => void;
   onCancel: () => void;
 }) {
+  const t = useT();
   const dc = devicesCount(devices);
   const totalChecks = keywordCount * dc;
   const liveTime =
@@ -32,18 +34,35 @@ export function CheckConfirmModal({
 
   return (
     <ConfirmDialog
-      title={`Check ${keywordCount} keyword${keywordCount !== 1 ? "s" : ""}?`}
-      confirmLabel="Run now"
+      title={
+        keywordCount === 1
+          ? t("Check 1 keyword?")
+          : t("Check {count} keywords?", { count: keywordCount })
+      }
+      confirmLabel={t("Run now")}
       pending={isPending}
       onConfirm={onRunNow}
       onClose={onCancel}
     >
-      {keywordCount} keywords &times; {dc} device{dc !== 1 ? "s" : ""} ={" "}
-      {totalChecks} SERP checks. Results in ~{eta}.
+      {keywordCount === 1
+        ? t("1 keyword × {devices} = {total} SERP checks. Results in ~{eta}.", {
+            devices: deviceText(dc, t),
+            total: totalChecks,
+            eta,
+          })
+        : t(
+            "{count} keywords × {devices} = {total} SERP checks. Results in ~{eta}.",
+            {
+              count: keywordCount,
+              devices: deviceText(dc, t),
+              total: totalChecks,
+              eta,
+            },
+          )}
       {costUsd != null ? (
         <>
           {" "}
-          Costs up to{" "}
+          {t("Costs up to")}{" "}
           <span className="font-mono font-semibold text-foreground">
             ${costUsd.toFixed(2)}
           </span>
@@ -52,4 +71,12 @@ export function CheckConfirmModal({
       ) : null}
     </ConfirmDialog>
   );
+}
+
+/** "1 device" / "{count} devices" so both plural forms stay correct. */
+function deviceText(
+  dc: number,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): string {
+  return dc === 1 ? t("1 device") : t("{count} devices", { count: dc });
 }

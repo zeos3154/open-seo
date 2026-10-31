@@ -3,6 +3,7 @@ import { Line, LineChart, ReferenceArea } from "recharts";
 import { TrendingUp } from "lucide-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import { SegmentedToggle } from "@/client/components/SegmentedToggle";
+import { useT } from "@/client/lib/i18n";
 import {
   ChartGrid,
   ChartXAxis,
@@ -46,16 +47,17 @@ export function RankTrendChart({
    * single keyword's position line, not for an averaged value. */
   showBottomBand?: boolean;
 }) {
+  const t = useT();
   const config: ChartConfig = Object.fromEntries(
-    series.map((s) => [s.dataKey, { label: s.name, color: s.color }]),
+    series.map((s) => [s.dataKey, { label: t(s.name), color: s.color }]),
   );
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-        <span>Google position (1 = best)</span>
+        <span>{t("Google position (1 = best)")}</span>
         <span className="inline-flex items-center gap-1">
-          Better <span aria-hidden>↑</span>
+          {t("Better")} <span aria-hidden>↑</span>
         </span>
       </div>
       <ChartContainer config={config} className="h-56">
@@ -119,7 +121,8 @@ export const TIME_AXIS = {
 } as const;
 
 function formatDateTick(value: number): string {
-  return new Date(value).toLocaleDateString("en-US", {
+  // Follow the browser locale, like the rest of the app's date rendering.
+  return new Date(value).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
   });
@@ -128,7 +131,7 @@ function formatDateTick(value: number): string {
 /** Tooltip label for a `checkedAt` timestamp: "Sep 28, 2026". */
 export function formatDateLabel(label: unknown): string {
   return typeof label === "number"
-    ? new Date(label).toLocaleDateString("en-US", {
+    ? new Date(label).toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -150,10 +153,15 @@ export function TrendRangeToggle({
   value: number;
   onChange: (sinceDays: number) => void;
 }) {
+  const t = useT();
+  const items = TREND_RANGES.map((range) => ({
+    ...range,
+    label: t(range.label),
+  }));
   return (
     <SegmentedToggle
       showLabels
-      items={TREND_RANGES}
+      items={items}
       value={String(value)}
       onChange={(next) => onChange(Number(next))}
     />
@@ -162,15 +170,16 @@ export function TrendRangeToggle({
 
 /** Shown instead of a trend chart until there are two checks to connect. */
 export function TrendEmptyState({ checks }: { checks: number }) {
+  const t = useT();
   return (
     <EmptyState
       icon={TrendingUp}
       size="sm"
-      title={checks === 0 ? "No history yet" : "Only 1 check so far"}
+      title={checks === 0 ? t("No history yet") : t("Only 1 check so far")}
       description={
         checks === 0
-          ? "Run a check to start tracking positions over time."
-          : "The trend fills in after the next check."
+          ? t("Run a check to start tracking positions over time.")
+          : t("The trend fills in after the next check.")
       }
     />
   );

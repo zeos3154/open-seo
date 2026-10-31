@@ -11,6 +11,7 @@ import {
   type ChartConfig,
 } from "@/client/components/ui/chart";
 import type { MonthlySearch } from "@/types/keywords";
+import { useT } from "@/client/lib/i18n";
 import {
   formatCompactNumber,
   lastTwelveMonths,
@@ -32,11 +33,13 @@ export function AreaTrendChart({
   trend: MonthlySearch[];
   label?: string;
 }) {
+  const t = useT();
   const last12 = lastTwelveMonths(trend);
   if (last12.length === 0) return null;
 
+  const chartLabel = t(label);
   const data = last12.map((m) => ({
-    month: MONTH_SHORT_LABELS[m.month - 1],
+    month: t(MONTH_SHORT_LABELS[m.month - 1] ?? ""),
     searchVolume: m.searchVolume,
   }));
 
@@ -44,11 +47,11 @@ export function AreaTrendChart({
     <ChartContainer
       config={
         {
-          searchVolume: { label, color: "var(--color-primary)" },
+          searchVolume: { label: chartLabel, color: "var(--color-primary)" },
         } satisfies ChartConfig
       }
       className="h-[210px]"
-      aria-label={`${label} trend chart`}
+      aria-label={t("{label} trend chart", { label: chartLabel })}
     >
       <AreaChart
         data={data}

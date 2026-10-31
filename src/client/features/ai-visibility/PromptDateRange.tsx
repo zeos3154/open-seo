@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/client/components/ui/select";
+import { useT } from "@/client/lib/i18n";
 
 export enum PromptRange {
   Last7 = "last_7_days",
@@ -22,6 +23,7 @@ interface PromptPeriod {
   end: string;
 }
 
+// Option labels are English source text; translate at render.
 const options = [
   { value: PromptRange.Last7, label: "Last 7 days" },
   { value: PromptRange.Last28, label: "Last 28 days" },
@@ -66,10 +68,14 @@ export function PromptDateRange({
   value: PromptPeriod;
   onChange: (period: PromptPeriod) => void;
 }) {
+  const t = useT();
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select
-        items={options}
+        items={options.map((option) => ({
+          ...option,
+          label: t(option.label),
+        }))}
         value={value.preset}
         onValueChange={(next) => {
           const option = options.find((item) => item.value === next);
@@ -81,7 +87,7 @@ export function PromptDateRange({
             );
         }}
       >
-        <SelectTrigger size="sm" aria-label="Analysis date range">
+        <SelectTrigger size="sm" aria-label={t("Analysis date range")}>
           <CalendarDays className="size-3.5" />
           <SelectValue />
         </SelectTrigger>
@@ -97,7 +103,7 @@ export function PromptDateRange({
         <>
           <Input
             type="date"
-            aria-label="Period start date"
+            aria-label={t("Period start date")}
             className="h-7 w-36 text-xs"
             value={value.start}
             max={value.end || undefined}
@@ -105,10 +111,10 @@ export function PromptDateRange({
               onChange({ ...value, start: event.target.value })
             }
           />
-          <span className="text-xs text-muted-foreground">to</span>
+          <span className="text-xs text-muted-foreground">{t("to")}</span>
           <Input
             type="date"
-            aria-label="Period end date"
+            aria-label={t("Period end date")}
             className="h-7 w-36 text-xs"
             value={value.end}
             min={value.start || undefined}
@@ -118,7 +124,7 @@ export function PromptDateRange({
           />
           {(!value.start || !value.end || value.start > value.end) && (
             <p role="alert" className="w-full text-xs text-destructive">
-              Choose a start date on or before the end date.
+              {t("Choose a start date on or before the end date.")}
             </p>
           )}
         </>

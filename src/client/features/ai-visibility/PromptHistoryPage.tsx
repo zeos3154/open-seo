@@ -6,6 +6,7 @@ import { SkeletonCard } from "@/client/components/SkeletonPresets";
 import { Button } from "@/client/components/ui/button";
 import { type AiRun } from "@/shared/ai-visibility";
 import { PromptAnalysis } from "./PromptAnalysis";
+import { useT } from "@/client/lib/i18n";
 import { prefetchRunNowCost, TrackingCostReview } from "./TrackingCostReview";
 import {
   AiQueryError,
@@ -24,6 +25,7 @@ export function PromptHistoryPage({
   promptId: string;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const trackerQuery = useAiVisibilityTracker(projectId);
   const [checking, setChecking] = useState(false);
   const [startedRun, setStartedRun] = useState<AiRun | null>(null);
@@ -50,12 +52,12 @@ export function PromptHistoryPage({
       <PageHeader
         backLink={
           <BackLink to="/p/$projectId/ai-visibility" params={{ projectId }}>
-            All tracked prompts
+            {t("All tracked prompts")}
           </BackLink>
         }
         title={
           <span className="whitespace-pre-wrap" data-ph-mask>
-            {prompt?.text ?? retainedPrompt ?? "Prompt analysis"}
+            {prompt?.text ?? retainedPrompt ?? t("Prompt analysis")}
           </span>
         }
         description={
@@ -71,7 +73,7 @@ export function PromptHistoryPage({
               onClick={() => setChecking(true)}
             >
               <Play />
-              Run now
+              {t("Run now")}
             </Button>
           )
         }

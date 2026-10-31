@@ -1,6 +1,7 @@
 import { MutationCache, QueryClient } from "@tanstack/query-core";
 import { toast } from "sonner";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent } from "@/client/lib/i18n";
 
 declare module "@tanstack/query-core" {
   interface Register {
@@ -19,7 +20,7 @@ export const queryClient = new QueryClient({
       if (mutation.options.onError || mutation.meta?.errorToast === false) {
         return;
       }
-      toast.error(getStandardErrorMessage(error));
+      toast.error(translateCurrent(getStandardErrorMessage(error)));
     },
   }),
   defaultOptions: {

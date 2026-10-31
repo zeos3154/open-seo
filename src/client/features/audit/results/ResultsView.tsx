@@ -30,6 +30,8 @@ import {
 } from "@/client/components/ui/alert";
 import { DataTableTabs } from "@/client/components/table/DataTableToolbar";
 import { TabsTrigger } from "@/client/components/ui/tabs";
+import { useT } from "@/client/lib/i18n";
+import { SEVERITY_LABEL } from "./IssuesView";
 
 type ResultsTab = "issues" | "pages" | "performance";
 
@@ -48,6 +50,7 @@ export function ResultsView({
   siteBlocked: boolean;
 }) {
   const { audit, pages, lighthouse, issues } = data;
+  const t = useT();
   const crawlStopped = issues.some(
     (issue) => issue.issueType === "crawl-rate-limited",
   );
@@ -105,8 +108,11 @@ export function ResultsView({
         <Alert variant="warning">
           <ShieldAlert />
           <AlertTitle>
-            Bot protection blocked our crawler on {blockedCount}{" "}
-            {blockedCount === 1 ? "page" : "pages"}.
+            {blockedCount === 1
+              ? t("Bot protection blocked our crawler on 1 page.")
+              : t("Bot protection blocked our crawler on {count} pages.", {
+                  count: blockedCount,
+                })}
           </AlertTitle>
           <AlertDescription>
             <BotProtectionAdvice
@@ -122,24 +128,33 @@ export function ResultsView({
           <ShieldAlert />
           <AlertTitle>
             {crawlStopped
-              ? "The crawl stopped early because of the site’s rate limit."
-              : `The site rate limited us on ${rateLimitedCount} ${rateLimitedCount === 1 ? "page" : "pages"}.`}
+              ? t("The crawl stopped early because of the site’s rate limit.")
+              : rateLimitedCount === 1
+                ? t("The site rate limited us on 1 page.")
+                : t("The site rate limited us on {count} pages.", {
+                    count: rateLimitedCount,
+                  })}
           </AlertTitle>
           <AlertDescription>
             {crawlStopped
-              ? "The site kept refusing pages, so some URLs were left unvisited. This report is incomplete. "
-              : "Pages that returned 429 Too Many Requests could not be audited. "}
-            Re-run the audit after the rate limit resets, or ask the site owner
-            to allow the{" "}
+              ? t(
+                  "The site kept refusing pages, so some URLs were left unvisited. This report is incomplete. ",
+                )
+              : t(
+                  "Pages that returned 429 Too Many Requests could not be audited. ",
+                )}
+            {t(
+              "Re-run the audit after the rate limit resets, or ask the site owner to allow the",
+            )}{" "}
             <a
               className="underline underline-offset-4"
               href="https://openseo.so/docs/crawler"
               target="_blank"
               rel="noreferrer"
             >
-              OpenSEO-Audit crawler
+              {t("OpenSEO-Audit crawler")}
             </a>
-            .
+            {t(".")}
           </AlertDescription>
         </Alert>
       )}
@@ -237,14 +252,15 @@ function ResultsHeader({
   onTabChange: (tab: ResultsTab) => void;
   onExport: (format: "csv" | "json" | "sheets") => void;
 }) {
+  const t = useT();
   const tabs: Array<{ tab: ResultsTab; label: string }> = [
-    { tab: "issues", label: `Issues (${issueCount})` },
-    { tab: "pages", label: `Pages (${pageCount})` },
+    { tab: "issues", label: t("Issues ({count})", { count: issueCount }) },
+    { tab: "pages", label: t("Pages ({count})", { count: pageCount }) },
     ...(hasPerformanceTab
       ? [
           {
             tab: "performance" as const,
-            label: `Performance (${lighthouseCount})`,
+            label: t("Performance ({count})", { count: lighthouseCount }),
           },
         ]
       : []),
@@ -295,6 +311,7 @@ function StatsStrip({
     avgAccessibility: number | null;
   };
 }) {
+  const t = useT();
   const severityCounts = useMemo(() => {
     const counts = { critical: 0, warning: 0, info: 0 };
     for (const issue of issues) {
@@ -304,9 +321,9 @@ function StatsStrip({
   }, [issues]);
 
   const items: StatItem[] = [
-    { label: "Pages crawled", value: String(pagesCrawled) },
+    { label: t("Pages crawled"), value: String(pagesCrawled) },
     {
-      label: "Issues found",
+      label: t("Issues found"),
       value: String(issues.length),
       valueClass: issues.length === 0 ? "text-success" : "",
       sub: issues.length > 0 && (
@@ -318,26 +335,21 @@ function StatsStrip({
                 severity={severity}
                 title={severity}
               >
-                {severity === "critical"
-                  ? "Critical"
-                  : severity === "warning"
-                    ? "Warning"
-                    : "Info"}{" "}
-                {severityCounts[severity]}
+                {t(SEVERITY_LABEL[severity])} {severityCounts[severity]}
               </SeverityBadge>
             ) : null,
           )}
         </span>
       ),
     },
-    { label: "Average response time", value: `${averageResponseMs}ms` },
+    { label: t("Average response time"), value: `${averageResponseMs}ms` },
   ];
 
   if (totalLighthouse > 0) {
     items.push(
-      { label: "Lighthouse tests", value: String(totalLighthouse) },
+      { label: t("Lighthouse tests"), value: String(totalLighthouse) },
       {
-        label: "Lighthouse performance",
+        label: t("Lighthouse performance"),
         value:
           lighthouseSummary.avgPerformance == null
             ? "-"
@@ -345,7 +357,7 @@ function StatsStrip({
         valueClass: scoreClass(lighthouseSummary.avgPerformance),
       },
       {
-        label: "Lighthouse SEO",
+        label: t("Lighthouse SEO"),
         value:
           lighthouseSummary.avgSeo == null
             ? "-"
@@ -353,7 +365,7 @@ function StatsStrip({
         valueClass: scoreClass(lighthouseSummary.avgSeo),
       },
       {
-        label: "Lighthouse accessibility",
+        label: t("Lighthouse accessibility"),
         value:
           lighthouseSummary.avgAccessibility == null
             ? "-"
@@ -361,7 +373,7 @@ function StatsStrip({
         valueClass: scoreClass(lighthouseSummary.avgAccessibility),
       },
       {
-        label: "Lighthouse failures",
+        label: t("Lighthouse failures"),
         value: String(lighthouseSummary.failed),
         valueClass:
           lighthouseSummary.failed > 0 ? "text-destructive" : "text-success",

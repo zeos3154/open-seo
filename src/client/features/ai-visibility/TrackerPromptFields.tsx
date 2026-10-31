@@ -14,6 +14,7 @@ import {
   type TrackerDraft,
 } from "./TrackerTrackingFields";
 import { TopicField } from "./TopicField";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 
 export function TrackerPromptFields({
   projectId,
@@ -28,6 +29,7 @@ export function TrackerPromptFields({
   onChange: (value: TrackerDraft) => void;
   onGeneratingChange: (pending: boolean) => void;
 }) {
+  const t = useT();
   const promptsId = useId();
   const group = value.topic;
   const topicPrompts = state.prompts.filter(
@@ -70,7 +72,9 @@ export function TrackerPromptFields({
     while (next.length < 3) next.push("");
     update({ prompts: next });
     if (accepted.length < prompts.length)
-      toast.info(`Added ${accepted.length} prompts`);
+      toast.info(
+        translateCurrent("Added {count} prompts", { count: accepted.length }),
+      );
   };
   return (
     <section className="space-y-4">
@@ -82,13 +86,16 @@ export function TrackerPromptFields({
       {topicPrompts.length > 0 &&
         topicPrompts.every((prompt) => prompt.paused) && (
           <p className="text-xs text-muted-foreground">
-            Every prompt in this topic is paused. Prompts you add here will
-            still run.
+            {t(
+              "Every prompt in this topic is paused. Prompts you add here will still run.",
+            )}
           </p>
         )}
-      <Field aria-label="Prompts to track">
+      <Field aria-label={t("Prompts to track")}>
         <div className="flex items-center justify-between gap-3">
-          <FieldLabel htmlFor={`${promptsId}-0`}>Prompts to track</FieldLabel>
+          <FieldLabel htmlFor={`${promptsId}-0`}>
+            {t("Prompts to track")}
+          </FieldLabel>
           <Button
             type="button"
             variant="outline"
@@ -105,7 +112,7 @@ export function TrackerPromptFields({
             ) : (
               <Sparkles className="size-4" />
             )}
-            {generate.isPending ? "Generating…" : "Generate"}
+            {generate.isPending ? t("Generating…") : t("Generate")}
           </Button>
         </div>
         <div className="space-y-2">
@@ -113,8 +120,8 @@ export function TrackerPromptFields({
             <Input
               key={index}
               id={`${promptsId}-${index}`}
-              aria-label={`Prompt ${index + 1}`}
-              placeholder={`Prompt ${index + 1}`}
+              aria-label={t("Prompt {index}", { index: index + 1 })}
+              placeholder={t("Prompt {index}", { index: index + 1 })}
               value={text}
               onChange={(event) =>
                 update({
@@ -150,7 +157,7 @@ export function TrackerPromptFields({
           disabled={group.prompts.length >= MAX_PROMPTS_PER_ADDITION}
           onClick={() => update({ prompts: [...group.prompts, ""] })}
         >
-          <Plus /> Add prompt
+          <Plus /> {t("Add prompt")}
         </Button>
       </Field>
       {generate.isError && <AiQueryError error={generate.error} />}

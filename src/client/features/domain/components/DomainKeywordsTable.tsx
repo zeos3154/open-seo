@@ -24,6 +24,7 @@ import type {
   KeywordRow,
   SortOrder,
 } from "@/client/features/domain/types";
+import { useT } from "@/client/lib/i18n";
 
 type Props = DataTableFrameProps & {
   domain: string;
@@ -50,6 +51,7 @@ export function DomainKeywordsTable({
   ...frame
 }: Props) {
   const selectAnchorRef = useSelectionAnchor();
+  const t = useT();
   const rowSelection = useMemo<RowSelectionState>(
     () =>
       Object.fromEntries(
@@ -61,7 +63,7 @@ export function DomainKeywordsTable({
     () => [
       makeSelectionColumn<KeywordRow>(selectAnchorRef),
       keywordColumnHelper.accessor("keyword", {
-        header: () => "Keyword",
+        header: () => t("Keyword"),
         cell: ({ getValue }) => (
           <span className="font-medium">{getValue()}</span>
         ),
@@ -69,7 +71,7 @@ export function DomainKeywordsTable({
       keywordColumnHelper.accessor("position", {
         header: () => (
           <SortableHeader
-            label="Rank"
+            label={t("Rank")}
             column={domainSortColumn(
               sortMode === "rank",
               currentSortOrder,
@@ -82,7 +84,7 @@ export function DomainKeywordsTable({
       keywordColumnHelper.accessor("searchVolume", {
         header: () => (
           <SortableHeader
-            label="Volume"
+            label={t("Volume")}
             column={domainSortColumn(
               sortMode === "volume",
               currentSortOrder,
@@ -95,7 +97,7 @@ export function DomainKeywordsTable({
       keywordColumnHelper.accessor("traffic", {
         header: () => (
           <SortableHeader
-            label="Traffic"
+            label={t("Traffic")}
             column={domainSortColumn(
               sortMode === "traffic",
               currentSortOrder,
@@ -109,7 +111,7 @@ export function DomainKeywordsTable({
         header: () => (
           <SortableHeader
             label="CPC"
-            helpText="Cost per click in USD."
+            helpText={t("Cost per click in USD.")}
             column={domainSortColumn(sortMode === "cpc", currentSortOrder, () =>
               onSortClick("cpc"),
             )}
@@ -122,7 +124,7 @@ export function DomainKeywordsTable({
       }),
       keywordColumnHelper.display({
         id: "url",
-        header: () => "URL",
+        header: () => t("URL"),
         cell: ({ row }) => (
           <ExternalUrlCell
             value={row.original.url || row.original.relativeUrl}
@@ -137,8 +139,10 @@ export function DomainKeywordsTable({
       keywordColumnHelper.accessor("keywordDifficulty", {
         header: () => (
           <SortableHeader
-            label="Score"
-            helpText="Organic ranking difficulty (0-100): higher means harder to reach Google's top 10."
+            label={t("Score")}
+            helpText={t(
+              "Organic ranking difficulty (0-100): higher means harder to reach Google's top 10.",
+            )}
             column={domainSortColumn(
               sortMode === "score",
               currentSortOrder,
@@ -149,7 +153,7 @@ export function DomainKeywordsTable({
         cell: ({ getValue }) => <ScoreBadge value={getValue()} />,
       }),
     ],
-    [currentSortOrder, domain, onSortClick, selectAnchorRef, sortMode],
+    [currentSortOrder, domain, onSortClick, selectAnchorRef, sortMode, t],
   );
   const table = useDataTable({
     data: rows,
@@ -174,7 +178,7 @@ export function DomainKeywordsTable({
   return (
     <DataTable
       table={table}
-      empty={{ title: "No keywords match this search." }}
+      empty={{ title: t("No keywords match this search.") }}
       {...frame}
     />
   );

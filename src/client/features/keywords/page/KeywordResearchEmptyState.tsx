@@ -3,6 +3,7 @@ import { Globe, Search } from "lucide-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import { RecentSearches } from "@/client/components/RecentSearches";
 import { LOCATIONS } from "@/client/features/keywords/utils";
+import { useT } from "@/client/lib/i18n";
 import type { KeywordResearchControllerState } from "./types";
 
 type Props = {
@@ -24,6 +25,7 @@ function NoResultsState({
 }: {
   controller: KeywordResearchControllerState;
 }) {
+  const t = useT();
   const { lastSearchKeyword, lastSearchLocationCode } = controller;
 
   return (
@@ -31,16 +33,16 @@ function NoResultsState({
       <EmptyState
         variant="card"
         icon={Globe}
-        title="Not enough keyword data for this query yet"
+        title={t("Not enough keyword data for this query yet")}
         description={
           <>
-            We could not find keyword opportunities for
+            {t("We could not find keyword opportunities for")}
             <span className="font-medium text-foreground">
               {` "${lastSearchKeyword}" `}
             </span>
-            in
+            {t("in")}
             <span className="font-medium text-foreground">
-              {` ${LOCATIONS[lastSearchLocationCode] || "this location"}`}
+              {` ${LOCATIONS[lastSearchLocationCode] || t("this location")}`}
             </span>
             .
           </>
@@ -57,6 +59,7 @@ function SearchHistoryState({
   controller: KeywordResearchControllerState;
   projectId: string;
 }) {
+  const t = useT();
   return (
     <div className="pt-1">
       <RecentSearches
@@ -64,8 +67,10 @@ function SearchHistoryState({
         loaded={controller.historyLoaded}
         onRemove={controller.removeHistoryItem}
         emptyIcon={Search}
-        emptyTitle="Enter a keyword to get started"
-        emptyDescription="Search for any keyword to see volume, difficulty, CPC, and related keyword ideas."
+        emptyTitle={t("Enter a keyword to get started")}
+        emptyDescription={t(
+          "Search for any keyword to see volume, difficulty, CPC, and related keyword ideas.",
+        )}
         getTitle={(item) => item.keyword}
         getSubtitle={(item) => item.locationName}
         renderLink={(item, props) => (

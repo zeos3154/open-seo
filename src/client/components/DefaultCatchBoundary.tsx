@@ -10,8 +10,10 @@ import { AuthErrorCard } from "@/client/components/AuthErrorCard";
 import { captureClientError } from "@/client/lib/posthog";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/client/components/ui/card";
+import { useT } from "@/client/lib/i18n";
 
 export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
+  const t = useT();
   const router = useRouter();
   const isRoot = useMatch({
     strict: false,
@@ -40,7 +42,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
     <div className="flex min-w-0 flex-1 items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardContent className="text-center text-destructive">
-          {message}
+          {t(message)}
         </CardContent>
         <CardFooter className="flex flex-wrap justify-center gap-2">
           <Button
@@ -49,7 +51,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
             }}
             size="sm"
           >
-            Try Again
+            {t("Try Again")}
           </Button>
           {isRoot ? (
             <Button
@@ -58,7 +60,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
               size="sm"
               variant="outline"
             >
-              Home
+              {t("Home")}
             </Button>
           ) : (
             <Button
@@ -75,7 +77,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
               size="sm"
               variant="outline"
             >
-              Go Back
+              {t("Go Back")}
             </Button>
           )}
         </CardFooter>

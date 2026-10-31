@@ -6,6 +6,7 @@ import { QueryError } from "@/client/components/QueryState";
 import { SkeletonPageContent } from "@/client/components/SkeletonPresets";
 import { Button } from "@/client/components/ui/button";
 import { useSamAccess } from "@/client/features/sam/useSamAccess";
+import { useT } from "@/client/lib/i18n";
 
 /**
  * AI visibility setup researches the brand and suggests prompts through
@@ -19,6 +20,7 @@ export function OpenRouterKeyGate({
   projectId: string;
   children: ReactNode;
 }) {
+  const t = useT();
   const access = useSamAccess(projectId);
   if (access.status === "ready") return children;
   if (access.status === "checking") return <SkeletonPageContent />;
@@ -26,7 +28,7 @@ export function OpenRouterKeyGate({
     return (
       <QueryError
         error={access.error}
-        fallback="Could not check the OpenRouter API key."
+        fallback={t("Could not check the OpenRouter API key.")}
         onRetry={access.onRetry}
         isRetrying={access.isRetrying}
       />
@@ -37,26 +39,25 @@ export function OpenRouterKeyGate({
         className="max-w-2xl"
         icon={KeyRound}
         tone="warning"
-        title="Add an OpenRouter API key"
+        title={t("Add an OpenRouter API key")}
         description={
           <>
             <p>
-              AI visibility uses OpenRouter to research your brand and suggest
-              the prompts worth tracking, so you don&apos;t have to write them
-              yourself. The tracking results, what ChatGPT and other AI engines
-              actually answer, come from your DataForSEO account.
+              {t(
+                "AI visibility uses OpenRouter to research your brand and suggest the prompts worth tracking, so you don't have to write them yourself. The tracking results, what ChatGPT and other AI engines actually answer, come from your DataForSEO account.",
+              )}
             </p>
             <p>
-              Create a key on OpenRouter, set it as{" "}
-              <code>OPENROUTER_API_KEY</code>, restart OpenSEO, then confirm
-              here. The{" "}
+              {t(
+                "Create a key on OpenRouter, set it as OPENROUTER_API_KEY (in code formatting), restart OpenSEO, then confirm here.",
+              )}{" "}
               <Link
                 className="underline underline-offset-2 hover:text-foreground"
                 to="/help/openrouter-api-key"
               >
-                OpenRouter API key setup guide
+                {t("OpenRouter API key setup guide")}
               </Link>{" "}
-              has the steps for each deployment.
+              {t("has the steps for each deployment.")}
             </p>
           </>
         }
@@ -67,7 +68,7 @@ export function OpenRouterKeyGate({
               pending={access.isRefetching}
               onClick={access.onRetry}
             >
-              Confirm API Key
+              {t("Confirm API Key")}
             </Button>
             <Button
               size="lg"
@@ -81,7 +82,7 @@ export function OpenRouterKeyGate({
                 />
               }
             >
-              Open OpenRouter Keys
+              {t("Open OpenRouter Keys")}
             </Button>
           </>
         }

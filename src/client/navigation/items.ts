@@ -16,6 +16,9 @@ import {
 import { linkOptions } from "@tanstack/react-router";
 import { GoogleGlyphMuted } from "@/client/features/gsc/GoogleGlyph";
 
+// Labels are English source text serving as i18n keys: the sidebar translates
+// them at render time (src/client/lib/i18n.ts), so they follow the current
+// locale instead of freezing at module load.
 const projectNavItems = [
   {
     to: "/p/$projectId" as const,

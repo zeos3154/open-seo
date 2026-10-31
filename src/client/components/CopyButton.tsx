@@ -2,6 +2,7 @@ import type { ComponentProps } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
 import { useCopy } from "@/client/hooks/useCopy";
+import { useT } from "@/client/lib/i18n";
 
 type ButtonProps = ComponentProps<typeof Button>;
 
@@ -27,6 +28,7 @@ export function CopyButton({
   className?: string;
 }) {
   const { copied, copy } = useCopy();
+  const t = useT();
   const iconOnly = size?.startsWith("icon") ?? false;
   const Icon = copied ? Check : Copy;
 
@@ -48,7 +50,7 @@ export function CopyButton({
         className={copied && variant !== "default" ? "text-success" : undefined}
         aria-hidden
       />
-      {iconOnly ? null : copied ? "Copied" : label}
+      {iconOnly ? null : copied ? t("Copied") : label}
     </Button>
   );
 }

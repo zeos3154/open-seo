@@ -1,11 +1,14 @@
 import { useState, type ReactNode } from "react";
+import { SEVERITY_LABEL } from "@/client/features/audit/results/IssuesView";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { TableCell, TableRow } from "@/client/components/ui/table";
 import { SeverityBadge } from "@/client/features/audit/shared";
+import { useT } from "@/client/lib/i18n";
 import type { LighthouseIssue } from "./types";
 
 export function LighthouseIssueRow({ issue }: { issue: LighthouseIssue }) {
   const [open, setOpen] = useState(false);
+  const t = useT();
   const hasDetails = !!(issue.description || issue.items.length > 0);
 
   return (
@@ -23,7 +26,7 @@ export function LighthouseIssueRow({ issue }: { issue: LighthouseIssue }) {
         </TableCell>
         <TableCell className="py-3">
           <SeverityBadge severity={issue.severity}>
-            {issue.severity}
+            {t(SEVERITY_LABEL[issue.severity])}
           </SeverityBadge>
         </TableCell>
         <TableCell className="py-3">

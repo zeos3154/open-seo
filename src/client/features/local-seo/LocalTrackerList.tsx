@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, MapPin, Plus } from "lucide-react";
 import { listLocalTrackers } from "@/serverFunctions/local-seo";
-import { localAreaLabel } from "@/shared/local-seo";
 import {
   Card,
   CardAction,
@@ -13,6 +12,7 @@ import { Button } from "@/client/components/ui/button";
 import { EmptyState } from "@/client/components/EmptyState";
 import { QueryState } from "@/client/components/QueryState";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { useT } from "@/client/lib/i18n";
 
 export function LocalTrackerList({
   projectId,
@@ -25,23 +25,24 @@ export function LocalTrackerList({
     queryKey: ["localSeo", projectId, "trackers"],
     queryFn: () => listLocalTrackers({ data: { projectId } }),
   });
+  const t = useT();
   return (
     <Card className="gap-0 py-0">
       <CardHeader className="px-5 pt-4 pb-3">
         <CardTitle>
-          <h2 className="text-sm font-semibold">Tracked Businesses</h2>
+          <h2 className="text-sm font-semibold">{t("Tracked Businesses")}</h2>
         </CardTitle>
         <CardAction className="self-center">
           <Button size="sm" onClick={onAdd}>
             <Plus data-icon="inline-start" />
-            Add Business
+            {t("Add Business")}
           </Button>
         </CardAction>
       </CardHeader>
       <div className="divide-y divide-border border-t border-border">
         <QueryState
           query={query}
-          errorFallback="Failed to load tracked businesses"
+          errorFallback={t("Failed to load tracked businesses")}
           loading={
             <div className="space-y-3 p-5">
               <Skeleton className="h-4 w-48" />
@@ -54,8 +55,10 @@ export function LocalTrackerList({
               <EmptyState
                 variant="plain"
                 icon={MapPin}
-                title="No tracked businesses yet"
-                description="Add a Google Maps listing to check keyword rankings across the surrounding area."
+                title={t("No tracked businesses yet")}
+                description={t(
+                  "Add a Google Maps listing to check keyword rankings across the surrounding area.",
+                )}
               />
             ) : (
               trackers.map((tracker) => (
@@ -72,7 +75,11 @@ export function LocalTrackerList({
                       {tracker.address}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {localAreaLabel(tracker)} · Mobile
+                      {t("{count} points across {km} km", {
+                        count: tracker.gridSize * tracker.gridSize,
+                        km: (tracker.gridSize - 1) * tracker.spacingKm,
+                      })}{" "}
+                      · {t("Mobile")}
                     </p>
                   </div>
                   <ChevronRight className="size-4 shrink-0 text-muted-foreground" />

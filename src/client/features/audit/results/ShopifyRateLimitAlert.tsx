@@ -6,6 +6,7 @@ import {
   AlertTitle,
 } from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 
 /**
  * Shown when Shopify rate limited an unrendered crawl that carried a crawler
@@ -19,13 +20,17 @@ export function ShopifyRateLimitAlert({
   projectId: string;
   startUrl: string;
 }) {
+  const t = useT();
   return (
     <Alert variant="warning">
       <ShieldAlert />
-      <AlertTitle>We ran into an error with your Shopify domain.</AlertTitle>
+      <AlertTitle>
+        {t("We ran into an error with your Shopify domain.")}
+      </AlertTitle>
       <AlertDescription>
-        Shopify is globally rate limiting, so this report is incomplete. To
-        complete the audit, start a new one with Render JavaScript turned on.
+        {t(
+          "Shopify is globally rate limiting, so this report is incomplete. To complete the audit, start a new one with Render JavaScript turned on.",
+        )}
       </AlertDescription>
       <div className="col-start-2 mt-2">
         <Button
@@ -40,7 +45,7 @@ export function ShopifyRateLimitAlert({
             />
           }
         >
-          Start a new audit
+          {t("Start a new audit")}
         </Button>
       </div>
     </Alert>

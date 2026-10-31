@@ -12,6 +12,7 @@ import { cn } from "cn";
 import { Badge } from "@/client/components/ui/badge";
 import { Spinner } from "@/client/components/ui/spinner";
 import { getAuditCapabilities } from "@/serverFunctions/audit";
+import { currentLocale, useT } from "@/client/lib/i18n";
 import type { IssueSeverity } from "@/shared/audit-issues";
 
 export function extractPathname(url: string): string {
@@ -41,7 +42,7 @@ function parseTimestamp(dateStr: string): Date {
 }
 
 export function formatDate(dateStr: string): string {
-  return parseTimestamp(dateStr).toLocaleDateString("en-US", {
+  return parseTimestamp(dateStr).toLocaleDateString(currentLocale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -49,7 +50,7 @@ export function formatDate(dateStr: string): string {
 }
 
 export function formatStartedAt(dateStr: string): string {
-  return parseTimestamp(dateStr).toLocaleString("en-US", {
+  return parseTimestamp(dateStr).toLocaleString(currentLocale(), {
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -58,10 +59,11 @@ export function formatStartedAt(dateStr: string): string {
 }
 
 export function StatusBadge({ status }: { status: string }) {
+  const t = useT();
   if (status === "running") {
     return (
       <Badge variant="info">
-        <Spinner /> Running
+        <Spinner /> {t("Running")}
       </Badge>
     );
   }
@@ -69,14 +71,14 @@ export function StatusBadge({ status }: { status: string }) {
   if (status === "completed") {
     return (
       <Badge variant="success">
-        <CheckCircle /> Done
+        <CheckCircle /> {t("Done")}
       </Badge>
     );
   }
 
   return (
     <Badge variant="destructive">
-      <AlertCircle /> Failed
+      <AlertCircle /> {t("Failed")}
     </Badge>
   );
 }
@@ -165,6 +167,7 @@ export function BotProtectionAdvice({
   /** Whether this audit already rendered JavaScript. */
   rendered: boolean;
 }) {
+  const t = useT();
   const canRender =
     useAuditCapabilities(projectId).data?.canRenderJavaScript === true;
   const desktopCrawlers = (
@@ -176,7 +179,7 @@ export function BotProtectionAdvice({
       >
         LibreCrawl
       </a>{" "}
-      or{" "}
+      {t("or")}{" "}
       <a
         href="https://www.screamingfrog.co.uk/seo-spider/"
         target="_blank"
@@ -190,15 +193,18 @@ export function BotProtectionAdvice({
   if (!rendered && canRender) {
     return (
       <>
-        Turn on Render JavaScript and run the audit again. To avoid the extra
-        cost, use a free desktop crawler like {desktopCrawlers}.
+        {t("Turn on Render JavaScript and run the audit again.")}{" "}
+        {t("To avoid the extra cost, use a free desktop crawler like")}{" "}
+        {desktopCrawlers}
+        {t(".")}
       </>
     );
   }
   return (
     <>
-      {rendered ? "Rendering couldn't get past it. " : null}
-      Try a free desktop crawler like {desktopCrawlers}.
+      {rendered ? t("Rendering couldn't get past it. ") : null}
+      {t("Try a free desktop crawler like")} {desktopCrawlers}
+      {t(".")}
     </>
   );
 }

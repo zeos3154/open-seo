@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { refreshTrackingKeywordMetrics } from "@/serverFunctions/rank-tracking";
+import { translateCurrent } from "@/client/lib/i18n";
 
 export function useMetricsRefresh(projectId: string, configId: string) {
   const queryClient = useQueryClient();
@@ -13,7 +14,11 @@ export function useMetricsRefresh(projectId: string, configId: string) {
       void queryClient.invalidateQueries({
         queryKey: ["rankTrackingResults", projectId, configId],
       });
-      toast.success(`Metrics updated for ${result.updated} keywords`);
+      toast.success(
+        translateCurrent("Metrics updated for {count} keywords", {
+          count: result.updated,
+        }),
+      );
     },
   });
   return { refresh: mutation.mutate, isRefreshing: mutation.isPending };

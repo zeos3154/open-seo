@@ -6,6 +6,7 @@ import {
 } from "@/client/lib/clipboard";
 import type { CsvValue } from "@/client/lib/csv";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent } from "@/client/lib/i18n";
 import { captureClientEvent } from "@/client/lib/posthog";
 
 type ModalState = { isOpen: false } | { isOpen: true; rowCount: number };
@@ -53,7 +54,7 @@ export async function exportTableToSheets(args: {
 }) {
   const { headers, rows, feature } = args;
   if (rows.length === 0) {
-    toast.error("No data to export");
+    toast.error(translateCurrent("No data to export"));
     return;
   }
   try {
@@ -64,6 +65,10 @@ export async function exportTableToSheets(args: {
     });
     setState({ isOpen: true, rowCount: rows.length });
   } catch (error) {
-    toast.error(getStandardErrorMessage(error, "Could not copy to clipboard"));
+    toast.error(
+      translateCurrent(
+        getStandardErrorMessage(error, "Could not copy to clipboard"),
+      ),
+    );
   }
 }

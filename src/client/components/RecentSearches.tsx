@@ -3,6 +3,7 @@ import { Clock, History, X, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/client/components/ui/card";
+import { currentLocale, useT } from "@/client/lib/i18n";
 
 // Props for the caller's clickable element. Spread them onto a <Link> so
 // cmd+click and "open in new tab" work, or onto a <button> for in-page state.
@@ -31,6 +32,7 @@ export function RecentSearches<TItem extends { timestamp: number }>({
   emptyTitle,
   emptyDescription,
 }: Props<TItem>) {
+  const t = useT();
   if (!loaded) {
     return null;
   }
@@ -49,7 +51,9 @@ export function RecentSearches<TItem extends { timestamp: number }>({
     <Card size="lg">
       <CardHeader className="flex items-center gap-2 text-muted-foreground">
         <History className="size-4" aria-hidden />
-        {items.length} recent search{items.length !== 1 ? "es" : ""}
+        {items.length === 1
+          ? t("1 recent search")
+          : t("{count} recent searches", { count: items.length })}
       </CardHeader>
 
       <CardContent>
@@ -81,17 +85,20 @@ export function RecentSearches<TItem extends { timestamp: number }>({
               })}
               <div className="flex shrink-0 items-center gap-1">
                 <span className="text-xs text-muted-foreground">
-                  {new Date(item.timestamp).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {new Date(item.timestamp).toLocaleDateString(
+                    currentLocale(),
+                    {
+                      month: "short",
+                      day: "numeric",
+                    },
+                  )}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon-xs"
                   className="reveal-on-hover"
                   onClick={() => onRemove(item.timestamp)}
-                  aria-label="Remove from recent searches"
+                  aria-label={t("Remove from recent searches")}
                 >
                   <X />
                 </Button>

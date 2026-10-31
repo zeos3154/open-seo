@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import type { SortingState, Updater } from "@tanstack/react-table";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";
+import { useT } from "@/client/lib/i18n";
 import { BacklinksSearchCard } from "./BacklinksSearchCard";
 import { BacklinksBody } from "./BacklinksPageContent";
 import type { BacklinksPageProps } from "./backlinksPageTypes";
@@ -102,12 +103,15 @@ export function BacklinksPage({
     ),
     navigateToInput: navigateToTab,
   });
+  const t = useT();
   return (
     <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl space-y-4">
         <PageHeader
-          title="Backlinks"
-          description="Understand who links to a site, what changed recently, and which pages attract links."
+          title={t("Backlinks")}
+          description={t(
+            "Understand who links to a site, what changed recently, and which pages attract links.",
+          )}
           backLink={
             searchState.target ? (
               <BackLink
@@ -124,7 +128,7 @@ export function BacklinksPage({
                 }}
                 replace
               >
-                Recent searches
+                {t("Recent searches")}
               </BackLink>
             ) : undefined
           }

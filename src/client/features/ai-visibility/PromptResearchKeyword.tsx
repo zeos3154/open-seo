@@ -13,6 +13,7 @@ import { PromptResearchTable } from "./PromptResearchTable";
 import { TopicField } from "./TopicField";
 import { TrackerPatchReview } from "./TrackerPatchReview";
 import { AiQueryError, aiVisibilityKey } from "./shared";
+import { useT } from "@/client/lib/i18n";
 
 export function PromptResearchKeyword({
   projectId,
@@ -30,6 +31,7 @@ export function PromptResearchKeyword({
     prompts: string[];
     topic: string;
   } | null>(null);
+  const t = useT();
   // The tracked prompts refresh tracked flags after any tracker edit. The
   // server reuses its cached provider response, so this costs no extra credits.
   const research = useQuery({
@@ -71,7 +73,7 @@ export function PromptResearchKeyword({
               icon={<Plus className="size-3.5" />}
               onClick={track}
             >
-              Track prompts
+              {t("Track prompts")}
             </TableBulkActionButton>
           </div>
         }
@@ -92,12 +94,14 @@ export function PromptResearchKeyword({
           ) : undefined
         }
         empty={{
-          title: `No prompts found for “${keyword}”`,
-          description: "Try a shorter, broader term.",
+          title: t("No prompts found for “{keyword}”", { keyword }),
+          description: t("Try a shorter, broader term."),
         }}
         toolbar={
           <div className="border-b px-4 py-3 border-border">
-            <h2 className="font-medium">Prompts about “{keyword}”</h2>
+            <h2 className="font-medium">
+              {t("Prompts about “{keyword}”", { keyword })}
+            </h2>
           </div>
         }
       />

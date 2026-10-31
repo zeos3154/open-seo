@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { formatCentsForCsv } from "@/client/features/keywords/state/keywordControllerActions";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { translateCurrent } from "@/client/lib/i18n";
 import { exportRows } from "@/client/lib/exportRows";
 import { exportSavedKeywords } from "@/serverFunctions/keywords";
 import type { SavedKeywordRow } from "@/types/keywords";
@@ -62,7 +63,9 @@ export function useSavedKeywordsExport(params: {
       const result = await exportSavedKeywords({ data: exportInput });
       await runExport(format, result.rows);
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Could not export"));
+      toast.error(
+        translateCurrent(getStandardErrorMessage(error, "Could not export")),
+      );
     } finally {
       setExporting(null);
     }

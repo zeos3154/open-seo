@@ -7,6 +7,7 @@ import {
   formatPlatformLabel,
 } from "@/client/features/ai-search/platformLabels";
 import type { BrandLookupResult } from "@/types/schemas/ai-search";
+import { useT } from "@/client/lib/i18n";
 
 type ShareOfVoice = NonNullable<BrandLookupResult["shareOfVoice"]>;
 type ShareEntry = ShareOfVoice["entries"][number];
@@ -25,6 +26,7 @@ export function BrandLookupShareOfVoice({
   /** True under a URL scope: SoV always compares whole domains. */
   isDomainLevel: boolean;
 }) {
+  const t = useT();
   const target = shareOfVoice.entries.find((entry) => entry.isTarget) ?? null;
   const maxPct = Math.max(
     0,
@@ -35,9 +37,13 @@ export function BrandLookupShareOfVoice({
     <div className="flex h-full flex-col rounded-lg border border-border">
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium">Share of Voice</h3>
+          <h3 className="text-sm font-medium">{t("Share of Voice")}</h3>
           {isDomainLevel ? (
-            <DomainLevelBadge tooltip="Share of Voice compares whole domains — it is not narrowed to the page or folder you searched." />
+            <DomainLevelBadge
+              tooltip={t(
+                "Share of Voice compares whole domains — it is not narrowed to the page or folder you searched.",
+              )}
+            />
           ) : null}
         </div>
         {target ? (
@@ -57,6 +63,7 @@ export function BrandLookupShareOfVoice({
             entry={entry}
             rank={index + 1}
             maxPct={maxPct}
+            t={t}
           />
         ))}
       </ul>
@@ -64,8 +71,11 @@ export function BrandLookupShareOfVoice({
       {/* Captions only the platforms actually summed — when one platform's
           cross_aggregated call failed, the leaderboard must not claim both. */}
       <p className="border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
-        Share of mentions on{" "}
-        {shareOfVoice.platforms.map(formatPlatformLabel).join(" and ")}
+        {t("Share of mentions on {platforms}", {
+          platforms: shareOfVoice.platforms
+            .map((platform) => t(formatPlatformLabel(platform)))
+            .join(t("and")),
+        })}
       </p>
     </div>
   );
@@ -75,10 +85,12 @@ function LeaderboardRow({
   entry,
   rank,
   maxPct,
+  t,
 }: {
   entry: ShareEntry;
   rank: number;
   maxPct: number;
+  t: ReturnType<typeof useT>;
 }) {
   const hasData = entry.mentions != null && entry.sharePct != null;
   const barWidth =
@@ -95,7 +107,7 @@ function LeaderboardRow({
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm">{entry.label}</span>
-          {entry.isTarget ? <Badge size="sm">You</Badge> : null}
+          {entry.isTarget ? <Badge size="sm">{t("You")}</Badge> : null}
           <span className="ml-auto shrink-0 text-xs text-muted-foreground tabular-nums">
             {/* Null mentions = "no data"; render a dash, not zero. */}
             {entry.mentions == null ? "—" : formatCount(entry.mentions)}
@@ -103,7 +115,7 @@ function LeaderboardRow({
         </div>
         <Progress
           value={barWidth}
-          aria-label={`${entry.label} share of the leader`}
+          aria-label={t("{label} share of the leader", { label: entry.label })}
           className={cn(
             "mt-1.5 **:data-[slot=progress-track]:h-1.5",
             !entry.isTarget &&

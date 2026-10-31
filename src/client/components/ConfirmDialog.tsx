@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/client/components/ui/alert-dialog";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 
 /**
  * Asks before an action that cannot be undone: a delete, or one that spends
@@ -33,6 +34,7 @@ export function ConfirmDialog({
   destructive?: boolean;
   children: ReactNode;
 }) {
+  const t = useT();
   return (
     <AlertDialog
       open
@@ -46,7 +48,9 @@ export function ConfirmDialog({
           <AlertDialogDescription>{children}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>
+            {t("Cancel")}
+          </AlertDialogCancel>
           <Button
             variant={destructive ? "destructive" : "default"}
             pending={pending}

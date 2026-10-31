@@ -13,6 +13,7 @@ import { QueryState } from "@/client/components/QueryState";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { getLastProjectId } from "@/client/lib/active-project";
+import { useT } from "@/client/lib/i18n";
 import { CreateProjectModal } from "@/client/features/projects/CreateProjectModal";
 
 export const Route = createFileRoute("/_app/projects")({
@@ -29,24 +30,27 @@ function ProjectsPage() {
     setCurrentProjectId(getLastProjectId());
   }, []);
   const projectsQuery = useQuery(projectsQueryOptions());
+  const t = useT();
 
   return (
     <div className="h-full overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader
-          title="Projects"
-          description="Each project has its own Search Console, rank tracking, and audits."
+          title={t("Projects")}
+          description={t(
+            "Each project has its own Search Console, rank tracking, and audits.",
+          )}
           actions={
             <Button onClick={() => setCreating(true)}>
               <Plus data-icon="inline-start" />
-              New project
+              {t("New project")}
             </Button>
           }
         />
 
         <QueryState
           query={projectsQuery}
-          errorFallback="Failed to load projects"
+          errorFallback={t("Failed to load projects")}
         >
           {(data) => (
             <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
@@ -64,12 +68,12 @@ function ProjectsPage() {
                         </span>
                         {project.id === currentProjectId ? (
                           <Badge variant="secondary" size="sm">
-                            Current
+                            {t("Current")}
                           </Badge>
                         ) : null}
                       </span>
                       <span className="truncate text-xs text-muted-foreground">
-                        {project.domain ?? "No domain set"}
+                        {project.domain ?? t("No domain set")}
                       </span>
                     </span>
                     <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -97,6 +101,7 @@ function ArchivedProjects() {
     queryFn: () => getArchivedProjects(),
   });
   const archived = archivedQuery.data ?? [];
+  const t = useT();
 
   const restoreMutation = useMutation({
     mutationFn: (projectId: string) =>
@@ -106,7 +111,7 @@ function ArchivedProjects() {
       await queryClient.invalidateQueries({
         queryKey: projectsQueryOptions().queryKey,
       });
-      toast.success("Project restored");
+      toast.success(t("Project restored"));
     },
   });
 
@@ -114,7 +119,7 @@ function ArchivedProjects() {
 
   return (
     <section className="space-y-3">
-      <SectionHeader title="Archived" />
+      <SectionHeader title={t("Archived")} />
       <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
         {archived.map((project) => (
           <li
@@ -126,7 +131,7 @@ function ArchivedProjects() {
                 {project.name}
               </span>
               <span className="truncate text-xs text-muted-foreground">
-                {project.domain ?? "No domain set"}
+                {project.domain ?? t("No domain set")}
               </span>
             </span>
             <Button
@@ -135,7 +140,7 @@ function ArchivedProjects() {
               onClick={() => restoreMutation.mutate(project.id)}
               disabled={restoreMutation.isPending}
             >
-              Restore
+              {t("Restore")}
             </Button>
           </li>
         ))}

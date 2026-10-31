@@ -12,12 +12,14 @@ import { QueryError } from "@/client/components/QueryState";
 import { SkeletonPage } from "@/client/components/SkeletonPresets";
 import { StatusScreen } from "@/client/components/StatusScreen";
 import { SUBSCRIBE_ROUTE } from "@/shared/billing";
+import { useT } from "@/client/lib/i18n";
 
 export const Route = createFileRoute("/_app/")({
   component: IndexRedirect,
 });
 
 function IndexRedirect() {
+  const t = useT();
   const navigate = useNavigate();
 
   // Open the remembered project at once instead of waiting on the project
@@ -52,7 +54,9 @@ function IndexRedirect() {
       return (
         <StatusScreen
           pending
-          description="Redirecting you to billing so you can start a hosted subscription."
+          description={t(
+            "Redirecting you to billing so you can start a hosted subscription.",
+          )}
         />
       );
     }

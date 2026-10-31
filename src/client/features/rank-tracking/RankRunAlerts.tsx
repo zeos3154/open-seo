@@ -2,6 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { InsufficientCreditsError } from "@/client/features/billing/InsufficientCreditsError";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import { useT } from "@/client/lib/i18n";
 import type { useRankRunPolling } from "./useRankRunPolling";
 
 /** Warnings about the latest rank check: stale, failed, or incomplete. */
@@ -10,6 +11,7 @@ export function RankRunAlerts({
 }: {
   run: ReturnType<typeof useRankRunPolling>;
 }) {
+  const t = useT();
   if (!run) return null;
 
   if (run.maybeStale) {
@@ -17,14 +19,18 @@ export function RankRunAlerts({
       <Alert variant="warning">
         <AlertTriangle />
         <AlertDescription className="text-foreground">
-          This run may be unresponsive and will be cleaned up automatically.
+          {t(
+            "This run may be unresponsive and will be cleaned up automatically.",
+          )}
         </AlertDescription>
       </Alert>
     );
   }
 
   if (run.status === "failed" && run.errorMessage === "INSUFFICIENT_CREDITS") {
-    return <InsufficientCreditsError title="Your last rank check didn't run" />;
+    return (
+      <InsufficientCreditsError title={t("Your last rank check didn't run")} />
+    );
   }
 
   if (run.status === "failed") {
@@ -33,9 +39,9 @@ export function RankRunAlerts({
         <AlertTriangle />
         <AlertDescription className="text-foreground">
           <p>
-            <span className="font-medium">Last check failed.</span>{" "}
+            <span className="font-medium">{t("Last check failed.")}</span>{" "}
             {run.errorMessage &&
-              getStandardErrorMessage(new Error(run.errorMessage))}
+              t(getStandardErrorMessage(new Error(run.errorMessage)))}
           </p>
         </AlertDescription>
       </Alert>
@@ -51,9 +57,12 @@ export function RankRunAlerts({
         <AlertTriangle />
         <AlertDescription className="text-foreground">
           <p>
-            <span className="font-medium">Your last check was incomplete.</span>{" "}
-            We couldn't confirm a result for some keywords, so they show their
-            previous position.
+            <span className="font-medium">
+              {t("Your last check was incomplete.")}
+            </span>{" "}
+            {t(
+              "We couldn't confirm a result for some keywords, so they show their previous position.",
+            )}
           </p>
         </AlertDescription>
       </Alert>

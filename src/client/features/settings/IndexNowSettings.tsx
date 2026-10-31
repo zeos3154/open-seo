@@ -21,6 +21,7 @@ import {
   setUpIndexNow,
   submitIndexNowUrls,
 } from "@/serverFunctions/indexnow";
+import { useT, translateCurrent } from "@/client/lib/i18n";
 
 const urlsSchema = z.object({
   urls: z
@@ -56,8 +57,6 @@ const KEY_FILE_LABELS: Record<KeyFileHost["status"], string> = {
 const isUnused = (host: KeyFileHost) =>
   host.status === "moved" || host.status === "unreachable";
 
-const pluralUrls = (count: number) => `${count} URL${count === 1 ? "" : "s"}`;
-
 function downloadKeyFile(key: string) {
   const url = URL.createObjectURL(new Blob([key], { type: "text/plain" }));
   const link = document.createElement("a");
@@ -72,6 +71,7 @@ function downloadKeyFile(key: string) {
  * changed. The site proves ownership by hosting the project's key file.
  */
 export function IndexNowSettings({ projectId }: { projectId: string }) {
+  const t = useT();
   const queryClient = useQueryClient();
   const setupQueryKey = ["indexnow-setup", projectId];
   const setupQuery = useQuery({
@@ -111,15 +111,21 @@ export function IndexNowSettings({ projectId }: { projectId: string }) {
         .reduce((count, host) => count + host.urlCount, 0);
 
       for (const host of failed) {
-        toast.error("Couldn't submit to IndexNow", {
+        toast.error(translateCurrent("Couldn't submit to IndexNow"), {
           description: host.message,
           duration: 10_000,
         });
       }
-      if (sent > 0) toast.success(`Submitted ${pluralUrls(sent)}`);
+      if (sent > 0)
+        toast.success(
+          translateCurrent("Submitted {count} URLs", { count: sent }),
+        );
       if (result.skipped.length > 0) {
         toast.warning(
-          `Skipped ${pluralUrls(result.skipped.length)} not on ${setupQuery.data?.domain}`,
+          translateCurrent("Skipped {count} URLs not on {domain}", {
+            count: result.skipped.length,
+            domain: setupQuery.data?.domain ?? "",
+          }),
         );
       }
       if (failed.length > 0) {
@@ -151,13 +157,13 @@ export function IndexNowSettings({ projectId }: { projectId: string }) {
       <CardShell title="IndexNow">
         <div className="flex flex-1 flex-col gap-4 text-sm">
           <p className="text-muted-foreground">
-            Tell Bing about new and updated pages as soon as you publish them,
-            instead of waiting for it to crawl your site. Bing also powers
-            DuckDuckGo and Yahoo results. Google doesn't use IndexNow.
+            {t(
+              "Tell Bing about new and updated pages as soon as you publish them, instead of waiting for it to crawl your site. Bing also powers DuckDuckGo and Yahoo results. Google doesn't use IndexNow.",
+            )}
           </p>
           {!domain ? (
             <p className="text-muted-foreground">
-              Add your website in General settings to use IndexNow.
+              {t("Add your website in General settings to use IndexNow.")}
             </p>
           ) : !key ? (
             <div className="mt-auto flex justify-end">
@@ -167,7 +173,7 @@ export function IndexNowSettings({ projectId }: { projectId: string }) {
                 pending={setUpMutation.isPending}
                 onClick={() => setUpMutation.mutate()}
               >
-                Set up IndexNow
+                {t("Set up IndexNow")}
               </Button>
             </div>
           ) : (
@@ -181,10 +187,10 @@ export function IndexNowSettings({ projectId }: { projectId: string }) {
               />
               <Step
                 number={2}
-                title="Submit pages when you publish or update them"
+                title={t("Submit pages when you publish or update them")}
               >
                 <p className="text-muted-foreground">
-                  Paste just the pages that changed, not your whole site.
+                  {t("Paste just the pages that changed, not your whole site.")}
                 </p>
                 <form.AppForm>
                   <form.Form className="space-y-3">
@@ -193,7 +199,7 @@ export function IndexNowSettings({ projectId }: { projectId: string }) {
                         <field.TextareaField
                           label={
                             <span className="text-xs font-normal text-muted-foreground">
-                              URLs (one per line)
+                              {t("URLs (one per line)")}
                             </span>
                           }
                           placeholder={`https://${domain}/new-page`}
@@ -201,13 +207,15 @@ export function IndexNowSettings({ projectId }: { projectId: string }) {
                         />
                       )}
                     </form.AppField>
-                    <form.SubmitButton>Submit to IndexNow</form.SubmitButton>
+                    <form.SubmitButton>
+                      {t("Submit to IndexNow")}
+                    </form.SubmitButton>
                   </form.Form>
                 </form.AppForm>
                 <div className="space-y-1 rounded-md bg-muted/50 p-3 text-muted-foreground">
                   <div className="flex flex-wrap items-center gap-2">
                     <span>
-                      Or ask your agent:{" "}
+                      {t("Or ask your agent:")}{" "}
                       <span className="text-foreground">"{AGENT_PROMPT}"</span>
                     </span>
                     <CopyButton
@@ -215,12 +223,13 @@ export function IndexNowSettings({ projectId }: { projectId: string }) {
                       successMessage="Prompt copied"
                       size="icon-xs"
                       variant="ghost"
-                      label="Copy prompt"
+                      label={t("Copy prompt")}
                     />
                   </div>
                   <p className="text-xs">
-                    If it can edit your site's code, it can add the key file
-                    too.
+                    {t(
+                      "If it can edit your site's code, it can add the key file too.",
+                    )}
                   </p>
                 </div>
               </Step>
@@ -245,6 +254,7 @@ function KeyFileStep({
   isChecking: boolean;
   onCheck: () => void;
 }) {
+  const t = useT();
   const used = hosts?.filter((host) => !isUnused(host)) ?? [];
   // Until the check answers, list both addresses without a status.
   const shown: { host: string; status?: KeyFileHost["status"] }[] = !hosts
@@ -259,7 +269,9 @@ function KeyFileStep({
     <Step
       number={1}
       title={
-        verified ? "Your key file is set up" : "Add this key file to your site"
+        verified
+          ? t("Your key file is set up")
+          : t("Add this key file to your site")
       }
     >
       {verified ? null : (
@@ -271,10 +283,10 @@ function KeyFileStep({
             onClick={() => downloadKeyFile(indexNowKey)}
           >
             <Download className="size-4" />
-            Download key file
+            {t("Download key file")}
           </Button>
           <p className="text-muted-foreground">
-            Put it at the root of your site, so it opens at:
+            {t("Put it at the root of your site, so it opens at:")}
           </p>
         </>
       )}
@@ -300,7 +312,7 @@ function KeyFileStep({
         pending={isChecking}
         onClick={onCheck}
       >
-        Check again
+        {t("Check again")}
       </Button>
       {verified ? null : (
         <Collapsible>
@@ -309,28 +321,35 @@ function KeyFileStep({
               className="size-3.5 transition-transform group-data-[panel-open]:rotate-90"
               aria-hidden
             />
-            How do I add a file to my site?
+            {t("How do I add a file to my site?")}
           </CollapsibleTrigger>
           <CollapsibleContent>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
               <li>
-                Site built from code: put the file in the folder your site
-                serves as-is, often called <code>public</code> or{" "}
-                <code>static</code>.
+                {t(
+                  "Site built from code: put the file in the folder your site serves as-is, often called",
+                )}{" "}
+                <code>public</code> {t("or")} <code>static</code>
+                {t(".")}
               </li>
               <li>
-                WordPress: upload it with your host's file manager or SFTP to
-                the folder that holds <code>wp-config.php</code>. SEO plugins
-                like Rank Math can also submit to IndexNow for you.
+                {t(
+                  "WordPress: upload it with your host's file manager or SFTP to the folder that holds",
+                )}{" "}
+                <code>wp-config.php</code>
+                {t(
+                  ". SEO plugins like Rank Math can also submit to IndexNow for you.",
+                )}
               </li>
               <li>
-                On Cloudflare: turn on Crawler Hints in Cloudflare's caching
-                settings and it submits changed pages to IndexNow for you.
+                {t(
+                  "On Cloudflare: turn on Crawler Hints in Cloudflare's caching settings and it submits changed pages to IndexNow for you.",
+                )}
               </li>
               <li>
-                Website builders like Webflow, Shopify, Squarespace and Wix
-                usually don't let you add files at the root. Check whether yours
-                already supports IndexNow.
+                {t(
+                  "Website builders like Webflow, Shopify, Squarespace and Wix usually don't let you add files at the root. Check whether yours already supports IndexNow.",
+                )}
               </li>
             </ul>
           </CollapsibleContent>
@@ -341,6 +360,7 @@ function KeyFileStep({
 }
 
 function KeyFileStatus({ status }: { status: KeyFileHost["status"] }) {
+  const t = useT();
   const problem =
     status === "missing" ||
     status === "wrong_content" ||
@@ -351,7 +371,7 @@ function KeyFileStatus({ status }: { status: KeyFileHost["status"] }) {
       className={`inline-flex items-center gap-1 text-xs ${status === "found" ? "text-success" : problem ? "text-destructive" : "text-muted-foreground"}`}
     >
       {Icon ? <Icon className="size-3.5" aria-hidden /> : null}
-      {KEY_FILE_LABELS[status]}
+      {t(KEY_FILE_LABELS[status])}
     </span>
   );
 }

@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/client/components/ui/select";
+import { useT } from "@/client/lib/i18n";
 
 /** Picks a saved topic or names a new one. */
 export function TopicField({
@@ -20,17 +21,18 @@ export function TopicField({
   onChange: (topic: string) => void;
 }) {
   const topicId = useId();
+  const t = useT();
   // Kept separately so typing a saved topic's name doesn't hide the input.
   const [creating, setCreating] = useState(!topics.includes(value));
   const items = [
     ...topics.map((name) => ({ value: name, label: name })),
-    { value: "", label: "New topic" },
+    { value: "", label: t("New topic") },
   ];
   return (
     <>
       {topics.length > 0 && (
         <Field>
-          <FieldLabel>Topic</FieldLabel>
+          <FieldLabel>{t("Topic")}</FieldLabel>
           <Select
             items={items}
             value={creating ? "" : value}
@@ -39,7 +41,7 @@ export function TopicField({
               onChange(name ?? "");
             }}
           >
-            <SelectTrigger className="w-full" aria-label="Topic">
+            <SelectTrigger className="w-full" aria-label={t("Topic")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -54,12 +56,12 @@ export function TopicField({
       )}
       {creating && (
         <Field>
-          <FieldLabel htmlFor={topicId}>Topic name</FieldLabel>
+          <FieldLabel htmlFor={topicId}>{t("Topic name")}</FieldLabel>
           <Input
             id={topicId}
             required
             maxLength={100}
-            placeholder="e.g. SEO tools"
+            placeholder={t("e.g. SEO tools")}
             value={value}
             onChange={(event) => onChange(event.target.value)}
           />

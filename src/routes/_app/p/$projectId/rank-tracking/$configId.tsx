@@ -9,6 +9,7 @@ import { EmptyState } from "@/client/components/EmptyState";
 import { Button } from "@/client/components/ui/button";
 import { RankTrackingConfigModal } from "@/client/features/rank-tracking/RankTrackingConfigModal";
 import { rankTrackingDetailSearchSchema } from "@/types/schemas/rank-tracking-search";
+import { useT } from "@/client/lib/i18n";
 
 export const Route = createFileRoute(
   "/_app/p/$projectId/rank-tracking/$configId",
@@ -23,6 +24,7 @@ function RankTrackingConfigRoute() {
   const search = Route.useSearch();
   const queryClient = useQueryClient();
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const t = useT();
 
   const configsQuery = useQuery({
     queryKey: ["rankTrackingConfigs", projectId],
@@ -55,7 +57,7 @@ function RankTrackingConfigRoute() {
     return (
       <QueryError
         error={configsQuery.error}
-        fallback="Failed to load domain configuration"
+        fallback={t("Failed to load domain configuration")}
         onRetry={() => void configsQuery.refetch()}
         isRetrying={configsQuery.isFetching}
       />
@@ -66,11 +68,13 @@ function RankTrackingConfigRoute() {
     return (
       <EmptyState
         kind="no-data"
-        title="Domain configuration not found"
-        description="This domain was archived or does not exist in this project."
+        title={t("Domain configuration not found")}
+        description={t(
+          "This domain was archived or does not exist in this project.",
+        )}
         action={
           <Button variant="outline" size="sm" onClick={handleBack}>
-            Back to domains
+            {t("Back to domains")}
           </Button>
         }
       />

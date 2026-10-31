@@ -4,6 +4,7 @@ import { sort } from "remeda";
 import type { RankPositionMatrixCell } from "@/serverFunctions/rank-tracking";
 import { EmptyState } from "@/client/components/EmptyState";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 import {
   Table,
   TableBody,
@@ -34,6 +35,7 @@ export function RankTrackingHistoryMatrix({
   onClearFilters: () => void;
 }) {
   const { runs, cellByKeyword } = useMemo(() => buildMatrix(cells), [cells]);
+  const t = useT();
 
   // The History view is only offered once the matrix has loaded at least two
   // runs, so only filters can leave this empty.
@@ -41,11 +43,11 @@ export function RankTrackingHistoryMatrix({
     return (
       <EmptyState
         kind="filtered"
-        title="No keywords match these filters"
-        description="Change or clear the filters to see more keywords."
+        title={t("No keywords match these filters")}
+        description={t("Change or clear the filters to see more keywords.")}
         action={
           <Button variant="outline" size="sm" onClick={onClearFilters}>
-            Clear filters
+            {t("Clear filters")}
           </Button>
         }
       />
@@ -60,7 +62,7 @@ export function RankTrackingHistoryMatrix({
             {/* Unconstrained keyword column absorbs the slack when only a few
                 check columns exist, so sparse history doesn't stretch oddly. */}
             <TableHead className="sticky left-0 z-10 w-full bg-card">
-              Keyword
+              {t("Keyword")}
             </TableHead>
             {runs.map((r) => (
               <TableHead key={r.runId} className="w-24 text-right">
@@ -107,13 +109,14 @@ export function RankTrackingHistoryMatrix({
 }
 
 function NotCheckedCell() {
+  const t = useT();
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           // An icon fits the numeric column.
           <span
-            aria-label="Not checked"
+            aria-label={t("Not checked")}
             className="inline-flex cursor-help align-middle text-muted-foreground"
           />
         }
@@ -121,7 +124,7 @@ function NotCheckedCell() {
         <CircleSlash className="size-3.5" aria-hidden />
       </TooltipTrigger>
       <TooltipContent>
-        Not checked: check failed, no position recorded.
+        {t("Not checked: check failed, no position recorded.")}
       </TooltipContent>
     </Tooltip>
   );
@@ -187,7 +190,8 @@ function buildMatrix(cells: RankPositionMatrixCell[]): {
 }
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString("en-US", {
+  // Follow the browser locale, like the rest of the app's date rendering.
+  return new Date(value).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
   });

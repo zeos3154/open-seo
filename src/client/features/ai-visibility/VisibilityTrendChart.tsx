@@ -10,19 +10,13 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/client/components/ui/chart";
+import { useT } from "@/client/lib/i18n";
 import type { AiTrend } from "@/shared/ai-visibility";
 
 export const trendSeries = [
   { key: "mentionRate", label: "Brand mentions", color: "#2563eb" },
   { key: "citationRate", label: "Owned citations", color: "#e69f00" },
 ] as const;
-
-const chartConfig: ChartConfig = Object.fromEntries(
-  trendSeries.map((series) => [
-    series.key,
-    { label: series.label, color: series.color },
-  ]),
-);
 
 const shortDate = (value: string | number) =>
   new Date(value).toLocaleDateString(undefined, {
@@ -36,6 +30,13 @@ const shortDate = (value: string | number) =>
  * leaves a gap, not a zero.
  */
 export function VisibilityTrendChart({ trend }: { trend: AiTrend }) {
+  const t = useT();
+  const chartConfig: ChartConfig = Object.fromEntries(
+    trendSeries.map((series) => [
+      series.key,
+      { label: t(series.label), color: series.color },
+    ]),
+  );
   const start = Date.parse(trend.current.start);
   const latestByDay = new Map<string, AiTrend["runs"][number]>();
   // Runs arrive oldest first; a later run replaces that day's earlier point.
@@ -47,13 +48,16 @@ export function VisibilityTrendChart({ trend }: { trend: AiTrend }) {
     time: Date.parse(run.createdAt),
     mentionRate: run.mentionRate,
     citationRate: run.citationRate,
-    collected: `${run.coverage.answered} of ${run.coverage.expected} answers collected`,
+    collected: t("{count} of {total} answers collected", {
+      count: run.coverage.answered,
+      total: run.coverage.expected,
+    }),
   }));
   return (
     <ChartContainer
       config={chartConfig}
       className="h-[220px]"
-      aria-label="Daily brand mention and owned citation rate"
+      aria-label={t("Daily brand mention and owned citation rate")}
     >
       <LineChart data={data} margin={{ left: 0, right: 12, top: 8, bottom: 0 }}>
         <ChartGrid />

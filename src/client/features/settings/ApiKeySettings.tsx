@@ -32,6 +32,7 @@ import { CopyButton } from "@/client/components/CopyButton";
 import { useOrganizations } from "@/client/features/settings/useOrganizations";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient } from "@/lib/auth-client";
+import { useT } from "@/client/lib/i18n";
 
 // Better Auth rejects longer names with INVALID_NAME_LENGTH.
 const MAX_KEY_NAME_LENGTH = 32;
@@ -48,6 +49,7 @@ const apiKeyMetadataSchema = z.looseObject({
 });
 
 export function ApiKeySettings() {
+  const t = useT();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createdKey, setCreatedKey] = useState<string | null>(null);
@@ -132,15 +134,16 @@ export function ApiKeySettings() {
 
   return (
     <section className="space-y-3">
-      <SectionHeader title="API keys" />
+      <SectionHeader title={t("API keys")} />
       <div className="flex items-start justify-between gap-6">
         <div>
           <p className="text-sm">
-            Authenticate MCP clients when OAuth doesn't work
+            {t("Authenticate MCP clients when OAuth doesn't work")}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Use this for remote agents like Hermes where the normal login flow
-            doesn't work.
+            {t(
+              "Use this for remote agents like Hermes where the normal login flow doesn't work.",
+            )}
           </p>
           <p className="mt-1 text-sm">
             <a
@@ -149,12 +152,12 @@ export function ApiKeySettings() {
               target="_blank"
               rel="noreferrer"
             >
-              Setup guide
+              {t("Setup guide")}
             </a>
           </p>
         </div>
         <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-          Create API key
+          {t("Create API key")}
         </Button>
       </div>
 
@@ -164,19 +167,21 @@ export function ApiKeySettings() {
       >
         {(apiKeys) =>
           apiKeys.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No API keys yet.</p>
+            <p className="text-sm text-muted-foreground">
+              {t("No API keys yet.")}
+            </p>
           ) : (
             <TableCard>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Key</TableHead>
+                    <TableHead>{t("Name")}</TableHead>
+                    <TableHead>{t("Key")}</TableHead>
                     {showOrganization ? (
-                      <TableHead>Organization</TableHead>
+                      <TableHead>{t("Organization")}</TableHead>
                     ) : null}
-                    <TableHead>Created</TableHead>
-                    <TableHead>Last used</TableHead>
+                    <TableHead>{t("Created")}</TableHead>
+                    <TableHead>{t("Last used")}</TableHead>
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -203,11 +208,13 @@ export function ApiKeySettings() {
                       <TableCell className="text-xs text-muted-foreground">
                         {key.lastRequest
                           ? key.lastRequest.toLocaleDateString()
-                          : "Never"}
+                          : t("Never")}
                       </TableCell>
                       <TableCell>
                         <RowActionsMenu
-                          label={`Actions for ${key.name || "API key"}`}
+                          label={t("Actions for {name}", {
+                            name: key.name || "API key",
+                          })}
                         >
                           <DropdownMenuItem
                             variant="destructive"
@@ -219,7 +226,7 @@ export function ApiKeySettings() {
                             }
                           >
                             <Trash2 />
-                            Revoke key
+                            {t("Revoke key")}
                           </DropdownMenuItem>
                         </RowActionsMenu>
                       </TableCell>
@@ -234,14 +241,14 @@ export function ApiKeySettings() {
 
       {revoking ? (
         <ConfirmDialog
-          title={`Revoke \u201c${revoking.name}\u201d?`}
-          confirmLabel="Revoke key"
+          title={t("Revoke “{name}”?", { name: revoking.name })}
+          confirmLabel={t("Revoke key")}
           destructive
           pending={revokeMutation.isPending}
           onClose={() => setRevoking(null)}
           onConfirm={() => revokeMutation.mutate(revoking.id)}
         >
-          Clients using it will stop working.
+          {t("Clients using it will stop working.")}
         </ConfirmDialog>
       ) : null}
 
@@ -262,14 +269,13 @@ export function ApiKeySettings() {
           {createdKey ? (
             <>
               <DialogHeader>
-                <DialogTitle>Copy your new API key</DialogTitle>
+                <DialogTitle>{t("Copy your new API key")}</DialogTitle>
                 <DialogDescription>
-                  It won't be shown again. Send it as{" "}
+                  {t("It won't be shown again. Send it as")}{" "}
                   <span className="font-mono text-xs">
                     Authorization: Bearer
                   </span>{" "}
-                  to{" "}
-                  <span className="font-mono text-xs break-all">{mcpUrl}</span>.
+                  {t("to {url}", { url: mcpUrl })}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex items-center gap-2">
@@ -288,19 +294,19 @@ export function ApiKeySettings() {
                 />
               </div>
               <DialogFooter>
-                <Button onClick={closeCreateModal}>Done</Button>
+                <Button onClick={closeCreateModal}>{t("Done")}</Button>
               </DialogFooter>
             </>
           ) : (
             <form.AppForm>
               <form.Form className="grid gap-4">
                 <DialogHeader>
-                  <DialogTitle>Create API key</DialogTitle>
+                  <DialogTitle>{t("Create API key")}</DialogTitle>
                 </DialogHeader>
                 <form.AppField name="name">
                   {(field) => (
                     <field.TextField
-                      label="Name"
+                      label={t("Name")}
                       placeholder="Claude Code on laptop"
                       maxLength={MAX_KEY_NAME_LENGTH}
                       required
@@ -310,14 +316,16 @@ export function ApiKeySettings() {
                 </form.AppField>
                 {showOrganization ? (
                   <p className="text-sm text-muted-foreground">
-                    This key works in {activeOrganizationName}.
+                    {t("This key works in {org}.", {
+                      org: activeOrganizationName ?? "",
+                    })}
                   </p>
                 ) : null}
                 <DialogFooter>
                   <Button variant="ghost" onClick={closeCreateModal}>
-                    Cancel
+                    {t("Cancel")}
                   </Button>
-                  <form.SubmitButton>Create</form.SubmitButton>
+                  <form.SubmitButton>{t("Create")}</form.SubmitButton>
                 </DialogFooter>
               </form.Form>
             </form.AppForm>

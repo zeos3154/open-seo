@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { ProjectPageHeader } from "@/client/features/projects/ProjectPageHeader";
 import { SettingsTabs } from "@/client/features/projects/SettingsTabs";
+import { useT } from "@/client/lib/i18n";
 
 export const Route = createFileRoute("/_app/p/$projectId/settings")({
   component: ProjectSettingsLayout,
@@ -8,6 +9,7 @@ export const Route = createFileRoute("/_app/p/$projectId/settings")({
 
 function ProjectSettingsLayout() {
   const { projectId } = Route.useParams();
+  const t = useT();
 
   return (
     <div className="h-full overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
@@ -15,7 +17,7 @@ function ProjectSettingsLayout() {
         <div className="space-y-4">
           <ProjectPageHeader
             projectId={projectId}
-            title="Project settings"
+            title={t("Project settings")}
             showBackLink
           />
           <SettingsTabs projectId={projectId} />

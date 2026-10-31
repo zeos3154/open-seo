@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/client/components/ui/table";
 import { formatDate, StatusBadge } from "@/client/features/audit/shared";
+import { useT } from "@/client/lib/i18n";
 
 type AuditHistory = Awaited<ReturnType<typeof getAuditHistory>>;
 
@@ -31,11 +32,10 @@ export function AuditHistorySection({
   historyQuery: UseQueryResult<AuditHistory>;
   onDelete: (auditId: string) => void;
 }) {
+  const t = useT();
+  const errorFallback = t("Failed to load audit history");
   return (
-    <QueryState
-      query={historyQuery}
-      errorFallback="Failed to load audit history"
-    >
+    <QueryState query={historyQuery} errorFallback={errorFallback}>
       {(history) => (
         <AuditHistoryTable
           projectId={projectId}
@@ -56,22 +56,23 @@ function AuditHistoryTable({
   history: AuditHistory;
   onDelete: (auditId: string) => void;
 }) {
+  const t = useT();
   if (history.length === 0) {
-    return <EmptyState icon={ScanSearch} title="No audits yet" />;
+    return <EmptyState icon={ScanSearch} title={t("No audits yet")} />;
   }
 
   return (
     <TableCard>
       <DataTableToolbar>
-        <h2 className="text-sm font-semibold">Previous Audits</h2>
+        <h2 className="text-sm font-semibold">{t("Previous Audits")}</h2>
       </DataTableToolbar>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Date</TableHead>
+            <TableHead>{t("Date")}</TableHead>
             <TableHead>URL</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Pages</TableHead>
+            <TableHead>{t("Status")}</TableHead>
+            <TableHead>{t("Pages")}</TableHead>
             <TableHead>Lighthouse</TableHead>
             <TableHead />
           </TableRow>
@@ -92,7 +93,7 @@ function AuditHistoryTable({
               <TableCell>
                 {audit.ranLighthouse ? (
                   <Badge variant="outline" size="sm">
-                    Yes
+                    {t("Yes")}
                   </Badge>
                 ) : null}
               </TableCell>
@@ -120,6 +121,7 @@ function HistoryActions({
   auditId: string;
   onDelete: (auditId: string) => void;
 }) {
+  const t = useT();
   return (
     <div className="flex items-center justify-end gap-2 reveal-on-hover">
       <Button
@@ -133,15 +135,15 @@ function HistoryActions({
           />
         }
       >
-        View
+        {t("View")}
       </Button>
-      <RowActionsMenu label="Audit actions">
+      <RowActionsMenu label={t("Audit actions")}>
         <DropdownMenuItem
           variant="destructive"
           onClick={() => onDelete(auditId)}
         >
           <Trash2 />
-          Delete audit
+          {t("Delete audit")}
         </DropdownMenuItem>
       </RowActionsMenu>
     </div>

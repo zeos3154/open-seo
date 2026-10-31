@@ -19,12 +19,14 @@ import {
   listReportTemplates,
 } from "@/serverFunctions/reportTemplates";
 import type { ReportTemplate } from "@/types/schemas/report-templates";
+import { useT } from "@/client/lib/i18n";
 
 export const Route = createFileRoute("/_app/p/$projectId/reports/templates")({
   component: ReportTemplatesPage,
 });
 
 function ReportTemplatesPage() {
+  const t = useT();
   const { projectId } = Route.useParams();
   const queryClient = useQueryClient();
   // `{}` opens the form for a new template; `{ template }` opens it for an edit.
@@ -69,15 +71,17 @@ function ReportTemplatesPage() {
         <PageHeader
           backLink={
             <BackLink to="/p/$projectId/reports" params={{ projectId }}>
-              Reports
+              {t("Reports")}
             </BackLink>
           }
-          title="Report templates"
-          description="Reusable briefs your agents follow when they write a report: who it is for, which sections it has, and how it should sound."
+          title={t("Report templates")}
+          description={t(
+            "Reusable briefs your agents follow when they write a report: who it is for, which sections it has, and how it should sound.",
+          )}
           actions={
             <Button onClick={() => setForm({})}>
               <Plus data-icon="inline-start" />
-              New template
+              {t("New template")}
             </Button>
           }
         />
@@ -110,14 +114,14 @@ function ReportTemplatesPage() {
 
       {pendingDelete ? (
         <ConfirmDialog
-          title={`Delete \u201c${pendingDelete.name}\u201d?`}
-          confirmLabel="Delete template"
+          title={t("Delete “{name}”?", { name: pendingDelete.name })}
+          confirmLabel={t("Delete template")}
           destructive
           pending={deleteMutation.isPending}
           onClose={() => setPendingDelete(null)}
           onConfirm={() => deleteMutation.mutate(pendingDelete.id)}
         >
-          Reports already written from it are not affected.
+          {t("Reports already written from it are not affected.")}
         </ConfirmDialog>
       ) : null}
     </div>

@@ -7,6 +7,7 @@ import {
   FieldLabel,
 } from "@/client/components/ui/field";
 import { Input } from "@/client/components/ui/input";
+import { useT } from "@/client/lib/i18n";
 import {
   MAX_LOCAL_KEYWORD_LENGTH,
   MAX_LOCAL_KEYWORDS,
@@ -28,20 +29,21 @@ export function LocalKeywordFields({
   description?: string;
 }) {
   const id = useId();
+  const t = useT();
   // The row "Add keyword" just created, so typing can start right away.
   const [addedRow, setAddedRow] = useState<number | null>(null);
   const setRows = (rows: string[]) => onChange(rows.length ? rows : [""]);
   return (
     <Field>
-      <FieldLabel htmlFor={`${id}-0`}>Keywords to track</FieldLabel>
+      <FieldLabel htmlFor={`${id}-0`}>{t("Keywords to track")}</FieldLabel>
       {description && <FieldDescription>{description}</FieldDescription>}
       <div className="space-y-2">
         {value.map((keyword, index) => (
           <div key={index} className="flex items-center gap-1">
             <Input
               id={`${id}-${index}`}
-              aria-label={`Keyword ${index + 1}`}
-              placeholder="e.g. pizza delivery"
+              aria-label={t("Keyword {index}", { index: index + 1 })}
+              placeholder={t("e.g. pizza delivery")}
               maxLength={MAX_LOCAL_KEYWORD_LENGTH}
               autoFocus={index === addedRow}
               value={keyword}
@@ -73,7 +75,7 @@ export function LocalKeywordFields({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label={`Remove keyword ${index + 1}`}
+              aria-label={t("Remove keyword {index}", { index: index + 1 })}
               onClick={() =>
                 setRows(value.filter((_, position) => position !== index))
               }
@@ -94,7 +96,7 @@ export function LocalKeywordFields({
           onChange([...value, ""]);
         }}
       >
-        <Plus /> Add keyword
+        <Plus /> {t("Add keyword")}
       </Button>
     </Field>
   );

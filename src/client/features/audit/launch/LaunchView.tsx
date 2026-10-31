@@ -9,6 +9,7 @@ import {
   RENDERING_COST_NOTE,
   renderingCostText,
 } from "@/shared/audit-rendering";
+import { useT } from "@/client/lib/i18n";
 
 type LaunchViewProps = {
   projectId: string;
@@ -24,6 +25,7 @@ export function LaunchView({
   // The plan only sets the page limit, so the form stays usable while the
   // plan loads. The server enforces the limit regardless.
   const isFreePlan = useHostedPlanGate() === "free";
+  const t = useT();
   const controller = useLaunchController({
     projectId,
     initialUrl,
@@ -34,7 +36,7 @@ export function LaunchView({
   return (
     <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
       <div className="mx-auto max-w-7xl space-y-4">
-        <PageHeader title="Site Audit" />
+        <PageHeader title={t("Site Audit")} />
 
         <LaunchFormCard
           launchForm={controller.launchForm}
@@ -75,27 +77,33 @@ function LargeCrawlDialog({
   onClose: () => void;
 }) {
   const pageCount = pages.toLocaleString();
+  const t = useT();
   // Only hosted plans pay for rendering, so only they see a price.
   const priced = renderJavaScript && isHostedClientAuthMode();
   return (
     <ConfirmDialog
       title={
-        priced ? `Render up to ${pageCount} pages?` : "Start a large audit?"
+        priced
+          ? t("Render up to {count} pages?", { count: pageCount })
+          : t("Start a large audit?")
       }
-      confirmLabel={priced ? "Start audit" : "Continue"}
+      confirmLabel={priced ? t("Start audit") : t("Continue")}
       onConfirm={onConfirm}
       onClose={onClose}
     >
       {priced ? (
         <>
-          {RENDERING_COST_NOTE} Rendered audits can take longer than regular
-          audits.
+          {t(RENDERING_COST_NOTE)}
+          {t(" Rendered audits can take longer than regular audits.")}
           <span className="mt-3 block font-semibold text-foreground">
             {renderingCostText(pages)}
           </span>
         </>
       ) : (
-        `You are about to crawl ${pageCount} pages. This is okay, but it may take a while. Continue?`
+        t(
+          "You are about to crawl {count} pages. This is okay, but it may take a while. Continue?",
+          { count: pageCount },
+        )
       )}
     </ConfirmDialog>
   );

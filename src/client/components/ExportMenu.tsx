@@ -20,10 +20,13 @@ import {
   DropdownMenuTrigger,
 } from "@/client/components/ui/dropdown-menu";
 import type { ExportFormat } from "@/client/lib/exportRows";
+import { useT } from "@/client/lib/i18n";
 
 /** Every `exportRows()` format, plus a plain list copy (one item per line). */
 type ExportAction = ExportFormat | "copy-list";
 
+// Labels are English source keys; translate at render so a locale switch
+// updates the open menu. Action ids stay stable (they are exported values).
 const ACTION_ITEMS: Record<ExportAction, { label: string; icon: ReactNode }> = {
   sheets: { label: "Export to Sheets", icon: <Sheet /> },
   csv: { label: "Export CSV", icon: <FileDown /> },
@@ -57,13 +60,14 @@ export function ExportMenu<A extends ExportAction>({
   copyListLabel?: string;
   scopes?: { id: string; label: string; actions?: A[] }[];
 }) {
+  const t = useT();
   const renderItems = (scope?: string, scopeActions: A[] = actions) =>
     scopeActions.map((action) => (
       <DropdownMenuItem key={action} onClick={() => onExport(action, scope)}>
         {ACTION_ITEMS[action].icon}
         {action === "copy-list" && copyListLabel
           ? copyListLabel
-          : ACTION_ITEMS[action].label}
+          : t(ACTION_ITEMS[action].label)}
       </DropdownMenuItem>
     ));
 
@@ -80,7 +84,7 @@ export function ExportMenu<A extends ExportAction>({
         }
       >
         {busy ? null : <Download data-icon="inline-start" />}
-        Export
+        {t("Export")}
         <ChevronDown data-icon="inline-end" className="opacity-60" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -89,7 +93,11 @@ export function ExportMenu<A extends ExportAction>({
               <Fragment key={scope.id}>
                 {index > 0 ? <DropdownMenuSeparator /> : null}
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel>{scope.label}</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    {typeof scope.label === "string"
+                      ? t(scope.label)
+                      : scope.label}
+                  </DropdownMenuLabel>
                   {renderItems(scope.id, scope.actions)}
                 </DropdownMenuGroup>
               </Fragment>

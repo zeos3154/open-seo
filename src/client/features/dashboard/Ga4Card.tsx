@@ -18,10 +18,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/client/components/ui/chart";
-
-const sessionsChartConfig = {
-  sessions: { label: "Sessions", color: "var(--color-primary)" },
-} satisfies ChartConfig;
+import { useT } from "@/client/lib/i18n";
 
 function formatTrendDay(date: string): string {
   // Construct in local time: Date.parse("2026-08-01") is UTC midnight, which
@@ -47,6 +44,10 @@ export function Ga4Card({
   projectId: string;
   connected: boolean;
 }) {
+  const t = useT();
+  const sessionsChartConfig = {
+    sessions: { label: t("Sessions"), color: "var(--color-primary)" },
+  } satisfies ChartConfig;
   const reportQuery = useQuery({
     queryKey: ["dashboardGa4Report", projectId],
     queryFn: () => getGa4DashboardReport({ data: { projectId } }),
@@ -64,7 +65,7 @@ export function Ga4Card({
   // period would otherwise render an all-zero flatline chart in an empty box.
   return (
     <CardShell
-      title="Organic traffic"
+      title={t("Organic traffic")}
       action={
         <Link
           to="/p/$projectId/settings"
@@ -72,16 +73,16 @@ export function Ga4Card({
           hash="google-analytics"
           className={moreDetailsClass}
         >
-          Manage
+          {t("Manage")}
         </Link>
       }
     >
       <p className="mb-4 text-sm text-muted-foreground">
-        Google Analytics · Last 28 days
+        {t("Google Analytics · Last 28 days")}
       </p>
       {reportQuery.isError ? (
         <p className="text-sm text-muted-foreground">
-          Couldn&rsquo;t load Google Analytics data. Try again shortly.
+          {t("Couldn't load Google Analytics data. Try again shortly.")}
         </p>
       ) : !report ? (
         <div className="space-y-3" aria-busy>
@@ -90,7 +91,7 @@ export function Ga4Card({
         </div>
       ) : !report.totals.sessions ? (
         <p className="text-sm text-muted-foreground">
-          No organic search traffic recorded in the last 28 days yet.
+          {t("No organic search traffic recorded in the last 28 days yet.")}
         </p>
       ) : (
         <div className="space-y-4">
@@ -98,7 +99,7 @@ export function Ga4Card({
             showChange
             rows={[
               {
-                label: "Sessions",
+                label: t("Sessions"),
                 value: statValue(report.totals.sessions, formatCount),
                 change: percentChange(
                   report.totals.sessions,
@@ -106,7 +107,7 @@ export function Ga4Card({
                 ),
               },
               {
-                label: "Active users",
+                label: t("Active users"),
                 value: statValue(report.totals.activeUsers, formatCount),
                 change: percentChange(
                   report.totals.activeUsers,
@@ -114,12 +115,12 @@ export function Ga4Card({
                 ),
               },
               {
-                label: "Engagement rate",
+                label: t("Engagement rate"),
                 value: statValue(report.totals.engagementRate, formatCtr),
                 change: null,
               },
               {
-                label: "Key events",
+                label: t("Key events"),
                 value: statValue(report.totals.keyEvents, formatCount),
                 change: percentChange(
                   report.totals.keyEvents,

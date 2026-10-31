@@ -13,6 +13,7 @@ import {
 } from "@/serverFunctions/dashboard";
 import { DashboardKeywordTable } from "./DashboardKeywordTable";
 import { Freshness } from "./siteTabParts";
+import { useT } from "@/client/lib/i18n";
 
 const SOURCES = ["new", "top", "striking"] as const;
 type Source = (typeof SOURCES)[number];
@@ -33,6 +34,7 @@ export function DashboardKeywords({
   connected: boolean;
   siteUrl: string | null;
 }) {
+  const t = useT();
   const [source, setSource] = useState<Source>("new");
   const emerging = useQuery({
     queryKey: ["dashboardEmergingQueries", projectId, siteUrl],
@@ -100,12 +102,12 @@ export function DashboardKeywords({
           ? {
               title:
                 emerging.data?.value.hasSearchData === false
-                  ? "No search data yet"
-                  : "No new keywords this week",
+                  ? t("No search data yet")
+                  : t("No new keywords this week"),
             }
           : source === "striking"
-            ? { title: "No keywords at positions 5–20 in this period" }
-            : { title: "No keywords yet" }
+            ? { title: t("No keywords at positions 5–20 in this period") }
+            : { title: t("No keywords yet") }
       }
       tabs={
         <DataTableTabs
@@ -126,19 +128,19 @@ export function DashboardKeywords({
                 />
               }
             >
-              View full GSC insights →
+              {t("View full GSC insights →")}
             </Button>
           }
           description={
             <>
-              {DESCRIPTIONS[source]}
+              {t(DESCRIPTIONS[source])}
               {cached ? <Freshness {...cached} /> : null}
             </>
           }
         >
-          <TabsTrigger value="new">New keywords</TabsTrigger>
-          <TabsTrigger value="top">Top keywords</TabsTrigger>
-          <TabsTrigger value="striking">Striking distance</TabsTrigger>
+          <TabsTrigger value="new">{t("New keywords")}</TabsTrigger>
+          <TabsTrigger value="top">{t("Top keywords")}</TabsTrigger>
+          <TabsTrigger value="striking">{t("Striking distance")}</TabsTrigger>
         </DataTableTabs>
       }
     />

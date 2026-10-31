@@ -1,4 +1,5 @@
 import { Button } from "@/client/components/ui/button";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import type { GooglePickerAccount } from "./GooglePropertyPicker";
 
 export function GscPropertySetupHelp({
@@ -16,27 +17,32 @@ export function GscPropertySetupHelp({
   onRetry: () => void;
   onReconnect: () => void;
 }) {
+  const t = useT();
   return (
     <>
       <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4 text-sm">
-        <h2 className="font-semibold">We couldn’t find your website</h2>
+        <h2 className="font-semibold">{t("We couldn’t find your website")}</h2>
         <p className="break-words text-muted-foreground">
-          We checked{" "}
-          {accounts
-            .map(
-              (account) =>
-                account.email ??
-                `Google account · ${account.accountId.slice(-6)}`,
-            )
-            .join(", ")}
-          .
+          {t("We checked {accounts}.", {
+            accounts: accounts
+              .map(
+                (account) =>
+                  account.email ??
+                  translateCurrent("Google account · {id}", {
+                    id: account.accountId.slice(-6),
+                  }),
+              )
+              .join(", "),
+          })}
         </p>
         <p className="text-muted-foreground">
-          Add your site to Search Console, or ask whoever manages it to give
           {accounts.length === 1
-            ? " this account"
-            : " one of these accounts"}{" "}
-          access.
+            ? t(
+                "Add your site to Search Console, or ask whoever manages it to give this account access.",
+              )
+            : t(
+                "Add your site to Search Console, or ask whoever manages it to give one of these accounts access.",
+              )}
         </p>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <a
@@ -45,7 +51,7 @@ export function GscPropertySetupHelp({
             rel="noopener noreferrer"
             className="underline underline-offset-4"
           >
-            Open Search Console ↗
+            {t("Open Search Console ↗")}
           </a>
           <a
             href="https://openseo.so/blogs/google-search-console-setup"
@@ -53,7 +59,7 @@ export function GscPropertySetupHelp({
             rel="noopener noreferrer"
             className="underline underline-offset-4"
           >
-            Setup guide
+            {t("Setup guide")}
           </a>
         </div>
       </div>
@@ -64,7 +70,7 @@ export function GscPropertySetupHelp({
           onClick={onRetry}
           disabled={loading || busy}
         >
-          {loading ? "Refreshing…" : "Refresh"}
+          {loading ? t("Refreshing…") : t("Refresh")}
         </Button>
         <Button
           variant="ghost"
@@ -73,7 +79,7 @@ export function GscPropertySetupHelp({
           disabled={loading || busy}
           pending={linking}
         >
-          {linking ? "Opening Google…" : "Use a different Google account"}
+          {linking ? t("Opening Google…") : t("Use a different Google account")}
         </Button>
       </div>
     </>

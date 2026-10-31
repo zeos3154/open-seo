@@ -13,6 +13,7 @@ import type {
 import type { KeywordResearchControllerInput } from "./useKeywordResearchController";
 import type { KeywordResearchDisplayRow } from "@/client/features/keywords/groupSharedVolumeRows";
 import { formatLocationLabel } from "@/shared/keyword-locations";
+import { translateCurrent } from "@/client/lib/i18n";
 
 /** Local exports name the area the volume, CPC, and competition cover. */
 function keywordResearchHeaders(locationName?: string) {
@@ -147,7 +148,7 @@ export function useSaveAndExportActions(params: SaveExportActionParams) {
             source_feature: "keyword_research",
             keyword_count: count,
           });
-          toast.success(`Saved ${count} keywords`);
+          toast.success(translateCurrent("Saved {count} keywords", { count }));
           setShowSaveDialog(false);
         },
       },

@@ -10,6 +10,7 @@ import {
 } from "@/client/components/ui/dropdown-menu";
 import { Spinner } from "@/client/components/ui/spinner";
 import { DEFAULT_BACKLINKS_SPAM_THRESHOLD } from "@/types/schemas/backlinks";
+import { useT } from "@/client/lib/i18n";
 
 export function BacklinksBestLinksMenu({
   hideSpam,
@@ -18,11 +19,12 @@ export function BacklinksBestLinksMenu({
   hideSpam: boolean;
   onHideSpamChange: (hideSpam: boolean) => void;
 }) {
+  const t = useT();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>
         <Link2 data-icon="inline-start" />
-        Best links: {hideSpam ? "On" : "Off"}
+        {hideSpam ? t("Best links: On") : t("Best links: Off")}
         <ChevronDown data-icon="inline-end" className="opacity-60" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72">
@@ -32,17 +34,21 @@ export function BacklinksBestLinksMenu({
         >
           <DropdownMenuRadioItem value="best">
             <span>
-              <span className="block">Best links only</span>
+              <span className="block">{t("Best links only")}</span>
               <span className="block text-xs text-muted-foreground">
-                Scores below {DEFAULT_BACKLINKS_SPAM_THRESHOLD} or unknown
+                {t("Scores below {threshold} or unknown", {
+                  threshold: DEFAULT_BACKLINKS_SPAM_THRESHOLD,
+                })}
               </span>
             </span>
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="all">
             <span>
-              <span className="block">All links (spammy included)</span>
+              <span className="block">{t("All links (spammy included)")}</span>
               <span className="block text-xs text-muted-foreground">
-                Includes scores {DEFAULT_BACKLINKS_SPAM_THRESHOLD} or higher
+                {t("Includes scores {threshold} or higher", {
+                  threshold: DEFAULT_BACKLINKS_SPAM_THRESHOLD,
+                })}
               </span>
             </span>
           </DropdownMenuRadioItem>
@@ -61,6 +67,7 @@ export function BacklinksActionsMenu({
   loadRatings: (domains: string[]) => void | Promise<void>;
   ratableDomains: string[];
 }) {
+  const t = useT();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -68,8 +75,8 @@ export function BacklinksActionsMenu({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Backlinks table actions"
-            title="Backlinks table actions"
+            aria-label={t("Backlinks table actions")}
+            title={t("Backlinks table actions")}
           />
         }
       >
@@ -79,7 +86,7 @@ export function BacklinksActionsMenu({
         <DropdownMenuItem
           onClick={() => void loadRatings(ratableDomains)}
           disabled={isLoadingRatings}
-          title="Look up Ahrefs Domain Rating for each domain in the table"
+          title={t("Look up Ahrefs Domain Rating for each domain in the table")}
         >
           {isLoadingRatings ? <Spinner /> : <Gauge />}
           Ahrefs DR

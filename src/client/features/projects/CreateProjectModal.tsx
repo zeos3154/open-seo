@@ -26,6 +26,7 @@ import {
 import { ProjectMarketFields } from "@/client/features/projects/ProjectMarketFields";
 import { toastInitialAudit } from "@/client/features/projects/initialAuditToast";
 import { createProject } from "@/serverFunctions/projects";
+import { translateCurrent, useT } from "@/client/lib/i18n";
 import { isEveryAppClientAuthMode } from "@/lib/auth-mode";
 
 const createProjectSchema = z.object({
@@ -45,6 +46,7 @@ const SERVER_FIELD_ERRORS: Record<string, Record<string, string>> = {
 export function CreateProjectModal({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const t = useT();
 
   const createMutation = useMutation({
     mutationFn: (values: z.infer<typeof createProjectSchema>) =>
@@ -66,7 +68,7 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
         queryKey: ["dashboardActivation"],
       });
       onClose();
-      toast.success("Project created");
+      toast.success(t("Project created"));
       toastInitialAudit(created.initialAudit);
       // Continue setup through the new project’s dashboard.
       void navigate({
@@ -93,9 +95,12 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
       } catch (error) {
         const fields = SERVER_FIELD_ERRORS[getErrorCode(error) ?? ""];
         if (fields) {
+          // Store the English source text; the shared field renderer
+          // (useAppForm) translates at display time, so stored errors stay
+          // reactive if the locale changes.
           formApi.setErrorMap({ onSubmit: { fields } });
         } else {
-          toast.error(getStandardErrorMessage(error));
+          toast.error(translateCurrent(getStandardErrorMessage(error)));
         }
       }
     },
@@ -112,13 +117,13 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
         <form.AppForm>
           <form.Form className="flex flex-col gap-4">
             <DialogHeader>
-              <DialogTitle>New project</DialogTitle>
+              <DialogTitle>{t("New project")}</DialogTitle>
             </DialogHeader>
 
             <form.AppField name="name">
               {(field) => (
                 <field.TextField
-                  label="Name"
+                  label={t("Name")}
                   placeholder="Acme Inc."
                   maxLength={120}
                   required
@@ -128,21 +133,25 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
 
             <p className="text-sm text-muted-foreground">
               {isEveryAppClientAuthMode()
-                ? "Adding your website starts a 50-page site audit."
-                : "Adding your website starts a 50-page scan with JavaScript rendering. Rendering uses your credits."}
+                ? t("Adding your website starts a 50-page site audit.")
+                : t(
+                    "Adding your website starts a 50-page scan with JavaScript rendering. Rendering uses your credits.",
+                  )}
             </p>
             <form.AppField name="domain">
               {(field) => (
                 <field.TextField
                   label={
                     <>
-                      Domain{" "}
+                      {t("Domain")}{" "}
                       <span className="font-normal text-muted-foreground">
-                        (optional)
+                        {t("(optional)")}
                       </span>
                     </>
                   }
-                  description="You can connect Search Console and set up rank tracking after creating the project."
+                  description={t(
+                    "You can connect Search Console and set up rank tracking after creating the project.",
+                  )}
                   placeholder="example.com"
                   maxLength={255}
                 />
@@ -159,9 +168,9 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
                 )}
               </form.Field>
               <FieldDescription>
-                Keyword, SERP, and domain data uses this country and language
-                unless a call asks for a different one. Change it later in
-                project settings.
+                {t(
+                  "Keyword, SERP, and domain data uses this country and language unless a call asks for a different one. Change it later in project settings.",
+                )}
               </FieldDescription>
             </div>
 
@@ -172,9 +181,9 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
                 onClick={onClose}
                 disabled={createMutation.isPending}
               >
-                Cancel
+                {t("Cancel")}
               </Button>
-              <form.SubmitButton>Create project</form.SubmitButton>
+              <form.SubmitButton>{t("Create project")}</form.SubmitButton>
             </DialogFooter>
           </form.Form>
         </form.AppForm>

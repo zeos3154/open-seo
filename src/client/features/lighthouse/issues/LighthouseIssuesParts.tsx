@@ -22,6 +22,7 @@ import { LighthouseIssueRow } from "./LighthouseIssueRow";
 import { LighthouseIssuesSummary } from "./LighthouseIssuesSummary";
 import { categoryLabel } from "./utils";
 import { categoryTabs } from "./types";
+import { useT } from "@/client/lib/i18n";
 
 export function LighthouseIssuesHeader({
   onBack,
@@ -40,15 +41,18 @@ export function LighthouseIssuesHeader({
   metrics?: LighthouseMetrics | null;
   severityCounts: { critical: number; warning: number; info: number };
 }) {
+  const t = useT();
   return (
     <>
       <div className="flex items-center justify-between gap-3">
-        <BackButton onClick={onBack}>Site Audit</BackButton>
+        <BackButton onClick={onBack}>{t("Site Audit")}</BackButton>
         <span className="text-xs text-muted-foreground">
           {scannedAt
-            ? `Scanned ${new Date(scannedAt).toLocaleString()}`
+            ? t("Scanned {time}", {
+                time: new Date(scannedAt).toLocaleString(),
+              })
             : isLoading
-              ? "Reading latest issues..."
+              ? t("Reading latest issues...")
               : null}
         </span>
       </div>
@@ -56,21 +60,21 @@ export function LighthouseIssuesHeader({
       <Card>
         <CardContent className="space-y-4">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold">Lighthouse Issues</h1>
+            <h1 className="text-2xl font-semibold">{t("Lighthouse Issues")}</h1>
             <p className="text-sm text-muted-foreground break-all">
-              {finalUrl ?? (isLoading ? "Loading URL..." : null)}
+              {finalUrl ?? (isLoading ? t("Loading URL...") : null)}
             </p>
           </div>
           <LighthouseIssuesSummary scores={scores} metrics={metrics} />
           <div className="flex flex-wrap gap-2">
             <SeverityBadge severity="critical">
-              Critical {severityCounts.critical}
+              {t("Critical")} {severityCounts.critical}
             </SeverityBadge>
             <SeverityBadge severity="warning">
-              Warning {severityCounts.warning}
+              {t("Warning")} {severityCounts.warning}
             </SeverityBadge>
             <SeverityBadge severity="info">
-              Info {severityCounts.info}
+              {t("Info")} {severityCounts.info}
             </SeverityBadge>
           </div>
         </CardContent>
@@ -106,10 +110,9 @@ export function LighthouseIssuesToolbar({
     variant: "all" | "current",
   ) => void;
 }) {
+  const t = useT();
   const exportCurrentCategory: ExportPayload =
     category === "all" ? { mode: "issues" } : { mode: "category", category };
-
-  const categoryLabelLower = selectedCategoryLabel.toLowerCase();
 
   // One menu section per scope. The saved payload has no issue rows, so it
   // offers only the JSON formats.
@@ -123,25 +126,27 @@ export function LighthouseIssuesToolbar({
   }> = [
     {
       id: "current",
-      label: `${selectedCategoryLabel} issues`,
+      label: t("{category} issues", { category: t(selectedCategoryLabel) }),
       issues: visibleIssues,
       payload: exportCurrentCategory,
-      copied: `Copied ${categoryLabelLower} issues`,
+      copied: t("Copied {category} issues", {
+        category: t(selectedCategoryLabel),
+      }),
     },
     {
       id: "all",
-      label: "All actionable issues",
+      label: t("All actionable issues"),
       issues: allIssues,
       payload: { mode: "issues" },
-      copied: "Copied all actionable issues",
+      copied: t("Copied all actionable issues"),
     },
     {
       id: "full",
-      label: "Saved Lighthouse payload",
+      label: t("Saved Lighthouse payload"),
       actions: ["copy-json", "json"],
       issues: [],
       payload: { mode: "full" },
-      copied: "Copied saved Lighthouse payload",
+      copied: t("Copied saved Lighthouse payload"),
     },
   ];
 
@@ -184,6 +189,7 @@ function CategoryTabs({
   categoryCounts: Record<CategoryTab, number>;
   onCategoryChange: (next: CategoryTab) => void;
 }) {
+  const t = useT();
   return (
     <Tabs
       value={category}
@@ -192,7 +198,7 @@ function CategoryTabs({
       <TabsList variant="line" className="h-auto! flex-wrap justify-start">
         {categoryTabs.map((tab) => (
           <TabsTrigger key={tab} value={tab}>
-            {categoryLabel(tab)}
+            {t(categoryLabel(tab))}
             <span className="text-xs text-muted-foreground">
               ({categoryCounts[tab]})
             </span>
@@ -212,13 +218,14 @@ export function LighthouseIssueList({
   isLoading: boolean;
   emptyMessage?: string;
 }) {
+  const t = useT();
   if (isLoading) {
     return <SkeletonTableRows className="p-4" rows={5} columns={3} />;
   }
   if (!issues.length) {
     return (
       <p className="p-4 text-sm text-muted-foreground">
-        {emptyMessage ?? "No actionable issues for this category."}
+        {emptyMessage ?? t("No actionable issues for this category.")}
       </p>
     );
   }
@@ -227,13 +234,15 @@ export function LighthouseIssueList({
       <TableHeader>
         <TableRow>
           <TableHead className="w-8" />
-          <TableHead className="w-24">Severity</TableHead>
-          <TableHead>Issue</TableHead>
-          <TableHead className="hidden w-28 sm:table-cell">Category</TableHead>
-          <TableHead className="hidden w-28 md:table-cell text-right">
-            Impact
+          <TableHead className="w-24">{t("Severity")}</TableHead>
+          <TableHead>{t("Issue")}</TableHead>
+          <TableHead className="hidden w-28 sm:table-cell">
+            {t("Category")}
           </TableHead>
-          <TableHead className="w-14 text-right">Score</TableHead>
+          <TableHead className="hidden w-28 md:table-cell text-right">
+            {t("Impact")}
+          </TableHead>
+          <TableHead className="w-14 text-right">{t("Score")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

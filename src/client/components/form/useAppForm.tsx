@@ -26,6 +26,7 @@ import {
   useFormContext,
 } from "@/client/components/form/formContext";
 import { getFieldError } from "@/client/lib/forms";
+import { useT } from "@/client/lib/i18n";
 
 type FieldText = {
   label: ReactNode;
@@ -47,7 +48,11 @@ type BoundProps =
 function useFieldControl(description: ReactNode) {
   const field = useFieldContext<unknown>();
   const id = useId();
+  const t = useT();
   const error = getFieldError(field.state.meta.errors);
+  // Messages are English source text (schema/server strings); translate at
+  // display so module-scope validation schemas never freeze the locale.
+  const errorText = error ? t(error) : null;
   const descriptionId = description ? `${id}-description` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [descriptionId, errorId].filter(Boolean).join(" ");
@@ -60,7 +65,7 @@ function useFieldControl(description: ReactNode) {
         {description ? (
           <FieldDescription id={descriptionId}>{description}</FieldDescription>
         ) : null}
-        {error ? <FieldError id={errorId}>{error}</FieldError> : null}
+        {errorText ? <FieldError id={errorId}>{errorText}</FieldError> : null}
       </>
     ),
     controlProps: {

@@ -1,12 +1,14 @@
 import { AlertCircle } from "lucide-react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
+import { useT } from "@/client/lib/i18n";
 
 export function RemoveSavedKeywordsError({ message }: { message: string }) {
+  const t = useT();
   return (
     <Alert variant="destructive">
       <AlertCircle />
-      <AlertDescription>{message}</AlertDescription>
+      <AlertDescription>{t(message)}</AlertDescription>
     </Alert>
   );
 }
@@ -22,17 +24,26 @@ export function DeleteSavedKeywordsModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const plural = selectedCount !== 1 ? "s" : "";
+  const t = useT();
   return (
     <ConfirmDialog
-      title="Delete keywords?"
-      confirmLabel={`Delete ${selectedCount} keyword${plural}`}
+      title={t("Delete keywords?")}
+      confirmLabel={
+        selectedCount === 1
+          ? t("Delete 1 keyword")
+          : t("Delete {count} keywords", { count: selectedCount })
+      }
       destructive
       pending={isPending}
       onClose={onClose}
       onConfirm={onConfirm}
     >
-      This will permanently delete {selectedCount} saved keyword{plural}.
+      {t(
+        selectedCount === 1
+          ? "This will permanently delete 1 saved keyword."
+          : "This will permanently delete {count} saved keywords.",
+        selectedCount === 1 ? undefined : { count: selectedCount },
+      )}
     </ConfirmDialog>
   );
 }

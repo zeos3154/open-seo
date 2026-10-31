@@ -16,6 +16,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { MAX_DATAFORSEO_FILTER_CONDITIONS } from "@/types/schemas/domain";
+import { useT } from "@/client/lib/i18n";
 
 type FilterValues = Record<string, string>;
 
@@ -67,6 +68,7 @@ export function DomainFilterPanel<TValues extends FilterValues>({
     [appliedFilters, fields],
   );
   const [draftFilters, setDraftFilters] = useState(appliedFilters);
+  const t = useT();
   useEffect(() => {
     setDraftFilters(appliedFilters);
     // appliedKey covers content changes.
@@ -121,11 +123,14 @@ export function DomainFilterPanel<TValues extends FilterValues>({
       <div className="space-y-3" onKeyDown={handleKeyDown}>
         <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
           {textFields.map((field) => (
-            <DataTableFilterGroup key={String(field.key)} label={field.label}>
+            <DataTableFilterGroup
+              key={String(field.key)}
+              label={t(field.label)}
+            >
               <Input
                 className="h-7"
-                aria-label={field.label}
-                placeholder={field.placeholder}
+                aria-label={t(field.label)}
+                placeholder={t(field.placeholder)}
                 value={draftFilters[field.key]}
                 onChange={(event) =>
                   handleValueChange(field.key, event.target.value)
@@ -139,7 +144,7 @@ export function DomainFilterPanel<TValues extends FilterValues>({
           {rangeFields.map((field) => (
             <DataTableRangeFilter
               key={String(field.minKey)}
-              label={field.title}
+              label={t(field.title)}
               min={{
                 step: field.step,
                 value: draftFilters[field.minKey],
@@ -162,19 +167,24 @@ export function DomainFilterPanel<TValues extends FilterValues>({
           <Alert variant="warning">
             <AlertTriangle />
             <AlertDescription className="text-foreground">
-              Too many filter conditions ({meta.conditionCount} of{" "}
-              {maxConditions} max). Remove some terms or ranges before applying.
+              {t(
+                "Too many filter conditions ({count} of {max} max). Remove some terms or ranges before applying.",
+                { count: meta.conditionCount, max: maxConditions },
+              )}
             </AlertDescription>
           </Alert>
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground tabular-nums">
-              {meta.conditionCount} / {maxConditions} conditions
+              {t("{count} / {max} conditions", {
+                count: meta.conditionCount,
+                max: maxConditions,
+              })}
             </span>
             {meta.dirtyCount > 0 ? (
               <Badge size="sm" variant="warning">
-                {meta.dirtyCount} unapplied
+                {t("{count} unapplied", { count: meta.dirtyCount })}
               </Badge>
             ) : null}
           </div>
@@ -185,7 +195,7 @@ export function DomainFilterPanel<TValues extends FilterValues>({
               onClick={cancelFilterEdits}
               disabled={!meta.isDirty}
             >
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button
               size="sm"
@@ -193,11 +203,14 @@ export function DomainFilterPanel<TValues extends FilterValues>({
               disabled={!meta.isDirty || meta.overLimit}
               title={
                 meta.overLimit
-                  ? `This scope leaves room for at most ${maxConditions} filter conditions per request`
+                  ? t(
+                      "This scope leaves room for at most {max} filter conditions per request",
+                      { max: maxConditions },
+                    )
                   : undefined
               }
             >
-              Apply filters
+              {t("Apply filters")}
               {meta.isDirty ? (
                 <Badge size="sm" variant="secondary">
                   {meta.dirtyCount}

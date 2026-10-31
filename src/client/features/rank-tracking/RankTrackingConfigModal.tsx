@@ -6,6 +6,7 @@ import { Info } from "lucide-react";
 import { useAppForm } from "@/client/components/form/useAppForm";
 import { CountryCombobox } from "@/client/components/CountryCombobox";
 import { Button } from "@/client/components/ui/button";
+import { useT } from "@/client/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,7 @@ import {
 import { Field, FieldLabel } from "@/client/components/ui/field";
 import type { RankTrackingConfig } from "@/types/schemas/rank-tracking";
 import { domainField, normalizeDomain } from "@/types/schemas/domain";
-import { pagesToDepth, estimateRankCheckCredits } from "@/shared/rank-tracking";
+import { pagesToDepth } from "@/shared/rank-tracking";
 import { getLanguageCode } from "@/client/features/keywords/locations";
 import {
   SERP_LANGUAGE_OPTIONS,
@@ -28,6 +29,7 @@ import { Spinner } from "@/client/components/Spinner";
 import { getFieldError } from "@/client/lib/forms";
 import { SearchTargetingField } from "./SearchTargetingField";
 import { KeywordSuggestionStep } from "./KeywordSuggestionStep";
+import { CostEstimate } from "./CostEstimate";
 import {
   useSaveConfigMutations,
   type SaveConfigInput,
@@ -63,12 +65,18 @@ const DEVICE_ITEMS: { value: SaveConfigInput["devices"]; label: string }[] = [
   { value: "mobile", label: "Mobile only" },
 ];
 
-const DEPTH_ITEMS = Array.from({ length: 10 }, (_, i) => i + 1).map(
-  (pages) => ({
+/** DEPTH_ITEMS labels depend on the page count; build them for the locale. */
+function makeDepthItems(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+) {
+  return Array.from({ length: 10 }, (_, i) => i + 1).map((pages) => ({
     value: pagesToDepth(pages),
-    label: `${pages} ${pages === 1 ? "page" : "pages"} (top ${pages * 10} results)`,
-  }),
-);
+    label:
+      pages === 1
+        ? t("{pages} page (top {top} results)", { pages, top: pages * 10 })
+        : t("{pages} pages (top {top} results)", { pages, top: pages * 10 }),
+  }));
+}
 
 function validateConfig(values: ConfigFormValues) {
   const fields: Partial<Record<keyof ConfigFormValues, string>> = {};
@@ -95,6 +103,7 @@ export function RankTrackingConfigModal({
     ...projectsQueryOptions(),
     enabled: !existingConfig,
   });
+  const t = useT();
   const initialMarket =
     existingConfig ??
     projectsQuery.data?.find((project) => project.id === projectId);
@@ -109,7 +118,7 @@ export function RankTrackingConfigModal({
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="sr-only">Add Domain</DialogTitle>
+            <DialogTitle className="sr-only">{t("Add Domain")}</DialogTitle>
           </DialogHeader>
           <div className="flex min-h-40 items-center justify-center">
             {projectsQuery.isPending ? (
@@ -117,7 +126,7 @@ export function RankTrackingConfigModal({
             ) : (
               <QueryError
                 error={projectsQuery.error}
-                fallback="Failed to load the project."
+                fallback={t("Failed to load the project.")}
                 onRetry={() => void projectsQuery.refetch()}
                 isRetrying={projectsQuery.isFetching}
               />
@@ -150,6 +159,13 @@ function RankTrackingConfigModalContent({
 }: Props & { initialMarket: ProjectMarket }) {
   const countryId = useId();
   const isEdit = !!existingConfig;
+  const t = useT();
+  // Translate shared/device option labels at render so a locale switch applies.
+  const deviceItems = DEVICE_ITEMS.map((item) => ({
+    ...item,
+    label: t(item.label),
+  }));
+  const depthItems = makeDepthItems(t);
   const [createdConfigId, setCreatedConfigId] = useState<string>();
   // An untouched edit leaves the stored run time alone; anything that changes
   // the schedule sends the time on screen so it is the one that gets saved.
@@ -240,7 +256,7 @@ function RankTrackingConfigModalContent({
             <form.Form className="flex flex-col gap-4">
               <DialogHeader>
                 <DialogTitle>
-                  {isEdit ? "Edit Domain Config" : "Add Domain"}
+                  {isEdit ? t("Edit Domain Config") : t("Add Domain")}
                 </DialogTitle>
               </DialogHeader>
 
@@ -260,14 +276,14 @@ function RankTrackingConfigModalContent({
               >
                 {(field) => (
                   <field.TextField
-                    label="Target Domain"
+                    label={t("Target Domain")}
                     placeholder="example.com"
                   />
                 )}
               </form.AppField>
 
               <Field>
-                <FieldLabel htmlFor={countryId}>Country</FieldLabel>
+                <FieldLabel htmlFor={countryId}>{t("Country")}</FieldLabel>
                 <CountryCombobox
                   id={countryId}
                   value={values.locationCode}
@@ -301,9 +317,11 @@ function RankTrackingConfigModalContent({
               <form.AppField name="languageCode">
                 {(field) => (
                   <field.SelectField
-                    label="Language"
+                    label={t("Language")}
                     items={LANGUAGE_ITEMS}
-                    description="Defaults to the country's language. Any language can be tracked in any country — pick the one your customers search in."
+                    description={t(
+                      "Defaults to the country's language. Any language can be tracked in any country — pick the one your customers search in.",
+                    )}
                   />
                 )}
               </form.AppField>
@@ -312,16 +330,20 @@ function RankTrackingConfigModalContent({
                 <form.AppField name="devices">
                   {(field) => (
                     <field.SelectField
-                      label="Devices"
-                      items={DEVICE_ITEMS}
-                      description="Most Google searches come from mobile, but select this based on your customer."
+                      label={t("Devices")}
+                      items={deviceItems}
+                      description={t(
+                        "Most Google searches come from mobile, but select this based on your customer.",
+                      )}
                     />
                   )}
                 </form.AppField>
                 {values.devices === "both" && (
                   <p className="flex items-start gap-1.5 text-xs text-info">
                     <Info className="mt-0.5 size-3.5 shrink-0" />
-                    Tracking both devices uses 2x credits per keyword check
+                    {t(
+                      "Tracking both devices uses 2x credits per keyword check",
+                    )}
                   </p>
                 )}
               </div>
@@ -341,9 +363,11 @@ function RankTrackingConfigModalContent({
               <form.AppField name="serpDepth">
                 {(field) => (
                   <field.SelectField
-                    label="Search Depth"
-                    items={DEPTH_ITEMS}
-                    description="10 pages is ~8x more expensive than 1 page"
+                    label={t("Search Depth")}
+                    items={depthItems}
+                    description={t(
+                      "10 pages is ~8x more expensive than 1 page",
+                    )}
                   />
                 )}
               </form.AppField>
@@ -361,10 +385,10 @@ function RankTrackingConfigModalContent({
                   onClick={onClose}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  {t("Cancel")}
                 </Button>
                 <form.SubmitButton>
-                  {isEdit ? "Save Changes" : "Add Domain"}
+                  {isEdit ? t("Save Changes") : t("Add Domain")}
                 </form.SubmitButton>
               </DialogFooter>
             </form.Form>
@@ -372,41 +396,5 @@ function RankTrackingConfigModalContent({
         )}
       </DialogContent>
     </Dialog>
-  );
-}
-
-function CostEstimate({
-  devices,
-  serpDepth,
-  schedule,
-}: Pick<ConfigFormValues, "devices" | "serpDepth" | "schedule">) {
-  // Scheduled checks run through the cheaper task queue; manual configs only
-  // ever pay the live price.
-  const { costUsd: costPerKeyword } = estimateRankCheckCredits(
-    ["plain keyword"],
-    devices,
-    serpDepth,
-    schedule === "manual" ? "live" : "queued",
-  );
-  const checksPerMonth =
-    schedule === "daily" ? 30 : schedule === "weekly" ? 4 : 1;
-  return (
-    <div className="space-y-0.5 rounded-lg bg-muted px-3 py-2.5 text-xs text-muted-foreground">
-      <div>
-        <span className="font-mono font-semibold text-foreground">
-          up to ${costPerKeyword.toFixed(4)}
-        </span>{" "}
-        per keyword per check
-      </div>
-      {schedule !== "manual" && (
-        <div>
-          50 keywords would cost up to{" "}
-          <span className="font-mono font-semibold text-foreground">
-            ${(costPerKeyword * 50 * checksPerMonth).toFixed(2)}
-          </span>
-          /month
-        </div>
-      )}
-    </div>
   );
 }

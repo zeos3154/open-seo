@@ -4,6 +4,7 @@ import { FormActions } from "@/client/components/FormActions";
 import type { ProjectContextUpdate } from "@/types/schemas/projectContext";
 import { EditableListSection } from "./EditableListSection";
 import { Provenance, useContextUpdate, type ContextCompetitor } from "./shared";
+import { useT } from "@/client/lib/i18n";
 
 type CompetitorDraft = { domain: string; name: string; notes: string };
 
@@ -94,7 +95,7 @@ function CompetitorForm({
     name: initial?.name ?? "",
     notes: initial?.notes ?? "",
   });
-
+  const t = useT();
   return (
     <form
       className="space-y-2 bg-muted/40 p-3"
@@ -113,22 +114,24 @@ function CompetitorForm({
           }
           placeholder="competitor.com"
           maxLength={255}
-          aria-label="Competitor domain"
+          aria-label={t("Competitor domain")}
         />
         <Input
           value={draft.name}
           onChange={(event) => setDraft({ ...draft, name: event.target.value })}
-          placeholder="Name (optional)"
+          placeholder={t("Name (optional)")}
           maxLength={120}
-          aria-label="Competitor name"
+          aria-label={t("Competitor name")}
         />
       </div>
       <Input
         value={draft.notes}
         onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
-        placeholder="Why they matter — e.g. wins every comparison keyword (optional)"
+        placeholder={t(
+          "Why they matter — e.g. wins every comparison keyword (optional)",
+        )}
         maxLength={500}
-        aria-label="Competitor notes"
+        aria-label={t("Competitor notes")}
       />
       <FormActions
         pending={pending}

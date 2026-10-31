@@ -50,3 +50,5 @@ dist/
 # Cloudflare Vite plugin 2.x's build output and local state
 .everyapp/
 .cloudflare/
+.agent-slug
+CLAUDE.local.md

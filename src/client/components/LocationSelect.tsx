@@ -7,6 +7,7 @@ import {
   ComboboxList,
 } from "@/client/components/ui/combobox";
 import { LOCATION_OPTIONS } from "@/shared/keyword-locations";
+import { useT } from "@/client/lib/i18n";
 
 type LocationOption = (typeof LOCATION_OPTIONS)[number];
 
@@ -35,6 +36,7 @@ export function LocationSelect({
   options = LOCATION_OPTIONS,
   className = "w-full",
 }: Props) {
+  const t = useT();
   const selected = options.find((option) => option.code === value) ?? null;
 
   return (
@@ -50,11 +52,11 @@ export function LocationSelect({
     >
       <ComboboxInput
         className={className}
-        placeholder="Select country"
-        aria-label="Country"
+        placeholder={t("Select country")}
+        aria-label={t("Country")}
       />
       <ComboboxContent>
-        <ComboboxEmpty>No countries match.</ComboboxEmpty>
+        <ComboboxEmpty>{t("No countries match.")}</ComboboxEmpty>
         <ComboboxList>
           {(option: LocationOption) => (
             <ComboboxItem key={option.code} value={option}>

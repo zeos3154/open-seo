@@ -19,6 +19,7 @@ import {
 import { DomainFavicon } from "./DomainFavicon";
 import { SuggestedCompetitors } from "./SuggestedCompetitors";
 import { AiQueryError, aiVisibilityKey } from "./shared";
+import { useT } from "@/client/lib/i18n";
 
 export function CompetitorsTab({
   projectId,
@@ -31,6 +32,7 @@ export function CompetitorsTab({
   runId: string | undefined;
   collecting: boolean;
 }) {
+  const t = useT();
   const [selectedEngines, setSelectedEngines] = useState<AiEngine[] | null>(
     null,
   );
@@ -64,13 +66,13 @@ export function CompetitorsTab({
             nativeButton={false}
             render={<Link to="/p/$projectId/context" params={{ projectId }} />}
           >
-            Manage competitors
+            {t("Manage competitors")}
           </Button>
         }
       >
         {runId && state.engines.length > 1 && (
           <EngineFilter
-            label="Filter engine"
+            label={t("Filter engine")}
             engines={state.engines}
             value={engines}
             onChange={setSelectedEngines}
@@ -84,17 +86,17 @@ export function CompetitorsTab({
       ) : runId && !rows.length ? (
         <p className="p-10 text-center text-sm text-muted-foreground">
           {collecting
-            ? "Collecting answers. Brands appear here as answers arrive."
-            : "No answers match these filters."}
+            ? t("Collecting answers. Brands appear here as answers arrive.")
+            : t("No answers match these filters.")}
         </p>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Brand</TableHead>
-              <TableHead>Mentioned in</TableHead>
-              <TableHead>Cited in</TableHead>
-              <TableHead>Avg. position</TableHead>
+              <TableHead>{t("Brand")}</TableHead>
+              <TableHead>{t("Mentioned in")}</TableHead>
+              <TableHead>{t("Cited in")}</TableHead>
+              <TableHead>{t("Avg. position")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -106,16 +108,16 @@ export function CompetitorsTab({
                     {name}
                     {own && (
                       <Badge variant="secondary" className="ml-2">
-                        You
+                        {t("You")}
                       </Badge>
                     )}
                   </span>
                 </TableCell>
                 <TableCell>
-                  {summary ? share(summary.mentions, summary.answers) : "—"}
+                  {summary ? share(summary.mentions, summary.answers, t) : "—"}
                 </TableCell>
                 <TableCell>
-                  {summary ? share(summary.citations, summary.answers) : "—"}
+                  {summary ? share(summary.citations, summary.answers, t) : "—"}
                 </TableCell>
                 <TableCell>
                   {summary?.positionCount
@@ -130,7 +132,9 @@ export function CompetitorsTab({
                   colSpan={4}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  No competitors saved yet. Use Manage competitors to add them.
+                  {t(
+                    "No competitors saved yet. Use Manage competitors to add them.",
+                  )}
                 </TableCell>
               </TableRow>
             )}
@@ -145,9 +149,9 @@ export function CompetitorsTab({
             params={{ projectId }}
             className="text-foreground underline underline-offset-4"
           >
-            prompt tracking
+            {t("prompt tracking")}
           </Link>{" "}
-          to see how often AI answers mention and cite your competitors.
+          {t("to see how often AI answers mention and cite your competitors.")}
         </p>
       )}
       {runId && (
@@ -161,8 +165,12 @@ export function CompetitorsTab({
   );
 }
 
-function share(count: number, total: number) {
+function share(
+  count: number,
+  total: number,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+) {
   return total
     ? `${count} / ${total} (${Math.round((count / total) * 100)}%)`
-    : "No answers";
+    : t("No answers");
 }
