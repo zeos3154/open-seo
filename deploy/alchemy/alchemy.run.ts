@@ -15,6 +15,7 @@ import {
   requireAllowedEmails,
   workerName,
 } from "./alchemy.access.ts";
+import { resolveSelfHostDomain } from "./alchemy.domains.ts";
 
 // Preview hostnames are `open-seo-<stage>.<WORKERS_SUBDOMAIN>` — the naming
 // lives in alchemy.access.ts, shared with the Access wildcard the security
@@ -333,10 +334,8 @@ export default Alchemy.Stack(
       );
     }
     const workersSubdomain = yield* readWorkersSubdomain({ required: false });
-    const selfHostDomain =
-      stage === "selfhost"
-        ? (yield* optionalVar("SELFHOST_DOMAIN")).trim()
-        : "";
+    const { hostname: selfHostDomain, passwordAuthUrl } =
+      yield* resolveSelfHostDomain(stage, authMode);
 
     // Auth needs an absolute BETTER_AUTH_URL. Prod sets it explicitly;
     // previews always derive it from the deterministic worker name — a wrong
@@ -351,8 +350,8 @@ export default Alchemy.Stack(
           ),
         );
       }
-    } else if (selfHostDomain && authMode === "password") {
-      authUrl = `https://${selfHostDomain}`;
+    } else if (passwordAuthUrl) {
+      authUrl = passwordAuthUrl;
     } else if (workersSubdomain) {
       authUrl = `https://${workerName(stage)}.${workersSubdomain}`;
     } else if (authMode === "password") {
@@ -468,9 +467,7 @@ export default Alchemy.Stack(
       name: workerName(stage),
       // Declare self-host domains here so later deploys retain the binding.
       // The zone is inferred from the hostname; workers.dev stays available.
-      domain: prod
-        ? ["app.openseo.so", "www.app.openseo.so"]
-        : selfHostDomain || undefined,
+      domain: prod ? ["app.openseo.so", "www.app.openseo.so"] : selfHostDomain,
       // Prebuilt worker from `vite build` (@cloudflare/vite-plugin). The entry
       // exports the DO + WorkflowEntrypoint classes (re-exported by
       // src/server.ts), which `bundle: false` requires. Sibling chunks under
