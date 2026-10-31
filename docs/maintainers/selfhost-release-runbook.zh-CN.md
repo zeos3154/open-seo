@@ -9,13 +9,27 @@ GitHub 的 main 是源码分支；Cloudflare Worker version 是线上运行版�
 每次发布先核对两条可能的部署路径：
 
 1. **GitHub Actions**：检查 `.github/workflows/` 的触发事件、仓库限制和部署目标。本仓库现有 `deploy-production.yml` 只接受手动 `workflow_dispatch`，且仅允许它列出的上游仓库部署托管版，不负责本自托管实例。`ci.yml` 在 main push 后执行检查，不部署本实例。
-2. **Cloudflare Workers Builds**：在 Cloudflare 的主 Worker → Settings → Build/Builds，核对是否关联 Git、关联仓库、production branch、build/deploy commands、是否启用预览，以及变量与密钥来源。若已关联 production branch 为 main，推送或合并到 main 会触发构建并执行部署命令。API 读取失败不代表未关联；权限不足时必须查控制台。
+2. **Cloudflare Workers Builds**：通过官方 Builds API 核对是否关联 Git、关联仓库、production branch、build/deploy commands、是否启用预览，以及变量与密钥来源。若已关联 production branch 为 main，推送或合并到 main 会触发构建并执行部署命令。API 读取失败不代表未关联；403 时需提供具备读取权限的凭据，或在允许使用浏览器时查控制台。
 
 **必须在合并 main 之前完成备份。** 自动部署已接通时，合并本身就是发布触发点。不要同时再从本机部署，避免两个发布过程互相覆盖。
 
 确认未关联自动部署后，合并 main 只更新源码，需要从本机使用下面的自托管部署命令构建、上传。Cloudflare 面板出现 “Automatic deployment on upload” 只表示上传后自动激活版本，不能证明关联了 Git。
 
 参考：[Workers Builds 分支规则](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/)、[Builds API](https://developers.cloudflare.com/workers/ci-cd/builds/api-reference/)。
+
+### 使用 CLI 读取构建触发器
+
+Wrangler 当前没有直接查询 Workers Builds 配置的子命令，可以从 CLI 调用官方接口：
+
+```text
+GET /accounts/{account_id}/builds/workers/{worker_tag}/triggers
+```
+
+`worker_tag` 是 Workers API 返回的不可变 tag，不是 Worker 名称。该读取接口接受 `Workers CI Read` 或 `Workers CI Write`。现有部署 OAuth 登录可能只有 `Workers Scripts` 等权限，能发布 Worker 也不代表能读取 Builds；反复执行同一命令或重新申请同一组 OAuth scopes 不能补出缺少的权限。
+
+只核查触发器时，使用限定当前账号的用户 API Token 并授予 `Workers CI Read`；需要查询实际 DNS 记录时，额外限定目标 zone 的 `DNS Read`。不要为此创建全权限令牌。令牌从安全环境或私有文件读取，不放进命令行参数、聊天或 Git。官方权限依据：[列出 Worker 构建触发器](https://developers.cloudflare.com/api/resources/workers_builds/subresources/triggers/methods/list/)。
+
+DNS 的公开解析可用 DNS-over-HTTPS 查询并保存，避免本机代理的 Fake-IP 被当成真实解析。公开 A/AAAA 结果不是控制台 DNS 记录的完整备份：它不包含 record ID、原始 CNAME 目标及代理设置。应与 Worker custom-domain 配置分开记录。
 
 ## 2. 发布准入检查
 
