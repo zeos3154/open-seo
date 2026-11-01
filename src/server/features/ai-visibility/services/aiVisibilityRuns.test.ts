@@ -85,6 +85,26 @@ describe("AI visibility checks", () => {
     ).toEqual([{ status: "failed" }]);
   });
 
+  it("terminates a check whose workflow is still running after 12 hours, so it stops blocking", async () => {
+    const stuck = await runCheck({ projectId, maxCostUsd: 1 }, customer);
+    await testDb.db
+      .update(aiRuns)
+      .set({ status: "running", createdAt: "2026-01-01T00:00:00.000Z" });
+    const terminate = vi.fn();
+    workflow.get.mockResolvedValue({
+      status: async () => ({ status: "running" }),
+      terminate,
+    });
+
+    const next = await runCheck({ projectId, maxCostUsd: 1 }, customer);
+
+    expect(next.id).not.toBe(stuck.id);
+    expect(terminate).toHaveBeenCalled();
+    expect(await repo.getRunInternal(stuck.id)).toMatchObject({
+      status: "failed",
+    });
+  });
+
   it("marks only prompts with collected answer text as having results", async () => {
     const run = await runCheck({ projectId, maxCostUsd: 1 }, customer);
     const answers = await repo.getObservations([run.id]);
@@ -106,6 +126,31 @@ describe("AI visibility checks", () => {
         prompts.map((prompt) => [prompt.text, prompt.hasResults]),
       ),
     ).toEqual({ "Is OpenSEO good?": true, "Which SEO tools?": false });
+  });
+
+  it("preserves the active run and its pending answers when termination fails", async () => {
+    const stuck = await runCheck({ projectId, maxCostUsd: 1 }, customer);
+    await testDb.db.update(aiRuns).set({
+      status: "running",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
+    const error = new Error("Workflow RPC unavailable");
+    workflow.get.mockResolvedValue({
+      status: async () => ({ status: "running" }),
+      terminate: vi.fn().mockRejectedValue(error),
+    });
+
+    await expect(
+      runCheck({ projectId, maxCostUsd: 1 }, customer),
+    ).rejects.toThrow(error);
+    expect(await repo.getRunInternal(stuck.id)).toMatchObject({
+      status: "running",
+    });
+    expect(await repo.getObservations([stuck.id])).toEqual([
+      expect.objectContaining({ status: "pending" }),
+      expect.objectContaining({ status: "pending" }),
+    ]);
+    expect(workflow.create).toHaveBeenCalledOnce();
   });
 
   it("refuses a check that now costs more than the approved maximum", async () => {

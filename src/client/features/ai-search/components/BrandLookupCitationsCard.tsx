@@ -170,7 +170,7 @@ export function CitationTabsCard({
                   <strong className="text-foreground">
                     {result.resolvedTarget}
                   </strong>
-                  {t(isUrlScoped ? "." : " in AI answers.")}{" "}
+                  {isUrlScoped ? "." : ` ${t("in AI answers.")}`}{" "}
                   {t("Prompt examples come from the fetched sample.")}
                 </>
               ) : (
@@ -180,7 +180,7 @@ export function CitationTabsCard({
                   <strong className="text-foreground">
                     {result.resolvedTarget}
                   </strong>
-                  {t(isUrlScoped ? "." : " in its text or sources.")}
+                  {isUrlScoped ? "." : ` ${t("in its text or sources.")}`}
                 </>
               )}
             </p>

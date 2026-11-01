@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { startWorkflow } from "./startWorkflow";
+import { startWorkflow, terminateStuckWorkflow } from "./startWorkflow";
 
 const workflow = { create: vi.fn(), get: vi.fn() };
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- only create and get run
@@ -43,4 +43,31 @@ describe("startWorkflow", () => {
     expect(await outcome).toEqual(new Error("internal error"));
     expect(workflow.create).toHaveBeenCalledTimes(3);
   });
+});
+
+describe("terminateStuckWorkflow", () => {
+  it.each([
+    "(instance.not_found) Instance does not exist",
+    "WORKFLOW_ERROR: instance does not exist",
+  ])("allows cleanup of a confirmed missing instance: %s", async (message) => {
+    workflow.get.mockRejectedValue(new Error(message));
+    await expect(
+      terminateStuckWorkflow(binding, options.id),
+    ).resolves.toBeUndefined();
+  });
+
+  it.each(["complete", "errored", "terminated"])(
+    "allows cleanup when termination races with a %s instance",
+    async (status) => {
+      workflow.get.mockResolvedValue({
+        terminate: async () => {
+          throw new Error("already stopped");
+        },
+        status: async () => ({ status }),
+      });
+      await expect(
+        terminateStuckWorkflow(binding, options.id),
+      ).resolves.toBeUndefined();
+    },
+  );
 });

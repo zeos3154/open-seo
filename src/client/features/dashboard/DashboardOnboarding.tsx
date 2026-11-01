@@ -116,9 +116,7 @@ export function DashboardOnboarding({
                       dismiss.mutate({ step: item.id, dismissed: true })
                     }
                   >
-                    {item.id === "project"
-                      ? t("I only need one project")
-                      : t("Skip for now")}
+                    {t(item.skipLabel)}
                   </Button>
                 </div>
               </AccordionContent>
@@ -139,7 +137,7 @@ export function DashboardOnboarding({
                   key={item.id}
                   className="flex items-center justify-between gap-3 rounded-lg bg-foreground/5 px-3 py-2"
                 >
-                  <span className="text-sm">{item.label}</span>
+                  <span className="text-sm">{t(item.label)}</span>
                   <Button
                     variant="ghost"
                     aria-label={t("Restore {label}", { label: t(item.label) })}
