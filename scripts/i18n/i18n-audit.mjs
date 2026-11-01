@@ -198,8 +198,9 @@ function resolveLocalLiteral(name, source) {
     )
       return;
     if (
-      ts.isStringLiteral(node.initializer) ||
-      ts.isNoSubstitutionTemplateLiteral(node.initializer)
+      node.initializer &&
+      (ts.isStringLiteral(node.initializer) ||
+        ts.isNoSubstitutionTemplateLiteral(node.initializer))
     ) {
       value = node.initializer.text;
     }
@@ -359,6 +360,7 @@ function exportedObjectProperty(source, exportName) {
       if (
         ts.isIdentifier(declaration.name) &&
         declaration.name.text === exportName &&
+        declaration.initializer &&
         ts.isObjectLiteralExpression(declaration.initializer)
       ) {
         objectLiteral = declaration.initializer;
@@ -467,7 +469,7 @@ function extractUnmarked(source, path) {
       UNMARKED_PROPERTIES.has(node.name.getText(source))
     ) {
       const initializer = node.initializer;
-      if (ts.isStringLiteral(initializer)) {
+      if (initializer && ts.isStringLiteral(initializer)) {
         add(
           initializer.text,
           source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,

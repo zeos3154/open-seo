@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -10,6 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 // deliberately broken translations without changing this checkout.
 const script = join(dirname(fileURLToPath(import.meta.url)), "i18n-audit.mjs");
 let workspace: string;
+let deferredWorkspace: string;
 let run: { status: number; output: string };
 
 beforeAll(async () => {
@@ -54,13 +55,72 @@ beforeAll(async () => {
     const failure = error as { status?: number; stdout?: string };
     run = { status: failure.status ?? 1, output: failure.stdout ?? "" };
   }
+
+  deferredWorkspace = await mkdtemp(join(tmpdir(), "open-seo-i18n-deferred-"));
+  await mkdir(join(deferredWorkspace, "src/client/lib"), { recursive: true });
+  await writeFile(
+    join(deferredWorkspace, "src/client/lib/i18n-messages.ts"),
+    "export const zhCN = {};",
+  );
+  await writeFile(
+    join(deferredWorkspace, "src/client/Deferred.tsx"),
+    `
+      import { useT } from "@/client/lib/i18n";
+      export function Deferred({ failed }: { failed: boolean }) {
+        const t = useT();
+        let message: string;
+        if (failed) message = "Failed";
+        else message = "Ready";
+        return <p>{t(message)}</p>;
+      }
+    `,
+  );
+  execFileSync("git", ["init", "--quiet"], { cwd: deferredWorkspace });
+  execFileSync(
+    "git",
+    [
+      "-c",
+      "user.name=Test",
+      "-c",
+      "user.email=test@example.com",
+      "-c",
+      "commit.gpgsign=false",
+      "commit",
+      "--allow-empty",
+      "--quiet",
+      "-m",
+      "baseline",
+    ],
+    { cwd: deferredWorkspace },
+  );
 });
 
 afterAll(async () => {
   await rm(workspace, { recursive: true, force: true });
+  await rm(deferredWorkspace, { recursive: true, force: true });
 });
 
 describe("i18n audit CLI", () => {
+  it.each(["check", "changes"])(
+    "%s leaves a key assigned after declaration for manual review",
+    (command) => {
+      const result = spawnSync(
+        process.execPath,
+        [script, command, "--base", "HEAD"],
+        {
+          cwd: deferredWorkspace,
+          encoding: "utf8",
+        },
+      );
+      expect(result.stderr).toBe("");
+      expect(result.status).toBe(0);
+      if (command === "check")
+        expect(result.stdout).toContain(
+          "Manual dynamic boundary: 1 marked calls",
+        );
+    },
+  );
+
   it("fails when static and explicit dynamic-source copy lack zh-CN", () => {
     expect(run.status).toBe(1);
     expect(run.output).toContain("Missing zh-CN (1)");
