@@ -61,6 +61,8 @@
     "billing:usage": "tsx scripts/dataforseo-account-usage.ts",
     "cleanup:default-projects:d1": "tsx scripts/d1-default-project-cleanup.ts",
     "gdpr:erase-user": "tsx scripts/erase-user-data.ts",
+    "i18n:check": "node scripts/i18n/i18n-audit.mjs check",
+    "i18n:changes": "node scripts/i18n/i18n-audit.mjs changes",
     "repair:rank-locations": "tsx scripts/repair-rank-tracking-locations.ts",
     "seed:rank-tracking": "tsx scripts/seed-rank-tracking.ts",
     "seed:projects": "tsx scripts/seed-projects.ts",
