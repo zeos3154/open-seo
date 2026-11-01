@@ -153,6 +153,10 @@ export const rankTrackingMessages: Record<string, string> = {
   "Scheduled check skipped: out of credits": "定时检查已跳过：积分不足",
   "Scheduled check skipped — paid plan required": "定时检查已跳过 — 需要付费版",
   "Archive domain": "归档域名",
+  Keywords: "关键词",
+  "Scheduled checks are paused": "定时检查已暂停",
+  "while our rankings data provider recovers from an outage. They'll catch up automatically once it's back.":
+    "我们的排名数据供应商正在从故障中恢复；恢复后它们会自动补跑。",
 
   // Detail header (RankTrackingDetailHeader.tsx)
   "vs yesterday": "与昨天对比",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAgentSetupPrompt } from "@/client/features/ai-mcp/agentSetupPrompt";
 import {
   AgentSetupPanel,
@@ -22,11 +22,7 @@ import { organizationContextQueryOptions } from "@/client/features/team/organiza
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { hasOrgPermission } from "@/lib/org-permissions";
-import { markDashboardStepClicked } from "@/serverFunctions/dashboard";
-import type {
-  DashboardClickStep,
-  DashboardSetupStep,
-} from "@/types/schemas/dashboard";
+import type { DashboardSetupStep } from "@/types/schemas/dashboard";
 import { parseResearchTarget } from "@/shared/researchScope";
 import { useT } from "@/client/lib/i18n";
 
@@ -51,30 +47,8 @@ export function DashboardSetupAction({
   const t = useT();
   const [showModal, setShowModal] = useState(false);
   const org = useQuery(organizationContextQueryOptions());
-  // Click-through steps: record the milestone, then open the page with the
-  // user's input already applied so the research runs on arrival.
-  const clickThrough = useMutation({
-    mutationFn: (input: { step: DashboardClickStep; value: string }) =>
-      markDashboardStepClicked({ data: { projectId, step: input.step } }),
-    onSuccess: async (_, input) => {
-      await queryClient.invalidateQueries({
-        queryKey: ["dashboardActivation", projectId],
-      });
-      onComplete();
-      if (input.step === "competitor")
-        void navigate({
-          to: "/p/$projectId/domain",
-          params: { projectId },
-          search: { domain: input.value },
-        });
-      else
-        void navigate({
-          to: "/p/$projectId/keywords",
-          params: { projectId },
-          search: { q: input.value },
-        });
-    },
-  });
+  // Research steps open the page with the user's input already applied, so
+  // the research runs on arrival and completes the step.
   if (step === "competitor")
     return (
       <StepInputForm
@@ -85,13 +59,14 @@ export function DashboardSetupAction({
         placeholder="competitor.com"
         submitLabel={t("Explore competitor")}
         validate={validateDomain}
-        pending={clickThrough.isPending}
-        onSubmit={(value) =>
-          clickThrough.mutate({
-            step: "competitor",
-            value: parseDomain(value),
-          })
-        }
+        onSubmit={(value) => {
+          onComplete();
+          void navigate({
+            to: "/p/$projectId/domain",
+            params: { projectId },
+            search: { domain: parseDomain(value) },
+          });
+        }}
       />
     );
   if (step === "keywords")
@@ -106,10 +81,14 @@ export function DashboardSetupAction({
         validate={(value) =>
           value.trim() ? undefined : t("Enter a keyword to start from")
         }
-        pending={clickThrough.isPending}
-        onSubmit={(value) =>
-          clickThrough.mutate({ step: "keywords", value: value.trim() })
-        }
+        onSubmit={(value) => {
+          onComplete();
+          void navigate({
+            to: "/p/$projectId/keywords",
+            params: { projectId },
+            search: { q: value.trim() },
+          });
+        }}
       />
     );
   if (step === "audit")
@@ -123,7 +102,6 @@ export function DashboardSetupAction({
         defaultValue={domain ? `https://${domain}` : ""}
         submitLabel={t("Set up audit")}
         validate={validateDomain}
-        pending={false}
         onSubmit={(value) => {
           onComplete();
           void navigate({
@@ -257,7 +235,6 @@ function StepInputForm({
   defaultValue = "",
   submitLabel,
   validate,
-  pending,
   onSubmit,
 }: {
   description: string;
@@ -266,7 +243,6 @@ function StepInputForm({
   defaultValue?: string;
   submitLabel: string;
   validate: (value: string) => string | undefined;
-  pending: boolean;
   onSubmit: (value: string) => void;
 }) {
   const form = useForm({
@@ -319,7 +295,7 @@ function StepInputForm({
       </form.Field>
       <form.Subscribe selector={(state) => state.canSubmit}>
         {(canSubmit) => (
-          <Button type="submit" size="lg" disabled={!canSubmit || pending}>
+          <Button type="submit" size="lg" disabled={!canSubmit}>
             {submitLabel}
           </Button>
         )}

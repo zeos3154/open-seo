@@ -86,6 +86,12 @@ export const dashboardMessages: Record<string, string> = {
     "在你已经在用的聊天机器人里研究关键词、审计网站。",
   "Add to {name}": "添加到 {name}",
   "Dismiss chatbot card": "关闭聊天机器人卡片",
+  "Ask {agent} about your site": "向 {agent} 咨询你的网站",
+  "Try: {prompt}": "试试：{prompt}",
+  "your agent": "你的智能体",
+  "Open in {name}": "在 {name} 中打开",
+  "Copy prompt": "复制提示词",
+  "Prompt copied": "提示词已复制",
 
   // GSC card
   "Google Search Console Performance": "Google Search Console 表现",
