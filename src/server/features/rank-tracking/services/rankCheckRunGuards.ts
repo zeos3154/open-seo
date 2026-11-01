@@ -192,11 +192,10 @@ export async function beginRankCheckRun(input: {
           "rank check",
         );
       } catch (error) {
-        // Workflow couldn't start — flip the run to failed so the
-        // partial-index slot is released. Best-effort cleanup of any
-        // zombie instance.
-        await failRunIfActive(runId, input.workflowStartErrorMessage);
+        // A refused create may still have started an instance. Confirm it
+        // stopped before failing the run and releasing its active slot.
         await terminateStuckWorkflow(input.workflow, runId);
+        await failRunIfActive(runId, input.workflowStartErrorMessage);
         throw error;
       }
       return { ok: true, runId };

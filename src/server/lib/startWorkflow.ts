@@ -62,16 +62,28 @@ export const STUCK_RUN_AFTER_MS = 12 * 60 * 60_000;
 
 /**
  * Stops a stuck instance, so it can no longer post paid calls after its run is
- * failed. `get` throws for an unknown id and `terminate` for an instance that
- * already stopped; both leave nothing to stop.
+ * failed. Ignore a confirmed missing instance or a failed termination whose
+ * status confirms it already stopped. An RPC failure alone proves neither.
  */
 export async function terminateStuckWorkflow<P>(
   workflow: Workflow<P>,
   id: string,
 ) {
   try {
-    await (await workflow.get(id)).terminate();
-  } catch {
-    // Already gone or stopped.
+    const instance = await workflow.get(id);
+    try {
+      await instance.terminate();
+    } catch (error) {
+      const { status } = await instance.status();
+      if (!["complete", "errored", "terminated"].includes(status)) throw error;
+    }
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.message.includes("instance.not_found") ||
+        error.message === "WORKFLOW_ERROR: instance does not exist")
+    )
+      return;
+    throw error;
   }
 }
